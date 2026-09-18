@@ -47,7 +47,7 @@ export const EventsTab: React.FC = () => {
     setError(null);
 
     try {
-      const res = await fetch('https://ems.ln.edu.hk/api/v1/events/?skip=0&limit=15');
+      const res = await fetch('/event_api.json');
       if (!res.ok) {
         throw new Error('Events request failed');
       }
@@ -57,7 +57,7 @@ export const EventsTab: React.FC = () => {
       setEvents(items as EventItem[]);
       setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch {
-      setError('Unable to load events at the moment.');
+      setError('Unable to load local test events data.');
       setEvents([]);
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export const EventsTab: React.FC = () => {
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Current Events</h2>
-          <p className="text-xs text-slate-500">Live from Lingnan EMS API</p>
+          <p className="text-xs text-slate-500">Template view using local testing JSON</p>
         </div>
         <button
           type="button"

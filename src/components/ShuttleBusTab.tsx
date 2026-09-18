@@ -41,6 +41,19 @@ const providerCardClass = (provider: 'KMB' | 'Citybus') =>
     ? 'border-red-200 bg-red-50/30'
     : 'border-blue-200 bg-blue-50/30';
 
+const safeFetchJson = async (url: string): Promise<any | null> => {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      return null;
+    }
+
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
 export const ShuttleBusTab: React.FC = () => {
   const [kmbArrivals, setKmbArrivals] = useState<ArrivalCard[]>([]);
   const [citybusArrivals, setCitybusArrivals] = useState<ArrivalCard[]>([]);
@@ -51,156 +64,164 @@ export const ShuttleBusTab: React.FC = () => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const loadKmb = useCallback(async (): Promise<ArrivalCard[]> => {
-    const result: ArrivalCard[] = [];
+    const [kmbStopsJson, routeStopRows] = await Promise.all([
+      safeFetchJson('https://data.etabus.gov.hk/v1/transport/kmb/stop'),
+      Promise.all(
+        KMB_ROUTES.flatMap((route) =>
+          ['inbound', 'outbound'].map(async (direction) => {
+            const routeStopJson = await safeFetchJson(
+              `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/${direction}/1`,
+            );
 
-    for (const route of KMB_ROUTES) {
-      for (const direction of ['inbound', 'outbound']) {
-        try {
-          const routeStopRes = await fetch(
-            `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/${direction}/1`,
-          );
-          if (!routeStopRes.ok) {
-            continue;
-          }
+            return {
+              route,
+              direction,
+              rows: (routeStopJson?.data ?? []) as Array<{ stop: string; bound: string }>,
+            };
+          }),
+        ),
+      ),
+    ]);
 
-          const routeStopJson = await routeStopRes.json();
-          const stopRows: Array<{ stop: string; bound: string }> = routeStopJson?.data ?? [];
-          if (!stopRows.length) {
-            continue;
-          }
-
-          let matchedStopId: string | null = null;
-          let matchedStopName = '';
-          let boundCode = stopRows[0]?.bound ?? '';
-
-          for (const row of stopRows) {
-            const stopRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${row.stop}`);
-            if (!stopRes.ok) {
-              continue;
-            }
-
-            const stopJson = await stopRes.json();
-            const stopNameEn = stopJson?.data?.name_en ?? '';
-            const stopNameTc = stopJson?.data?.name_tc ?? '';
-            if (LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc)) {
-              matchedStopId = row.stop;
-              matchedStopName = stopNameEn || stopNameTc;
-              boundCode = row.bound;
-              break;
-            }
-          }
-
-          if (!matchedStopId) {
-            continue;
-          }
-
-          const etaRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${matchedStopId}`);
-          if (!etaRes.ok) {
-            continue;
-          }
-
-          const etaJson = await etaRes.json();
-          const minuteList = (etaJson?.data ?? [])
-            .filter((row: any) => row?.route === route && row?.dir === boundCode)
-            .map((row: any) => minutesFromEta(row?.eta))
-            .filter((x: number | null): x is number => x !== null)
-            .sort((a: number, b: number) => a - b)
-            .slice(0, 3);
-
-          result.push({
-            route,
-            provider: 'KMB',
-            direction,
-            stopName: matchedStopName || 'Lingnan University',
-            minutes: minuteList,
-          });
-        } catch {
-          // Ignore individual route failures and continue.
-        }
+    const stopNameById = new Map<string, { en: string; tc: string }>();
+    const kmbStops: Array<{ stop: string; name_en?: string; name_tc?: string }> = kmbStopsJson?.data ?? [];
+    for (const stop of kmbStops) {
+      if (!stop?.stop) {
+        continue;
       }
+
+      stopNameById.set(stop.stop, {
+        en: stop.name_en ?? '',
+        tc: stop.name_tc ?? '',
+      });
     }
 
-    return result;
+    const matchedRoutes = routeStopRows
+      .map(({ route, direction, rows }) => {
+        const matched = rows.find((row) => {
+          const stopInfo = stopNameById.get(row.stop);
+          const stopNameEn = stopInfo?.en ?? '';
+          const stopNameTc = stopInfo?.tc ?? '';
+          return LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc);
+        });
+
+        if (!matched) {
+          return null;
+        }
+
+        const stopInfo = stopNameById.get(matched.stop);
+        return {
+          route,
+          direction,
+          stopId: matched.stop,
+          boundCode: matched.bound,
+          stopName: stopInfo?.en || stopInfo?.tc || 'Lingnan University',
+        };
+      })
+      .filter((x): x is { route: string; direction: string; stopId: string; boundCode: string; stopName: string } => x !== null);
+
+    const uniqueStopIds = [...new Set(matchedRoutes.map((item) => item.stopId))];
+    const etaByStop = new Map<string, any[]>();
+
+    await Promise.all(
+      uniqueStopIds.map(async (stopId) => {
+        const etaJson = await safeFetchJson(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`);
+        etaByStop.set(stopId, etaJson?.data ?? []);
+      }),
+    );
+
+    return matchedRoutes.map((item) => {
+      const minuteList = (etaByStop.get(item.stopId) ?? [])
+        .filter((row: any) => row?.route === item.route && row?.dir === item.boundCode)
+        .map((row: any) => minutesFromEta(row?.eta))
+        .filter((x: number | null): x is number => x !== null)
+        .sort((a: number, b: number) => a - b)
+        .slice(0, 3);
+
+      return {
+        route: item.route,
+        provider: 'KMB' as const,
+        direction: item.direction,
+        stopName: item.stopName,
+        minutes: minuteList,
+      };
+    });
   }, []);
 
   const loadCitybus = useCallback(async (): Promise<ArrivalCard[]> => {
-    const result: ArrivalCard[] = [];
-
-    try {
-      const stopRes = await fetch('https://rt.data.gov.hk/v2/transport/citybus/stop/CTB');
-      if (!stopRes.ok) {
-        return result;
-      }
-
-      const stopJson = await stopRes.json();
-      const stopMap: Record<string, { name_en?: string; name_tc?: string }> = stopJson?.data ?? {};
-
-      for (const route of CITYBUS_ROUTES) {
-        for (const direction of ['inbound', 'outbound']) {
-          try {
-            const routeStopRes = await fetch(
-              `https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/${direction}`,
-            );
-            if (!routeStopRes.ok) {
-              continue;
-            }
-
-            const routeStopJson = await routeStopRes.json();
-            const stopRows: Array<{ stop: string; dir: string }> = routeStopJson?.data ?? [];
-            if (!stopRows.length) {
-              continue;
-            }
-
-            let matchedStopId: string | null = null;
-            let matchedStopName = '';
-            let dirCode = stopRows[0]?.dir ?? '';
-
-            for (const row of stopRows) {
-              const stopInfo = stopMap[row.stop];
-              const stopNameEn = stopInfo?.name_en ?? '';
-              const stopNameTc = stopInfo?.name_tc ?? '';
-              if (LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc)) {
-                matchedStopId = row.stop;
-                matchedStopName = stopNameEn || stopNameTc;
-                dirCode = row.dir;
-                break;
-              }
-            }
-
-            if (!matchedStopId) {
-              continue;
-            }
-
-            const etaRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${matchedStopId}/${route}`);
-            if (!etaRes.ok) {
-              continue;
-            }
-
-            const etaJson = await etaRes.json();
-            const minuteList = (etaJson?.data ?? [])
-              .filter((row: any) => row?.route === route && (!dirCode || row?.dir === dirCode))
-              .map((row: any) => minutesFromEta(row?.eta))
-              .filter((x: number | null): x is number => x !== null)
-              .sort((a: number, b: number) => a - b)
-              .slice(0, 3);
-
-            result.push({
-              route,
-              provider: 'Citybus',
-              direction,
-              stopName: matchedStopName || 'Lingnan University',
-              minutes: minuteList,
-            });
-          } catch {
-            // Ignore individual route failures and continue.
-          }
-        }
-      }
-    } catch {
-      return result;
+    const stopJson = await safeFetchJson('https://rt.data.gov.hk/v2/transport/citybus/stop/CTB');
+    const stopMap: Record<string, { name_en?: string; name_tc?: string }> = stopJson?.data ?? {};
+    if (!Object.keys(stopMap).length) {
+      return [];
     }
 
-    return result;
+    const routeStopRows = await Promise.all(
+      CITYBUS_ROUTES.flatMap((route) =>
+        ['inbound', 'outbound'].map(async (direction) => {
+          const routeStopJson = await safeFetchJson(
+            `https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${route}/${direction}`,
+          );
+
+          return {
+            route,
+            direction,
+            rows: (routeStopJson?.data ?? []) as Array<{ stop: string; dir: string }>,
+          };
+        }),
+      ),
+    );
+
+    const matchedRoutes = routeStopRows
+      .map(({ route, direction, rows }) => {
+        const matched = rows.find((row) => {
+          const stopInfo = stopMap[row.stop];
+          const stopNameEn = stopInfo?.name_en ?? '';
+          const stopNameTc = stopInfo?.name_tc ?? '';
+          return LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc);
+        });
+
+        if (!matched) {
+          return null;
+        }
+
+        const stopInfo = stopMap[matched.stop];
+        return {
+          route,
+          direction,
+          stopId: matched.stop,
+          dirCode: matched.dir,
+          stopName: stopInfo?.name_en || stopInfo?.name_tc || 'Lingnan University',
+        };
+      })
+      .filter((x): x is { route: string; direction: string; stopId: string; dirCode: string; stopName: string } => x !== null);
+
+    const etaByStopRoute = new Map<string, any[]>();
+    const uniqueEtaKeys = [...new Set(matchedRoutes.map((item) => `${item.stopId}__${item.route}`))];
+
+    await Promise.all(
+      uniqueEtaKeys.map(async (key) => {
+        const [stopId, route] = key.split('__');
+        const etaJson = await safeFetchJson(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stopId}/${route}`);
+        etaByStopRoute.set(key, etaJson?.data ?? []);
+      }),
+    );
+
+    return matchedRoutes.map((item) => {
+      const minuteList = (etaByStopRoute.get(`${item.stopId}__${item.route}`) ?? [])
+        .filter((row: any) => row?.route === item.route && (!item.dirCode || row?.dir === item.dirCode))
+        .map((row: any) => minutesFromEta(row?.eta))
+        .filter((x: number | null): x is number => x !== null)
+        .sort((a: number, b: number) => a - b)
+        .slice(0, 3);
+
+      return {
+        route: item.route,
+        provider: 'Citybus' as const,
+        direction: item.direction,
+        stopName: item.stopName,
+        minutes: minuteList,
+      };
+    });
   }, []);
 
   const loadMtrTrain = useCallback(async (): Promise<TrainState> => {
@@ -231,26 +252,9 @@ export const ShuttleBusTab: React.FC = () => {
   }, []);
 
   const loadMtrBus = useCallback(async (): Promise<string> => {
-    const routes = ['K51', 'K58'];
-
-    for (const route of routes) {
-      const urls = [
-        `https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule.php?route_name=${route}`,
-        `https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule.php?routeName=${route}`,
-        `https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule?route_name=${route}`,
-        `https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule?routeName=${route}`,
-      ];
-
-      for (const url of urls) {
-        try {
-          const res = await fetch(url);
-          if (res.ok) {
-            return `MTR bus API reachable for ${route} (${url.includes('.php') ? 'php endpoint' : 'non-php endpoint'}).`;
-          }
-        } catch {
-          // continue trying fallback URL variants
-        }
-      }
+    const payload = await safeFetchJson('https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule.php?route_name=K51');
+    if (payload) {
+      return 'MTR bus API reachable (K51 test endpoint).';
     }
 
     return 'MTR bus API endpoint is currently unavailable from this app. Please check data.gov.hk endpoint updates.';
@@ -261,33 +265,37 @@ export const ShuttleBusTab: React.FC = () => {
     setError(null);
 
     try {
-      const [kmb, citybus, trains, mtrBus] = await Promise.all([
+      const [kmb, citybus, trains] = await Promise.all([
         loadKmb(),
         loadCitybus(),
         loadMtrTrain(),
-        loadMtrBus(),
       ]);
 
       setKmbArrivals(kmb);
       setCitybusArrivals(citybus);
       setTrainData(trains);
-      setMtrBusStatus(mtrBus);
       setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch {
       setError('Failed to fetch one or more transport feeds. Please refresh.');
     } finally {
       setLoading(false);
     }
-  }, [loadCitybus, loadKmb, loadMtrBus, loadMtrTrain]);
+  }, [loadCitybus, loadKmb, loadMtrTrain]);
 
   useEffect(() => {
     void loadAll();
+
+    void (async () => {
+      const mtrBus = await loadMtrBus();
+      setMtrBusStatus(mtrBus);
+    })();
+
     const timer = setInterval(() => {
       void loadAll();
-    }, 60000);
+    }, 120000);
 
     return () => clearInterval(timer);
-  }, [loadAll]);
+  }, [loadAll, loadMtrBus]);
 
   const allBusCards = useMemo(() => [...kmbArrivals, ...citybusArrivals], [citybusArrivals, kmbArrivals]);
 

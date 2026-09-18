@@ -5,15 +5,13 @@ import {
   Clock, 
   CheckCircle2, 
   ChevronRight, 
-  Sparkles, 
-  Link2, 
   CreditCard, 
   Bus, 
   GraduationCap, 
   SunMedium, 
   Printer, 
   Check, 
-  AlertCircle 
+  CalendarDays 
 } from 'lucide-react';
 import { CURRENT_STUDENT, COURSES } from '../data/mockData';
 import { TabType } from './NavigationBottomBar';
@@ -122,34 +120,34 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
         </div>
       </div>
 
-      {/* Featured Banner: HTML Image Hotlink feature */}
-      <div 
-        onClick={() => onNavigate('hotlink')}
-        className="cursor-pointer group relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-50/90 via-white to-slate-50 border border-red-200 p-3.5 shadow-xs hover:border-red-400 transition"
-      >
+      <div className="rounded-2xl bg-gradient-to-r from-red-50/90 via-white to-slate-50 border border-red-200 p-3.5 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-sm shadow-red-200 group-hover:scale-105 transition-transform shrink-0">
-              <Link2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-sm shadow-red-200 shrink-0">
+              <Bus className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 uppercase tracking-wide">
-                  Featured Tool
+                  Live Transit
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  HTML Image Hotlinks
+                  KMB / Citybus / MTR
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 group-hover:text-red-700 transition-colors">
-                Extract & Build Image Hotlinks from HTML
+              <h3 className="text-sm font-bold text-slate-900">
+                Check Next Arrival to Lingnan University
               </h3>
-              <p className="text-[11px] text-slate-600 line-clamp-1">
-                Upload or paste HTML files to extract images or generate ready-to-use hotlink codes.
-              </p>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-red-600 group-hover:translate-x-1 transition-transform shrink-0" />
+          <button
+            type="button"
+            onClick={() => onNavigate('shuttle')}
+            className="text-red-600 font-bold text-xs inline-flex items-center"
+          >
+            Open
+            <ChevronRight className="w-4 h-4 ml-0.5" />
+          </button>
         </div>
       </div>
 
@@ -240,7 +238,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
 
           <button
             type="button"
-            onClick={() => onNavigate('campus')}
+            onClick={() => onNavigate('shuttle')}
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
           >
             <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
@@ -253,14 +251,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
 
           <button
             type="button"
-            onClick={() => onNavigate('hotlink')}
+            onClick={() => onNavigate('events')}
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
           >
-            <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-              <Link2 className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-lg bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
+              <CalendarDays className="w-4 h-4" />
             </div>
             <span className="text-[11px] font-semibold text-slate-700 text-center">
-              Hotlinks
+              Events
             </span>
           </button>
         </div>

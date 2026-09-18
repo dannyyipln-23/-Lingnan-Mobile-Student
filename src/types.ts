@@ -55,24 +55,3 @@ export interface CampusFacility {
   totalSeats?: number;
   nextBusMins?: number[];
 }
-
-export interface ImageHotlinkItem {
-  id: string;
-  title: string;
-  category: 'official' | 'campus' | 'events' | 'student';
-  url: string;
-  altText: string;
-  width?: number;
-  height?: number;
-  description?: string;
-  tags: string[];
-}
-
-export interface ParsedImageHotlink {
-  src: string;
-  alt: string;
-  tag: string;
-  width?: string;
-  height?: string;
-  isValid?: boolean;
-}

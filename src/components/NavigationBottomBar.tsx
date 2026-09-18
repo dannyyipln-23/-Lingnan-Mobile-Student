@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, CreditCard, Calendar, Compass, Link2 } from 'lucide-react';
+import { Home, CreditCard, Calendar, Compass, Bus, CalendarDays } from 'lucide-react';
 
-export type TabType = 'home' | 'idcard' | 'timetable' | 'campus' | 'hotlink';
+export type TabType = 'home' | 'idcard' | 'timetable' | 'campus' | 'shuttle' | 'events';
 
 interface NavigationBottomBarProps {
   activeTab: TabType;
@@ -34,9 +34,15 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
       icon: Compass,
     },
     {
-      id: 'hotlink' as TabType,
-      label: 'Hotlink',
-      icon: Link2,
+      id: 'shuttle' as TabType,
+      label: 'Shuttle',
+      icon: Bus,
+      highlight: true,
+    },
+    {
+      id: 'events' as TabType,
+      label: 'Events',
+      icon: CalendarDays,
       highlight: true,
     },
   ];

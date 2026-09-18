@@ -76,7 +76,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
             Campus Life & Student Facilities
           </h2>
           <p className="text-xs text-slate-500">
-            ILP Graduation Units, Library, Shuttle Bus & Study Spaces
+            ILP Graduation Units, Library and Student Facilities
           </p>
         </div>
       </div>
@@ -87,7 +87,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
           { id: 'all', label: 'All Services' },
           { id: 'ilp', label: 'ILP Units' },
           { id: 'facilities', label: 'Study & Facilities' },
-          { id: 'bus', label: 'Shuttle Bus' },
+          { id: 'bus', label: 'Shuttle Info' },
         ].map(cat => (
           <button
             key={cat.id}
@@ -201,10 +201,10 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-900">
-                  MTR Siu Hong ↔ Lingnan Campus Shuttle Bus
+                  Campus Shuttle Snapshot
                 </h3>
                 <span className="text-[10px] text-slate-500">
-                  Frequent campus departures • Free for students
+                  For full live feeds, use the Shuttle tab
                 </span>
               </div>
             </div>

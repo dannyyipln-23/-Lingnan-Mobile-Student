@@ -1,0 +1,8 @@
+{
+  "name": "Lingnan Mobile Student Portal",
+  "description": "Comprehensive university mobile web app for students featuring digital student ID, timetable, campus guide, ILP tracker, and HTML image hotlink builder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

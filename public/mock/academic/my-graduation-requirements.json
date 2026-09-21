@@ -1,0 +1,20 @@
+{
+  "title": "My Graduation Requirements",
+  "lastUpdated": "2026-09-21",
+  "summary": [
+    { "label": "Program", "value": "BBA (Hons) Risk & Insurance" },
+    { "label": "Credits Completed", "value": "84 / 120" },
+    { "label": "ILP Units", "value": "84 / 75" }
+  ],
+  "sections": [
+    {
+      "title": "Program Requirement Status",
+      "rows": [
+        { "label": "Core Courses", "value": "Completed" },
+        { "label": "Major Electives", "value": "In Progress" },
+        { "label": "Common Core", "value": "Completed" },
+        { "label": "Capstone", "value": "Pending" }
+      ]
+    }
+  ]
+}

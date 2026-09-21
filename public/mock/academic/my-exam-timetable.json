@@ -1,0 +1,19 @@
+{
+  "title": "My Exam Timetable",
+  "lastUpdated": "2026-09-21",
+  "summary": [
+    { "label": "Exam Period", "value": "Dec 2026" },
+    { "label": "Scheduled Exams", "value": "4" },
+    { "label": "Conflicts", "value": "0" }
+  ],
+  "sections": [
+    {
+      "title": "Final Exams",
+      "rows": [
+        { "label": "RIM2201 - 2026-12-07 09:30", "value": "WYL104" },
+        { "label": "CDS2001 - 2026-12-10 14:00", "value": "MBG22" },
+        { "label": "BUS2105 - 2026-12-14 10:00", "value": "SEK201" }
+      ]
+    }
+  ]
+}

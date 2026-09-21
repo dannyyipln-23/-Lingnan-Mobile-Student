@@ -1,0 +1,24 @@
+{
+  "title": "Early Grade Release",
+  "lastUpdated": "2026-09-21",
+  "summary": [
+    { "label": "Current Window", "value": "Closed" },
+    { "label": "Next Window", "value": "TBD" },
+    { "label": "Eligible Courses", "value": "2" }
+  ],
+  "sections": [
+    {
+      "title": "Eligibility",
+      "rows": [
+        { "label": "CDS2001 Data Analytics with Python", "value": "Eligible" },
+        { "label": "BUS2105 Microeconomics for Business", "value": "Eligible" }
+      ]
+    },
+    {
+      "title": "Notes",
+      "rows": [
+        { "label": "Release availability depends on instructor confirmation", "value": "Read" }
+      ]
+    }
+  ]
+}

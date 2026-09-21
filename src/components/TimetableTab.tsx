@@ -58,8 +58,8 @@ export const TimetableTab: React.FC = () => {
             2025/2026 Academic Year • Term 1
           </p>
         </div>
-        <div className="text-right">
-          <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
+        <div className="text-right shrink-0">
+          <span className="inline-flex whitespace-nowrap text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
             15 Credits (5 Courses)
           </span>
         </div>

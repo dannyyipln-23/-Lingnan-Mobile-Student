@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   BookOpen,
   Calendar,
@@ -13,12 +13,15 @@ import {
   School,
   Wallet,
 } from 'lucide-react';
+import { AcademicSystemKey, AcademicSystemPage } from './AcademicSystemPage';
 
 interface CampusLifeTabProps {
   onOpenLibraryModal: () => void;
 }
 
 export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal }) => {
+  const [activeAcademicPage, setActiveAcademicPage] = useState<AcademicSystemKey | null>(null);
+
   const sectionClass = 'rounded-2xl bg-white border border-slate-200 p-4 shadow-sm';
   const sectionTitleClass = 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2';
   const itemButtonClass = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left hover:bg-slate-100 transition';
@@ -82,6 +85,28 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
     },
   ];
 
+  const academicPageMap = useMemo<Record<string, AcademicSystemKey>>(
+    () => ({
+      'My Academic Results': 'my-academic-results',
+      'My Graduation Requirements': 'my-graduation-requirements',
+      'My Class Schedule': 'my-class-schedule',
+      'My Exam Timetable': 'my-exam-timetable',
+      'Student Graduation Information': 'student-graduation-information',
+      'Early Grade Release': 'early-grade-release',
+      'Student Exam Timetable': 'my-exam-timetable',
+    }),
+    [],
+  );
+
+  if (activeAcademicPage) {
+    return (
+      <AcademicSystemPage
+        systemKey={activeAcademicPage}
+        onBack={() => setActiveAcademicPage(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4 pb-24 text-slate-800">
       <div className="flex items-center justify-between px-1">
@@ -100,6 +125,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
+            onClick={() => setActiveAcademicPage('my-class-schedule')}
             className={itemButtonClass}
           >
             <div className="flex items-start space-x-2.5">
@@ -146,6 +172,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
 
           <button
             type="button"
+            onClick={() => setActiveAcademicPage('my-graduation-requirements')}
             className={itemButtonClass}
           >
             <div className="flex items-start space-x-2.5">
@@ -182,12 +209,21 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {group.items.map((item) => (
+              {group.items.map((item) => {
+                const pageKey = group.id === 'academic' ? academicPageMap[item] : undefined;
+                const isDisabled = Boolean(group.disabled) || (group.id === 'academic' && !pageKey);
+
+                return (
                 <button
                   key={item}
                   type="button"
-                  disabled={group.disabled}
-                  className={group.disabled ? disabledButtonClass : itemButtonClass}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (pageKey) {
+                      setActiveAcademicPage(pageKey);
+                    }
+                  }}
+                  className={isDisabled ? disabledButtonClass : itemButtonClass}
                 >
                   <div className="flex items-start justify-between space-x-2">
                     <div className="inline-flex items-start space-x-2">
@@ -199,10 +235,11 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                       </div>
                       <span className="text-xs font-semibold text-slate-800 text-left">{item}</span>
                     </div>
-                    {group.disabled && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-1" />}
+                    {isDisabled && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-1" />}
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </section>
         );

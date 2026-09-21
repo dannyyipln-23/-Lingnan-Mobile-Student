@@ -1,0 +1,26 @@
+{
+  "title": "My Academic Results",
+  "lastUpdated": "2026-09-21",
+  "summary": [
+    { "label": "cGPA", "value": "3.72" },
+    { "label": "Credits Earned", "value": "84" },
+    { "label": "Credits In Progress", "value": "15" }
+  ],
+  "sections": [
+    {
+      "title": "2026/27 Term 1",
+      "rows": [
+        { "label": "RIM2201 Principles of Risk Management", "value": "A-" },
+        { "label": "CDS2001 Data Analytics with Python", "value": "A" },
+        { "label": "LCC1010 Practical Professional Communication", "value": "B+" }
+      ]
+    },
+    {
+      "title": "2025/26 Term 2",
+      "rows": [
+        { "label": "BUS2105 Microeconomics for Business", "value": "A-" },
+        { "label": "CLA9001 Hong Kong Heritage & Global Culture", "value": "A" }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, CircleHelp, Globe, Lock, UserRound } from 'lucide-react';
+import { CURRENT_STUDENT } from '../data/mockData';
 
 const settingItems = [
   {
@@ -40,6 +41,36 @@ export const SettingsTab: React.FC = () => {
       <div className="px-1">
         <h2 className="text-lg font-bold text-slate-900">Settings</h2>
         <p className="text-xs text-slate-500">Account, privacy and app preferences</p>
+      </div>
+
+      {/* Student Profile Card with Cartoon Avatar */}
+      <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-xs">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-red-500/20 bg-slate-100 border border-slate-200 shadow-xs shrink-0">
+            <img
+              src={CURRENT_STUDENT.avatarUrl}
+              alt={CURRENT_STUDENT.fullName}
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-red-600 font-mono">
+                {CURRENT_STUDENT.studentNumber}
+              </span>
+              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
+                Year {CURRENT_STUDENT.yearOfStudy}
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 truncate mt-0.5">
+              {CURRENT_STUDENT.fullName}
+            </h3>
+            <p className="text-xs text-slate-500 truncate">
+              {CURRENT_STUDENT.major}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2.5">

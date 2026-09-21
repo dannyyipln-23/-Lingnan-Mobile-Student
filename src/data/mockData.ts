@@ -9,7 +9,7 @@ export const CURRENT_STUDENT: StudentProfile = {
   faculty: 'Faculty of Business',
   yearOfStudy: 3,
   expectedGraduation: 'July 2027',
-  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  avatarUrl: '/student-avatar.jpg',
   hostel: 'Hall B (The Jockey Club Hall)',
   hostelRoom: 'Room B-618',
   gpa: 3.72,

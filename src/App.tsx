@@ -3,11 +3,9 @@ import { MobileFrame } from './components/MobileFrame';
 import { StudentHeader } from './components/StudentHeader';
 import { NavigationBottomBar, TabType } from './components/NavigationBottomBar';
 import { HomeTab } from './components/HomeTab';
-import { StudentCardTab } from './components/StudentCardTab';
 import { TimetableTab } from './components/TimetableTab';
 import { CampusLifeTab } from './components/CampusLifeTab';
-import { ShuttleBusTab } from './components/ShuttleBusTab.tsx';
-import { EventsTab } from './components/EventsTab.tsx';
+import { SettingsTab } from './components/SettingsTab.tsx';
 import { LibraryBookingModal } from './components/LibraryBookingModal';
 import { NotificationModal } from './components/NotificationModal';
 
@@ -33,8 +31,6 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'idcard' && <StudentCardTab />}
-
         {activeTab === 'timetable' && <TimetableTab />}
 
         {activeTab === 'campus' && (
@@ -43,9 +39,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'shuttle' && <ShuttleBusTab />}
-
-        {activeTab === 'events' && <EventsTab />}
+        {activeTab === 'setting' && <SettingsTab />}
       </main>
 
       {/* Bottom Floating Navigation */}

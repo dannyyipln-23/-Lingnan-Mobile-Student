@@ -5,15 +5,14 @@ import {
   Clock, 
   CheckCircle2, 
   ChevronRight, 
-  CreditCard, 
-  Bus, 
+  LayoutGrid, 
+  Calendar,
   GraduationCap, 
   SunMedium, 
   Printer, 
-  Check, 
-  CalendarDays 
+  Check
 } from 'lucide-react';
-import { CURRENT_STUDENT, COURSES } from '../data/mockData';
+import { COURSES } from '../data/mockData';
 import { TabType } from './NavigationBottomBar';
 
 interface HomeTabProps {
@@ -45,104 +44,29 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
         </div>
       )}
 
-      {/* Student Welcome Banner in Lighten Red + Grey Theme */}
-      <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-red-100/50 blur-2xl pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-red-400 to-slate-400" />
-        
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="relative w-14 h-14 rounded-xl overflow-hidden ring-2 ring-red-500/30 shadow-xs bg-slate-100 shrink-0 border border-slate-200">
-              <img
-                src={CURRENT_STUDENT.avatarUrl}
-                alt={CURRENT_STUDENT.fullName}
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <div>
-              <div className="flex items-center space-x-1.5">
-                <span className="text-xs font-medium text-slate-500">
-                  Welcome back,
-                </span>
-                <span className="text-xs font-bold text-red-600 font-mono">
-                  {CURRENT_STUDENT.studentNumber}
-                </span>
-              </div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight leading-snug">
-                {CURRENT_STUDENT.fullName}
-              </h2>
-              <p className="text-[11px] text-slate-600 truncate max-w-[210px]">
-                {CURRENT_STUDENT.major} • Year {CURRENT_STUDENT.yearOfStudy}
-              </p>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
-              cGPA {CURRENT_STUDENT.gpa}
-            </span>
-            <p className="text-[10px] text-slate-500 mt-1">
-              {CURRENT_STUDENT.hostel}
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Balance Indicators */}
-        <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
-          <div className="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200/80">
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-              $
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-500 block">
-                Campus Octopus
-              </span>
-              <span className="font-bold text-slate-800">
-                HK${CURRENT_STUDENT.octopusBalance.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200/80">
-            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Printer className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-500 block">
-                Print Quota
-              </span>
-              <span className="font-bold text-slate-800">
-                {CURRENT_STUDENT.printQuotaPages} pages
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="rounded-2xl bg-gradient-to-r from-red-50/90 via-white to-slate-50 border border-red-200 p-3.5 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-sm shadow-red-200 shrink-0">
-              <Bus className="w-5 h-5" />
+              <LayoutGrid className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 uppercase tracking-wide">
-                  Live Transit
+                  Campus Hub
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  KMB / Citybus / MTR
+                  Applications and student services
                 </span>
               </div>
               <h3 className="text-sm font-bold text-slate-900">
-                Check Next Arrival to Lingnan University
+                Open categorized applications and campus tools
               </h3>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => onNavigate('shuttle')}
+            onClick={() => onNavigate('campus')}
             className="text-red-600 font-bold text-xs inline-flex items-center"
           >
             Open
@@ -209,17 +133,17 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
           Student Shortcuts
         </h3>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
-            onClick={() => onNavigate('idcard')}
+            onClick={() => onNavigate('timetable')}
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
           >
             <div className="w-9 h-9 rounded-lg bg-red-50 text-red-600 border border-red-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-              <CreditCard className="w-4 h-4" />
+              <Calendar className="w-4 h-4" />
             </div>
             <span className="text-[11px] font-semibold text-slate-700 text-center">
-              Student ID
+              Timetable
             </span>
           </button>
 
@@ -238,27 +162,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
 
           <button
             type="button"
-            onClick={() => onNavigate('shuttle')}
+            onClick={() => onNavigate('campus')}
             className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
           >
             <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-              <Bus className="w-4 h-4" />
+              <LayoutGrid className="w-4 h-4" />
             </div>
             <span className="text-[11px] font-semibold text-slate-700 text-center">
-              Shuttle Bus
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('events')}
-            className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
-          >
-            <div className="w-9 h-9 rounded-lg bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-              <CalendarDays className="w-4 h-4" />
-            </div>
-            <span className="text-[11px] font-semibold text-slate-700 text-center">
-              Events
+              Campus Apps
             </span>
           </button>
         </div>

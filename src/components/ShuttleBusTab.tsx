@@ -300,7 +300,7 @@ export const ShuttleBusTab: React.FC = () => {
   const allBusCards = useMemo(() => [...kmbArrivals, ...citybusArrivals], [citybusArrivals, kmbArrivals]);
 
   return (
-    <div className="space-y-4 pb-24 text-slate-800">
+    <div className="space-y-4 text-slate-800">
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Shuttle & Public Transport</h2>

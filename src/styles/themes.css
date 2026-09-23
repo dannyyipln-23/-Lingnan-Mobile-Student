@@ -134,18 +134,63 @@ html {
 
 .flow-shell {
   position: relative;
-  margin-left: -1rem;
-  margin-right: -1rem;
-  margin-top: -0.5rem;
-  min-height: 70vh;
-  padding: 0.5rem 1rem 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--frame-pad, 1rem));
+  margin-left: calc(-1 * var(--frame-pad, 1rem));
+  margin-right: calc(-1 * var(--frame-pad, 1rem));
+  margin-top: calc(-1 * var(--content-pad-top, 0.75rem));
+  min-height: calc(100% + var(--content-pad-top, 0.75rem));
+  padding: var(--content-pad-top, 0.75rem) var(--frame-pad, 1rem) 1.5rem;
   background: linear-gradient(
     180deg,
     var(--flow-bg-from) 0%,
-    var(--flow-bg-via) 42%,
-    transparent 100%
+    var(--flow-bg-via) 28%,
+    var(--flow-bg-via) 100%
   );
   color: var(--text-primary);
+}
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--frame-pad, 1rem));
+  margin-left: calc(-1 * var(--frame-pad, 1rem));
+  margin-right: calc(-1 * var(--frame-pad, 1rem));
+  margin-top: calc(-1 * var(--content-pad-top, 0.75rem));
+  min-height: calc(100% + var(--content-pad-top, 0.75rem));
+  padding: var(--content-pad-top, 0.75rem) var(--frame-pad, 1rem) 1.5rem;
+  background: linear-gradient(
+    180deg,
+    var(--page-bg-from, var(--surface-muted)) 0%,
+    var(--page-bg-via, var(--surface-muted)) 40%,
+    var(--page-bg-via, var(--surface-muted)) 100%
+  );
+  color: var(--text-primary);
+}
+
+.page-shell--home {
+  --page-bg-from: #fee2e2;
+  --page-bg-via: #f8fafc;
+}
+
+.page-shell--campus {
+  --page-bg-from: #e2e8f0;
+  --page-bg-via: #f8fafc;
+}
+
+.page-shell--timetable {
+  --page-bg-from: #ffedd5;
+  --page-bg-via: #f8fafc;
+}
+
+.page-shell--settings {
+  --page-bg-from: #e0e7ff;
+  --page-bg-via: #f8fafc;
 }
 
 .flow-shell__glow {

@@ -47,7 +47,7 @@ export const TimetableTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 text-slate-800">
+    <div className="page-shell page-shell--timetable space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
         <div>

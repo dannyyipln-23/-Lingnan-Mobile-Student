@@ -47,7 +47,7 @@ export const SettingsTab: React.FC = () => {
   const { fontSize, setFontSize } = useAppPreferences();
 
   return (
-    <div className="space-y-4 pb-24 text-[var(--text-primary)]">
+    <div className="page-shell page-shell--settings space-y-4">
       <div className="px-1">
         <h2 className="text-lg font-bold text-[var(--text-primary)]">Settings</h2>
         <p className="text-xs text-[var(--text-muted)]">Account, privacy and app preferences</p>

@@ -16,13 +16,21 @@ export default function App() {
   const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
 
   return (
-    <MobileFrame>
-      <StudentHeader
-        onOpenNotifications={() => setIsNotificationOpen(true)}
-        unreadCount={4}
-      />
-
-      <main className="mt-2">
+    <MobileFrame
+      topBar={
+        <StudentHeader
+          onOpenNotifications={() => setIsNotificationOpen(true)}
+          unreadCount={4}
+        />
+      }
+      bottomBar={
+        <NavigationBottomBar
+          activeTab={activeTab}
+          onChangeTab={(tab) => setActiveTab(tab)}
+        />
+      }
+    >
+      <main className="flex flex-col">
         {activeTab === 'home' && (
           <HomeTab
             onNavigate={(tab) => setActiveTab(tab)}
@@ -38,11 +46,6 @@ export default function App() {
 
         {activeTab === 'setting' && <SettingsTab />}
       </main>
-
-      <NavigationBottomBar
-        activeTab={activeTab}
-        onChangeTab={(tab) => setActiveTab(tab)}
-      />
 
       <LibraryBookingModal
         isOpen={isLibraryOpen}

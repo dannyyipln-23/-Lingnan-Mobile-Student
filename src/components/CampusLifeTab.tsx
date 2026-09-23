@@ -36,10 +36,12 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
   const { openInAppBrowser } = useAppPreferences();
   const [activeAcademicPage, setActiveAcademicPage] = useState<AcademicSystemKey | null>(null);
 
-  const sectionClass = 'rounded-2xl bg-white border border-slate-200 p-4 shadow-sm';
-  const sectionTitleClass = 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2';
-  const itemButtonClass = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left hover:bg-slate-100 transition';
-  const disabledButtonClass = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left opacity-60 cursor-not-allowed';
+  const sectionClass = 'rounded-2xl bg-white border border-slate-200 p-3 shadow-sm';
+  const sectionTitleClass = 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2';
+  const itemButtonClass =
+    'w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-left hover:bg-slate-100 transition';
+  const disabledButtonClass =
+    'w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-left opacity-60 cursor-not-allowed';
 
   const appGroups = [
     {
@@ -139,16 +141,12 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
   }
 
   return (
-    <div className="space-y-4 pb-24 text-slate-800">
-      <div className="flex items-center justify-between px-1">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">
-            Campus Applications Hub
-          </h2>
-          <p className="text-xs text-slate-500">
-            Grouped systems and services for academics, admin and campus life
-          </p>
-        </div>
+    <div className="page-shell page-shell--campus space-y-3">
+      <div className="px-0.5">
+        <h2 className="text-lg font-bold text-slate-900">Campus Applications Hub</h2>
+        <p className="text-xs text-slate-600">
+          Grouped systems and services for academics, admin and campus life
+        </p>
       </div>
 
       <div className={sectionClass}>
@@ -240,7 +238,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-1.5">
               {group.items.map((item) => {
                 const pageKey = group.id === 'academic' ? academicPageMap[item] : undefined;
                 const externalUrl = group.id === 'external' ? EXTERNAL_URLS[item] : undefined;
@@ -251,38 +249,40 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                   (group.id === 'external' && !externalUrl);
 
                 return (
-                <button
-                  key={item}
-                  type="button"
-                  disabled={isDisabled}
-                  onClick={() => {
-                    if (pageKey) {
-                      setActiveAcademicPage(pageKey);
-                      return;
-                    }
-                    if (externalUrl) {
-                      openInAppBrowser(externalUrl, item);
-                    }
-                  }}
-                  className={isDisabled ? disabledButtonClass : itemButtonClass}
-                >
-                  <div className="flex items-start justify-between space-x-2">
-                    <div className="inline-flex items-start space-x-2">
-                      <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
-                        {group.id === 'academic' && <BookOpen className="w-3.5 h-3.5" />}
-                        {group.id === 'admin' && <FileText className="w-3.5 h-3.5" />}
-                        {group.id === 'campus' && <Landmark className="w-3.5 h-3.5" />}
-                        {group.id === 'external' && <ExternalLink className="w-3.5 h-3.5" />}
+                  <button
+                    key={item}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => {
+                      if (pageKey) {
+                        setActiveAcademicPage(pageKey);
+                        return;
+                      }
+                      if (externalUrl) {
+                        openInAppBrowser(externalUrl, item);
+                      }
+                    }}
+                    className={isDisabled ? disabledButtonClass : itemButtonClass}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="inline-flex min-w-0 items-center gap-2">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
+                          {group.id === 'academic' && <BookOpen className="h-3.5 w-3.5" />}
+                          {group.id === 'admin' && <FileText className="h-3.5 w-3.5" />}
+                          {group.id === 'campus' && <Landmark className="h-3.5 w-3.5" />}
+                          {group.id === 'external' && <ExternalLink className="h-3.5 w-3.5" />}
+                        </div>
+                        <span className="text-left text-xs font-semibold leading-snug text-slate-800">
+                          {item}
+                        </span>
                       </div>
-                      <span className="text-xs font-semibold text-slate-800 text-left">{item}</span>
+                      {isDisabled ? (
+                        <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      ) : group.id === 'external' ? (
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0 text-blue-700" />
+                      ) : null}
                     </div>
-                    {isDisabled ? (
-                      <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-1" />
-                    ) : group.id === 'external' ? (
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-1" />
-                    ) : null}
-                  </div>
-                </button>
+                  </button>
                 );
               })}
             </div>

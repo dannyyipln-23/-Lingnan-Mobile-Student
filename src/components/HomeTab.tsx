@@ -35,7 +35,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
   const nextClass = COURSES[1]; // CDS2001 at 13:30
 
   return (
-    <div className="space-y-4 pb-24 text-slate-800">
+    <div className="page-shell page-shell--home space-y-4">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg flex items-center space-x-2 animate-bounce">

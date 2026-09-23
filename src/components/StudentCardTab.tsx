@@ -42,7 +42,7 @@ export const StudentCardTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 text-slate-800">
+    <div className="space-y-4 text-slate-800">
       {/* Title */}
       <div className="flex items-center justify-between px-1">
         <div>

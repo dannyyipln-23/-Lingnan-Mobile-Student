@@ -32,7 +32,8 @@
       "filters": ["studentId=000123456"],
       "columns": ["TermCode", "TermDescription", "TermLevelCode", "IsActive"],
       "rows": [
-        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "TermLevelCode": "UG", "IsActive": "Y" }
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "TermLevelCode": "UG", "IsActive": "Y" },
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "TermLevelCode": "UG", "IsActive": "N" }
       ]
     },
     {
@@ -44,7 +45,9 @@
       "columns": ["CourseCode", "CourseTitle", "Credit", "Instructor"],
       "rows": [
         { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Instructor": "Dr Lee" },
-        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Instructor": "Prof Chan" }
+        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Instructor": "Prof Chan" },
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Instructor": "Dr Wong" },
+        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Credit": "3", "Instructor": "Prof Yip" }
       ]
     }
   ]

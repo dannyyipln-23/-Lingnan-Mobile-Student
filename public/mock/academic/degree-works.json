@@ -32,9 +32,11 @@
       "filters": ["studentId=000123456"],
       "columns": ["TermCode", "TermDescription", "GPA"],
       "rows": [
+        { "TermCode": "2324T2", "TermDescription": "2023/24 Semester 2", "GPA": "3.22" },
         { "TermCode": "2425T1", "TermDescription": "2024/25 Semester 1", "GPA": "3.31" },
         { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "GPA": "3.45" },
-        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "GPA": "3.52" }
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "GPA": "3.52" },
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "GPA": "3.49" }
       ]
     },
     {
@@ -47,7 +49,9 @@
       "rows": [
         { "CourseCode": "CSCI1001", "CourseTitle": "Intro to Programming", "Grade": "A-", "Category": "Major Core" },
         { "CourseCode": "CSCI2003", "CourseTitle": "Database Systems", "Grade": "B+", "Category": "Major Core" },
-        { "CourseCode": "GEEN1004", "CourseTitle": "Academic Writing", "Grade": "A", "Category": "University Core" }
+        { "CourseCode": "GEEN1004", "CourseTitle": "Academic Writing", "Grade": "A", "Category": "University Core" },
+        { "CourseCode": "MATH2102", "CourseTitle": "Statistics for Data Science", "Grade": "A-", "Category": "Major Required" },
+        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "Category": "Major Elective" }
       ]
     }
   ]

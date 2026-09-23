@@ -32,8 +32,10 @@
       "filters": ["studentId=000123456"],
       "columns": ["TermCode", "TermDescription", "IsCurrent"],
       "rows": [
+        { "TermCode": "2425T1", "TermDescription": "2024/25 Semester 1", "IsCurrent": "N" },
         { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "IsCurrent": "N" },
-        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "IsCurrent": "Y" }
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "IsCurrent": "Y" },
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "IsCurrent": "N" }
       ]
     },
     {
@@ -45,7 +47,9 @@
       "columns": ["CourseCode", "CourseTitle", "Credit", "Status"],
       "rows": [
         { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Status": "Registered" },
-        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Status": "Registered" }
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Status": "Registered" },
+        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Status": "Registered" },
+        { "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Credit": "2", "Status": "Completed" }
       ]
     }
   ]

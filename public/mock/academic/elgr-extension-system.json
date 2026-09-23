@@ -32,8 +32,10 @@
       "filters": ["studentId=000123456"],
       "columns": ["TermCode", "TermDescription", "ELGRWindow", "Status"],
       "rows": [
+        { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "ELGRWindow": "2025-06-10 to 2025-06-17", "Status": "Closed" },
         { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "ELGRWindow": "2026-01-10 to 2026-01-17", "Status": "Open" },
-        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "ELGRWindow": "2026-06-12 to 2026-06-19", "Status": "Scheduled" }
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "ELGRWindow": "2026-06-12 to 2026-06-19", "Status": "Scheduled" },
+        { "TermCode": "2627T1", "TermDescription": "2026/27 Semester 1", "ELGRWindow": "2027-01-11 to 2027-01-18", "Status": "Scheduled" }
       ]
     },
     {
@@ -46,7 +48,9 @@
       "rows": [
         { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Grade": "A-", "ReleaseStatus": "Released" },
         { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Grade": "B+", "ReleaseStatus": "Released" },
-        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" }
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" },
+        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "ReleaseStatus": "Released" },
+        { "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Grade": "A", "ReleaseStatus": "Released" }
       ]
     }
   ]

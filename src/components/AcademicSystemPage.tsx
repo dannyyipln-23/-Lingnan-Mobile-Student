@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarClock, CircleAlert, Database } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CircleAlert } from 'lucide-react';
 
 export type AcademicSystemKey =
   | 'academic-record-application-system'
@@ -220,20 +220,6 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
                   <h3 className="text-sm font-bold text-slate-900">{dataset.title}</h3>
                   <p className="text-[11px] text-slate-500 mt-0.5">{dataset.purpose}</p>
                 </div>
-                <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-700">
-                  <Database className="w-3 h-3" />
-                  <span>API</span>
-                </span>
-              </div>
-
-              <p className="text-[11px] text-red-600 font-mono break-all">{dataset.endpoint}</p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {dataset.filters.map((filter) => (
-                  <span key={`${dataset.id}-${filter}`} className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700">
-                    {filter}
-                  </span>
-                ))}
               </div>
 
               <div className="overflow-x-auto border border-slate-200 rounded-xl">

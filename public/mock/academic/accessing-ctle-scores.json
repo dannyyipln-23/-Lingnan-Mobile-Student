@@ -1,0 +1,54 @@
+{
+  "title": "Accessing CTLE Scores",
+  "subtitle": "View teaching and learning evaluation scores per course",
+  "lastUpdated": "2026-09-23 09:00",
+  "studentContext": {
+    "studentId": "000123456",
+    "userNm": "STUDENT_A",
+    "termCode": "2526T1",
+    "termLevelCode": "UG"
+  },
+  "summary": [
+    { "label": "Courses with CTLE", "value": "4", "tone": "default" },
+    { "label": "Latest release", "value": "2025/26 Semester 1", "tone": "good" },
+    { "label": "Pending publication", "value": "1", "tone": "warn" }
+  ],
+  "sections": [
+    {
+      "title": "Student notes",
+      "rows": [
+        { "label": "Visibility", "value": "Scores available after release window" },
+        { "label": "Reference purpose", "value": "Course reflection and planning" },
+        { "label": "Data timing", "value": "Updated by term publication schedule" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "ctle-term-list",
+      "title": "CTLE Release Terms",
+      "endpoint": "GET /GradeTerms",
+      "purpose": "Provides term selector for CTLE score views.",
+      "filters": ["studentId=000123456"],
+      "columns": ["TermCode", "TermDescription", "IsReleased"],
+      "rows": [
+        { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "IsReleased": "Y" },
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "IsReleased": "Y" },
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "IsReleased": "N" }
+      ]
+    },
+    {
+      "id": "ctle-course-score",
+      "title": "Course-Level CTLE Score",
+      "endpoint": "GET /Grades",
+      "purpose": "Uses enrolled courses as the key to display available CTLE outcomes.",
+      "filters": ["studentId=000123456", "termCode=2526T1"],
+      "columns": ["CourseCode", "CourseTitle", "CTLEScore", "PublishStatus"],
+      "rows": [
+        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "CTLEScore": "4.3 / 5", "PublishStatus": "Published" },
+        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "CTLEScore": "4.6 / 5", "PublishStatus": "Published" },
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "CTLEScore": "-", "PublishStatus": "Pending" }
+      ]
+    }
+  ]
+}

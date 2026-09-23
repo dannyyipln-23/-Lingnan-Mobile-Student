@@ -1,18 +1,81 @@
 {
   "title": "My Exam Timetable",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Student exam schedule view generated from summary, course list, and detail endpoints",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509"
+  },
   "summary": [
-    { "label": "Exam Period", "value": "Dec 2026" },
-    { "label": "Scheduled Exams", "value": "4" },
-    { "label": "Conflicts", "value": "0" }
+    { "label": "Exam Term", "value": "1nd Term 2025 - 2026" },
+    { "label": "No. of Courses", "value": "1", "tone": "good" },
+    { "label": "Next Exam", "value": "CLC9015 - Tue Oct 28, 2025" }
   ],
   "sections": [
     {
-      "title": "Final Exams",
+      "title": "Student notes",
       "rows": [
-        { "label": "RIM2201 - 2026-12-07 09:30", "value": "WYL104" },
-        { "label": "CDS2001 - 2026-12-10 14:00", "value": "MBG22" },
-        { "label": "BUS2105 - 2026-12-14 10:00", "value": "SEK201" }
+        { "label": "Seating plan", "value": "Available 2 hours before exam" },
+        { "label": "Exam venue", "value": "Jackie Chan Gymnasium" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "exam-summary",
+      "title": "Exam Summary",
+      "endpoint": "GET /StudentExamTimetable",
+      "purpose": "Return examination information for a specific student.",
+      "filters": ["UserNm"],
+      "columns": ["StudentId", "UserNm", "TermCode", "TermDescription", "NoOfCourses"],
+      "rows": [
+        {
+          "StudentId": "4048115",
+          "UserNm": "dannyyip",
+          "TermCode": "202509",
+          "TermDescription": "1nd Term 2025 - 2026",
+          "NoOfCourses": "1"
+        }
+      ]
+    },
+    {
+      "id": "exam-courses",
+      "title": "Exam Courses",
+      "endpoint": "GET /StudentExamCourses",
+      "purpose": "Return student examination schedule and course information.",
+      "filters": ["UserNm"],
+      "columns": ["UserNm", "TermCode", "CourseCode", "CourseTitle", "ExamDate", "ExamTime", "Venue"],
+      "rows": [
+        {
+          "UserNm": "dannyyip",
+          "TermCode": "202509",
+          "CourseCode": "CLC9015",
+          "CourseTitle": "HumanRelationship&Interp Skill",
+          "ExamDate": "Tue Oct 28, 2025",
+          "ExamTime": "09:30 AM - 11:30 AM",
+          "Venue": "Jackie Chan Gymnasium"
+        }
+      ]
+    },
+    {
+      "id": "exam-details",
+      "title": "Exam Details",
+      "endpoint": "GET /StudentExamDetails",
+      "purpose": "Return student examination details and course information.",
+      "filters": ["UserNm", "CourseCode"],
+      "columns": ["UserNm", "CourseCode", "ExamDate", "BeginTime", "EndTime", "Venue", "SeatNumber", "GoogleMap"],
+      "rows": [
+        {
+          "UserNm": "dannyyip",
+          "CourseCode": "CLC9015",
+          "ExamDate": "28 Oct 2025 (Tue)",
+          "BeginTime": "09:30 AM",
+          "EndTime": "11:30 AM",
+          "Venue": "Jackie Chan Gymnasium",
+          "SeatNumber": "Y-6",
+          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
+        }
       ]
     }
   ]

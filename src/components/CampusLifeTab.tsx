@@ -87,12 +87,17 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
 
   const academicPageMap = useMemo<Record<string, AcademicSystemKey>>(
     () => ({
+      'Academic Record Application System': 'academic-record-application-system',
       'My Academic Results': 'my-academic-results',
       'My Graduation Requirements': 'my-graduation-requirements',
       'My Class Schedule': 'my-class-schedule',
       'My Exam Timetable': 'my-exam-timetable',
       'Student Graduation Information': 'student-graduation-information',
       'Early Grade Release': 'early-grade-release',
+      'ELGR Extension System': 'elgr-extension-system',
+      'Accessing CTLE Scores': 'accessing-ctle-scores',
+      'Degree Works': 'degree-works',
+      'Degree Works - Student Information Dashboard': 'degree-works-student-information-dashboard',
       'Student Exam Timetable': 'my-exam-timetable',
     }),
     [],

@@ -1,0 +1,51 @@
+{
+  "title": "Degree Works - Student Information Dashboard",
+  "subtitle": "Student profile and audit context used by Degree Works",
+  "lastUpdated": "2026-09-23 09:00",
+  "studentContext": {
+    "studentId": "000123456",
+    "userNm": "STUDENT_A",
+    "termCode": "2526T1",
+    "termLevelCode": "UG"
+  },
+  "summary": [
+    { "label": "Program", "value": "BSc Data Science", "tone": "default" },
+    { "label": "Standing", "value": "Good Standing", "tone": "good" },
+    { "label": "Advising hold", "value": "None", "tone": "good" }
+  ],
+  "sections": [
+    {
+      "title": "Dashboard notes",
+      "rows": [
+        { "label": "Profile source", "value": "Student profile + current registration" },
+        { "label": "Refresh behaviour", "value": "Updated on login and term switch" },
+        { "label": "Use case", "value": "Quick verification before planning" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dw-dashboard-term",
+      "title": "Current Term Context",
+      "endpoint": "GET /CurrentTermList",
+      "purpose": "Returns active term and level code for dashboard context.",
+      "filters": ["studentId=000123456"],
+      "columns": ["TermCode", "TermDescription", "TermLevelCode", "IsActive"],
+      "rows": [
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "TermLevelCode": "UG", "IsActive": "Y" }
+      ]
+    },
+    {
+      "id": "dw-dashboard-courses",
+      "title": "Current Registration Snapshot",
+      "endpoint": "GET /RegisteredCourses",
+      "purpose": "Displays live enrolled courses used for planning checks.",
+      "filters": ["studentId=000123456", "termCode=2526T1"],
+      "columns": ["CourseCode", "CourseTitle", "Credit", "Instructor"],
+      "rows": [
+        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Instructor": "Dr Lee" },
+        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Instructor": "Prof Chan" }
+      ]
+    }
+  ]
+}

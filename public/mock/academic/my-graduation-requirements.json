@@ -1,10 +1,17 @@
 {
   "title": "My Graduation Requirements",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Progress and term-level context with API-style datasets for student requirement tracking",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509"
+  },
   "summary": [
     { "label": "Program", "value": "BBA (Hons) Risk & Insurance" },
     { "label": "Credits Completed", "value": "84 / 120" },
-    { "label": "ILP Units", "value": "84 / 75" }
+    { "label": "ILP Units", "value": "84 / 75", "tone": "good" },
+    { "label": "Graduation Risk", "value": "Low", "tone": "good" }
   ],
   "sections": [
     {
@@ -14,6 +21,42 @@
         { "label": "Major Electives", "value": "In Progress" },
         { "label": "Common Core", "value": "Completed" },
         { "label": "Capstone", "value": "Pending" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "courses-terms",
+      "title": "Course Terms",
+      "endpoint": "GET /CoursesTerms",
+      "purpose": "Get the list of course terms for student context.",
+      "filters": ["StudentId"],
+      "columns": ["TermCode", "TermDescription", "DefaultTermIndicator"],
+      "rows": [
+        {
+          "TermCode": "202509",
+          "TermDescription": "1st Term 2025 - 2026",
+          "DefaultTermIndicator": "Y"
+        },
+        {
+          "TermCode": "202601",
+          "TermDescription": "2nd Term 2025 - 2026",
+          "DefaultTermIndicator": "N"
+        }
+      ]
+    },
+    {
+      "id": "current-term-list",
+      "title": "Current Term List",
+      "endpoint": "GET /CurrentTermList",
+      "purpose": "Get active course subjects for a term.",
+      "filters": ["TermCode"],
+      "columns": ["TermCode", "TermDescription"],
+      "rows": [
+        {
+          "TermCode": "202509",
+          "TermDescription": "1st Term 2025 - 2026"
+        }
       ]
     }
   ]

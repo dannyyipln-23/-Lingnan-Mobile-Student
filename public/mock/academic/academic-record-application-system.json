@@ -1,0 +1,52 @@
+{
+  "title": "Academic Record Application System",
+  "subtitle": "Submit transcript and official document requests using your student profile",
+  "lastUpdated": "2026-09-23 09:00",
+  "studentContext": {
+    "studentId": "000123456",
+    "userNm": "STUDENT_A",
+    "termCode": "2526T1",
+    "termLevelCode": "UG"
+  },
+  "summary": [
+    { "label": "Draft applications", "value": "1", "tone": "warn" },
+    { "label": "Submitted this term", "value": "3", "tone": "default" },
+    { "label": "Ready for collection", "value": "1", "tone": "good" }
+  ],
+  "sections": [
+    {
+      "title": "Before you submit",
+      "rows": [
+        { "label": "Minimum data required", "value": "Student ID, destination, delivery method" },
+        { "label": "Processing target", "value": "3 to 5 working days" },
+        { "label": "Status tracking", "value": "Use application reference number" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "record-terms",
+      "title": "Eligible Terms",
+      "endpoint": "GET /CoursesTerms",
+      "purpose": "Provides term options when creating transcript requests.",
+      "filters": ["studentId=000123456"],
+      "columns": ["TermCode", "TermDescription", "IsCurrent"],
+      "rows": [
+        { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "IsCurrent": "N" },
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "IsCurrent": "Y" }
+      ]
+    },
+    {
+      "id": "record-courses",
+      "title": "Academic Record Snapshot",
+      "endpoint": "GET /RegisteredCourses",
+      "purpose": "Helps verify student enrollment context before generating records.",
+      "filters": ["studentId=000123456", "termCode=2526T1"],
+      "columns": ["CourseCode", "CourseTitle", "Credit", "Status"],
+      "rows": [
+        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Status": "Registered" },
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Status": "Registered" }
+      ]
+    }
+  ]
+}

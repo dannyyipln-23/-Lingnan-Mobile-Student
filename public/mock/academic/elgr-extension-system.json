@@ -1,0 +1,53 @@
+{
+  "title": "ELGR Extension System",
+  "subtitle": "Request or track extension windows for early grade release workflows",
+  "lastUpdated": "2026-09-23 09:00",
+  "studentContext": {
+    "studentId": "000123456",
+    "userNm": "STUDENT_A",
+    "termCode": "2526T1",
+    "termLevelCode": "UG"
+  },
+  "summary": [
+    { "label": "Open extension requests", "value": "1", "tone": "warn" },
+    { "label": "Approved requests", "value": "2", "tone": "good" },
+    { "label": "Current ELGR window", "value": "Open", "tone": "good" }
+  ],
+  "sections": [
+    {
+      "title": "Extension guidance",
+      "rows": [
+        { "label": "Eligible users", "value": "Students with approved supporting reason" },
+        { "label": "Review authority", "value": "Department admin and registry" },
+        { "label": "Cut-off", "value": "Before ELGR close date" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "elgr-term-window",
+      "title": "ELGR Term Window",
+      "endpoint": "GET /GradeTerms",
+      "purpose": "Returns ELGR-enabled terms and their publication state.",
+      "filters": ["studentId=000123456"],
+      "columns": ["TermCode", "TermDescription", "ELGRWindow", "Status"],
+      "rows": [
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "ELGRWindow": "2026-01-10 to 2026-01-17", "Status": "Open" },
+        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "ELGRWindow": "2026-06-12 to 2026-06-19", "Status": "Scheduled" }
+      ]
+    },
+    {
+      "id": "elgr-grade-preview",
+      "title": "Early Grade Preview",
+      "endpoint": "GET /Grades",
+      "purpose": "Shows current grade publication state for ELGR-eligible courses.",
+      "filters": ["studentId=000123456", "termCode=2526T1"],
+      "columns": ["CourseCode", "CourseTitle", "Grade", "ReleaseStatus"],
+      "rows": [
+        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Grade": "A-", "ReleaseStatus": "Released" },
+        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Grade": "B+", "ReleaseStatus": "Released" },
+        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" }
+      ]
+    }
+  ]
+}

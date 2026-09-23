@@ -1,23 +1,66 @@
 {
   "title": "Early Grade Release",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Eligibility and release readiness view based on grade term and grade posting records",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509",
+    "termLevelCode": "202509_UG"
+  },
   "summary": [
-    { "label": "Current Window", "value": "Closed" },
+    { "label": "Current Window", "value": "Closed", "tone": "warn" },
     { "label": "Next Window", "value": "TBD" },
-    { "label": "Eligible Courses", "value": "2" }
+    { "label": "Eligible Courses", "value": "2" },
+    { "label": "Latest Grade Post", "value": "2026-06-01 11:08" }
   ],
   "sections": [
     {
-      "title": "Eligibility",
+      "title": "Release Rules",
       "rows": [
-        { "label": "CDS2001 Data Analytics with Python", "value": "Eligible" },
-        { "label": "BUS2105 Microeconomics for Business", "value": "Eligible" }
+        { "label": "Release availability", "value": "Depends on instructor confirmation" },
+        { "label": "Term-level gate", "value": "Requires valid TermLevelCode" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "elgr-grade-terms",
+      "title": "Early Release Grade Terms",
+      "endpoint": "GET /GradeTerms",
+      "purpose": "Confirm student has valid grade term context for release checks.",
+      "filters": ["StudentId"],
+      "columns": ["StudentId", "LevelTermCode", "LevelTermDesc"],
+      "rows": [
+        {
+          "StudentId": "4048115",
+          "LevelTermCode": "202509_UG",
+          "LevelTermDesc": "1st Term 2025 - 2026"
+        }
       ]
     },
     {
-      "title": "Notes",
+      "id": "elgr-grades",
+      "title": "Early Release Eligible Course Grades",
+      "endpoint": "GET /Grades",
+      "purpose": "Track release-ready courses and latest posting timestamps.",
+      "filters": ["StudentId", "TermLevelCode", "CourseRegistrationNumber"],
+      "columns": ["CRN", "CourseTitle", "FinalGrade", "GradeDate", "ReleaseReady"],
       "rows": [
-        { "label": "Release availability depends on instructor confirmation", "value": "Read" }
+        {
+          "CRN": "935",
+          "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
+          "FinalGrade": "B+",
+          "GradeDate": "2026-06-01 11:08:37",
+          "ReleaseReady": "Yes"
+        },
+        {
+          "CRN": "936",
+          "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
+          "FinalGrade": "B+",
+          "GradeDate": "2026-06-01 11:08:38",
+          "ReleaseReady": "Yes"
+        }
       ]
     }
   ]

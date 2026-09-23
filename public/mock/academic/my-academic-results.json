@@ -1,25 +1,72 @@
 {
   "title": "My Academic Results",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Student-first grade overview powered by GradeTerms and Grades API payload samples",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509",
+    "termLevelCode": "202509_UG"
+  },
   "summary": [
-    { "label": "cGPA", "value": "3.72" },
+    { "label": "cGPA", "value": "3.72", "tone": "good" },
     { "label": "Credits Earned", "value": "84" },
-    { "label": "Credits In Progress", "value": "15" }
+    { "label": "Credits In Progress", "value": "15" },
+    { "label": "Latest Posted Grade", "value": "B+ (2026-06-01)", "tone": "warn" }
   ],
   "sections": [
     {
-      "title": "2026/27 Term 1",
+      "title": "Highlights",
       "rows": [
-        { "label": "RIM2201 Principles of Risk Management", "value": "A-" },
-        { "label": "CDS2001 Data Analytics with Python", "value": "A" },
-        { "label": "LCC1010 Practical Professional Communication", "value": "B+" }
+        { "label": "Default viewing term", "value": "1st Term 2025 - 2026" },
+        { "label": "Most recent release time", "value": "2026-06-01 11:08" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "grade-terms",
+      "title": "Grade Terms",
+      "endpoint": "GET /GradeTerms",
+      "purpose": "Get the grade terms for a student.",
+      "filters": ["StudentId"],
+      "columns": ["StudentId", "LevelTermCode", "LevelTermDesc"],
+      "rows": [
+        {
+          "StudentId": "4048115",
+          "LevelTermCode": "202509_UG",
+          "LevelTermDesc": "1st Term 2025 - 2026"
+        }
       ]
     },
     {
-      "title": "2025/26 Term 2",
+      "id": "grades",
+      "title": "Grades",
+      "endpoint": "GET /Grades",
+      "purpose": "Get grades information for a student for a term.",
+      "filters": ["StudentId", "TermLevelCode", "CourseRegistrationNumber"],
+      "columns": ["StudentId", "TermCode", "CRN", "SubjectCode", "CourseNumber", "CourseTitle", "FinalGrade", "GradeDate"],
       "rows": [
-        { "label": "BUS2105 Microeconomics for Business", "value": "A-" },
-        { "label": "CLA9001 Hong Kong Heritage & Global Culture", "value": "A" }
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CRN": "936",
+          "SubjectCode": "SCE",
+          "CourseNumber": "4007",
+          "CourseTitle": "Practicing Sports TrainingPrin",
+          "FinalGrade": "B+",
+          "GradeDate": "2026-06-01 11:08:38"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CRN": "935",
+          "SubjectCode": "SCE",
+          "CourseNumber": "4006",
+          "CourseTitle": "Foundation Sports Psy forCoach",
+          "FinalGrade": "B+",
+          "GradeDate": "2026-06-01 11:08:37"
+        }
       ]
     }
   ]

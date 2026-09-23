@@ -1,23 +1,75 @@
 {
   "title": "My Class Schedule",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Registered course and term data structured from student schedule APIs",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509"
+  },
   "summary": [
-    { "label": "Semester", "value": "2026/27 Term 1" },
-    { "label": "Weekly Sessions", "value": "12" },
-    { "label": "Credit Load", "value": "15" }
+    { "label": "Current Term", "value": "202509" },
+    { "label": "Registered Courses", "value": "2", "tone": "good" },
+    { "label": "Total Credits", "value": "6" }
   ],
   "sections": [
     {
-      "title": "Monday",
+      "title": "Student quick view",
       "rows": [
-        { "label": "09:30 - 11:00 RIM2201", "value": "SEK101" },
-        { "label": "13:30 - 15:00 CDS2001", "value": "LBYG02" }
+        { "label": "Default registration term", "value": "202509" },
+        { "label": "Term description", "value": "1st Term 2025 - 2026" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "registration-terms",
+      "title": "Registration Terms",
+      "endpoint": "GET /RegistrationTerms",
+      "purpose": "Get term list for registered courses and course details context.",
+      "filters": ["No explicit filter in snippet"],
+      "columns": ["TermCode", "TermDescription", "DefaultTermIndicator"],
+      "rows": [
+        {
+          "TermCode": "202601",
+          "TermDescription": "2nd Term 2025 - 2026",
+          "DefaultTermIndicator": "N"
+        },
+        {
+          "TermCode": "202509",
+          "TermDescription": "1st Term 2025 - 2026",
+          "DefaultTermIndicator": "Y"
+        }
       ]
     },
     {
-      "title": "Tuesday",
+      "id": "registered-courses",
+      "title": "Registered Courses",
+      "endpoint": "GET /RegisteredCourses",
+      "purpose": "Get the list of registered courses for the given term.",
+      "filters": ["StudentId", "TermCode"],
+      "columns": ["StudentId", "TermCode", "CRN", "CourseNumber", "CourseTitle", "Credits", "ScheduleType", "RegistrationStatusCode"],
       "rows": [
-        { "label": "10:30 - 12:00 LCC1010", "value": "MBG06" }
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CRN": "935",
+          "CourseNumber": "4006",
+          "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
+          "Credits": "3",
+          "ScheduleType": "Lecture",
+          "RegistrationStatusCode": "RE"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CRN": "936",
+          "CourseNumber": "4007",
+          "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
+          "Credits": "3",
+          "ScheduleType": "Lecture",
+          "RegistrationStatusCode": "RE"
+        }
       ]
     }
   ]

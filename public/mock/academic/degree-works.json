@@ -1,0 +1,54 @@
+{
+  "title": "Degree Works",
+  "subtitle": "Track graduation progress and unmet rules in a single checklist",
+  "lastUpdated": "2026-09-23 09:00",
+  "studentContext": {
+    "studentId": "000123456",
+    "userNm": "STUDENT_A",
+    "termCode": "2526T1",
+    "termLevelCode": "UG"
+  },
+  "summary": [
+    { "label": "Rules completed", "value": "28 / 34", "tone": "good" },
+    { "label": "Credits earned", "value": "96 / 120", "tone": "default" },
+    { "label": "Rules pending", "value": "6", "tone": "warn" }
+  ],
+  "sections": [
+    {
+      "title": "Planner reminders",
+      "rows": [
+        { "label": "Highest priority", "value": "Capstone + 1 upper-level elective" },
+        { "label": "Advising recommendation", "value": "Book advising before add/drop week" },
+        { "label": "Expected completion", "value": "2026/27 Semester 2" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "dw-grade-terms",
+      "title": "Term History",
+      "endpoint": "GET /GradeTerms",
+      "purpose": "Shows completed terms included in degree audit calculations.",
+      "filters": ["studentId=000123456"],
+      "columns": ["TermCode", "TermDescription", "GPA"],
+      "rows": [
+        { "TermCode": "2425T1", "TermDescription": "2024/25 Semester 1", "GPA": "3.31" },
+        { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "GPA": "3.45" },
+        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "GPA": "3.52" }
+      ]
+    },
+    {
+      "id": "dw-requirement-courses",
+      "title": "Requirement Course Evidence",
+      "endpoint": "GET /Grades",
+      "purpose": "Maps passed courses against curriculum requirement groups.",
+      "filters": ["studentId=000123456", "termCode=all"],
+      "columns": ["CourseCode", "CourseTitle", "Grade", "Category"],
+      "rows": [
+        { "CourseCode": "CSCI1001", "CourseTitle": "Intro to Programming", "Grade": "A-", "Category": "Major Core" },
+        { "CourseCode": "CSCI2003", "CourseTitle": "Database Systems", "Grade": "B+", "Category": "Major Core" },
+        { "CourseCode": "GEEN1004", "CourseTitle": "Academic Writing", "Grade": "A", "Category": "University Core" }
+      ]
+    }
+  ]
+}

@@ -1,10 +1,17 @@
 {
   "title": "Student Graduation Information",
-  "lastUpdated": "2026-09-21",
+  "subtitle": "Graduation status dashboard with student registration evidence and checklist",
+  "lastUpdated": "2026-09-23",
+  "studentContext": {
+    "studentId": "4048115",
+    "userNm": "dannyyip",
+    "termCode": "202509"
+  },
   "summary": [
     { "label": "Expected Graduation", "value": "July 2027" },
-    { "label": "Ceremony Session", "value": "TBD" },
-    { "label": "Status", "value": "On Track" }
+    { "label": "Graduation Application", "value": "Pending", "tone": "warn" },
+    { "label": "Outstanding Fees", "value": "None", "tone": "good" },
+    { "label": "Status", "value": "On Track", "tone": "good" }
   ],
   "sections": [
     {
@@ -14,6 +21,32 @@
         { "label": "Outstanding fees", "value": "None" },
         { "label": "Clearance status", "value": "In Review" },
         { "label": "Certificate collection", "value": "Not Open" }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "registered-courses-mini",
+      "title": "Latest Registered Courses Snapshot",
+      "endpoint": "GET /RegisteredCourses",
+      "purpose": "Use latest registration records as proof of active student status before graduation cycle.",
+      "filters": ["StudentId", "TermCode"],
+      "columns": ["StudentId", "TermCode", "CourseNumber", "CourseTitle", "RegistrationStatusCode"],
+      "rows": [
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CourseNumber": "4006",
+          "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
+          "RegistrationStatusCode": "RE"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202509",
+          "CourseNumber": "4007",
+          "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
+          "RegistrationStatusCode": "RE"
+        }
       ]
     }
   ]

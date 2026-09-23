@@ -52,10 +52,10 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children, topBar, bott
         {topBar ? <div className="z-40 shrink-0">{topBar}</div> : null}
 
         <div
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-[var(--frame-pad)] pb-24 pt-3"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-[var(--frame-pad)] pb-0 pt-3"
           style={{ ['--content-pad-top' as string]: '0.75rem' }}
         >
-          <div className="flex flex-col">{children}</div>
+          <div className="flex min-h-full flex-col">{children}</div>
         </div>
 
         {bottomBar}

@@ -106,12 +106,12 @@ html {
 }
 
 .flow-theme-schedule {
-  --flow-bg-from: #99f6e4;
-  --flow-bg-via: #ccfbf1;
-  --flow-accent: #115e59;
-  --flow-chip-bg: #ccfbf1;
-  --flow-chip-fg: #134e4a;
-  --flow-chip-border: #5eead4;
+  --flow-bg-from: #e7edf3;
+  --flow-bg-via: #d8e5f7;
+  --flow-accent: #334155;
+  --flow-chip-bg: #eef2f7;
+  --flow-chip-fg: #334155;
+  --flow-chip-border: #cbd5e1;
 }
 
 .flow-theme-early {

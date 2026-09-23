@@ -1,96 +1,146 @@
 {
   "title": "My Class Schedule",
-  "subtitle": "Registered course and term data structured from student schedule APIs",
+  "subtitle": "Select a term, then a course for schedule details",
   "lastUpdated": "2026-09-23",
   "studentContext": {
     "studentId": "4048115",
     "userNm": "dannyyip",
     "termCode": "202509"
   },
-  "summary": [
-    { "label": "Current Term", "value": "202509" },
-    { "label": "Registered Courses", "value": "2", "tone": "good" },
-    { "label": "Total Credits", "value": "6" }
-  ],
-  "sections": [
+  "terms": [
     {
-      "title": "Student quick view",
-      "rows": [
-        { "label": "Default registration term", "value": "202509" },
-        { "label": "Term description", "value": "1st Term 2025 - 2026" }
-      ]
-    }
-  ],
-  "datasets": [
-    {
-      "id": "registration-terms",
-      "title": "Registration Terms",
-      "endpoint": "GET /RegistrationTerms",
-      "purpose": "Get term list for registered courses and course details context.",
-      "filters": ["No explicit filter in snippet"],
-      "columns": ["TermCode", "TermDescription", "DefaultTermIndicator"],
-      "rows": [
-        {
-          "TermCode": "202601",
-          "TermDescription": "2nd Term 2025 - 2026",
-          "DefaultTermIndicator": "N"
-        },
-        {
-          "TermCode": "202509",
-          "TermDescription": "1st Term 2025 - 2026",
-          "DefaultTermIndicator": "Y"
-        }
-      ]
+      "code": "202601",
+      "description": "2nd Term 2025 - 2026",
+      "isDefault": false
     },
     {
-      "id": "registered-courses",
-      "title": "Registered Courses",
-      "endpoint": "GET /RegisteredCourses",
-      "purpose": "Get the list of registered courses for the given term.",
-      "filters": ["StudentId", "TermCode"],
-      "columns": ["StudentId", "TermCode", "CRN", "CourseNumber", "CourseTitle", "Credits", "ScheduleType", "RegistrationStatusCode"],
-      "rows": [
-        {
-          "StudentId": "4048115",
-          "TermCode": "202601",
-          "CRN": "1201",
-          "CourseNumber": "4012",
-          "CourseTitle": "SCE4012 Advanced Coaching Analytics",
-          "Credits": "3",
-          "ScheduleType": "Lecture",
-          "RegistrationStatusCode": "RE"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202601",
-          "CRN": "1202",
-          "CourseNumber": "4013",
-          "CourseTitle": "SCE4013 Sports Performance Lab",
-          "Credits": "3",
-          "ScheduleType": "Laboratory",
-          "RegistrationStatusCode": "RE"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202509",
-          "CRN": "935",
-          "CourseNumber": "4006",
-          "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
-          "Credits": "3",
-          "ScheduleType": "Lecture",
-          "RegistrationStatusCode": "RE"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202509",
-          "CRN": "936",
-          "CourseNumber": "4007",
-          "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
-          "Credits": "3",
-          "ScheduleType": "Lecture",
-          "RegistrationStatusCode": "RE"
-        }
-      ]
+      "code": "202509",
+      "description": "1st Term 2025 - 2026",
+      "isDefault": true
     }
-  ]
+  ],
+  "itemsByTerm": {
+    "202601": [
+      {
+        "id": "1201",
+        "crn": "1201",
+        "courseNumber": "4012",
+        "subjectCode": "SCE",
+        "courseTitle": "Advanced Coaching Analytics",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "1202",
+        "crn": "1202",
+        "courseNumber": "4013",
+        "subjectCode": "SCE",
+        "courseTitle": "Sports Performance Lab",
+        "credits": "3",
+        "scheduleType": "Laboratory",
+        "registrationStatusCode": "RE"
+      }
+    ],
+    "202509": [
+      {
+        "id": "935",
+        "crn": "935",
+        "courseNumber": "4006",
+        "subjectCode": "SCE",
+        "courseTitle": "Foundation Sports Psy forCoach",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "936",
+        "crn": "936",
+        "courseNumber": "4007",
+        "subjectCode": "SCE",
+        "courseTitle": "Practicing Sports TrainingPrin",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      }
+    ]
+  },
+  "detailsById": {
+    "1201": {
+      "crn": "1201",
+      "subjectCode": "SCE",
+      "courseNumber": "4012",
+      "courseTitle": "Advanced Coaching Analytics",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Dr. Chan W.L.",
+      "days": "Mon / Wed",
+      "daysDisplay": "MW",
+      "startTime": "10:30 AM",
+      "endTime": "11:50 AM",
+      "building": "Simon and Eleanor Kwok Building",
+      "room": "SEKxxx 201",
+      "classStartDate": "2026-01-12",
+      "classEndDate": "2026-04-24",
+      "termCode": "202601"
+    },
+    "1202": {
+      "crn": "1202",
+      "subjectCode": "SCE",
+      "courseNumber": "4013",
+      "courseTitle": "Sports Performance Lab",
+      "credits": "3",
+      "scheduleType": "Laboratory",
+      "registrationStatusCode": "RE",
+      "faculty": "Prof. Lee K.Y.",
+      "days": "Tue",
+      "daysDisplay": "T",
+      "startTime": "02:00 PM",
+      "endTime": "04:50 PM",
+      "building": "Patrick Lee Wan Keung Academic Building",
+      "room": "Lab 3",
+      "classStartDate": "2026-01-13",
+      "classEndDate": "2026-04-21",
+      "termCode": "202601"
+    },
+    "935": {
+      "crn": "935",
+      "subjectCode": "SCE",
+      "courseNumber": "4006",
+      "courseTitle": "Foundation Sports Psy forCoach",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Dr. Wong M.H.",
+      "days": "Tue / Thu",
+      "daysDisplay": "TR",
+      "startTime": "09:00 AM",
+      "endTime": "10:20 AM",
+      "building": "Dorothy Y.L. Wong Building",
+      "room": "LKK 101",
+      "classStartDate": "2025-09-01",
+      "classEndDate": "2025-12-05",
+      "termCode": "202509"
+    },
+    "936": {
+      "crn": "936",
+      "subjectCode": "SCE",
+      "courseNumber": "4007",
+      "courseTitle": "Practicing Sports TrainingPrin",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Dr. Ho P.S.",
+      "days": "Fri",
+      "daysDisplay": "F",
+      "startTime": "01:30 PM",
+      "endTime": "04:20 PM",
+      "building": "Chan Tak Tai Auditorium Annex",
+      "room": "CTA 02",
+      "classStartDate": "2025-09-05",
+      "classEndDate": "2025-12-05",
+      "termCode": "202509"
+    }
+  }
 }

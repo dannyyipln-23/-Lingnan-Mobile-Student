@@ -1,129 +1,110 @@
 {
   "title": "My Exam Timetable",
-  "subtitle": "Student exam schedule view generated from summary, course list, and detail endpoints",
+  "subtitle": "Select a term, then an exam for venue and seat details",
   "lastUpdated": "2026-09-23",
   "studentContext": {
     "studentId": "4048115",
     "userNm": "dannyyip",
     "termCode": "202509"
   },
-  "summary": [
-    { "label": "Exam Term", "value": "1nd Term 2025 - 2026" },
-    { "label": "No. of Courses", "value": "1", "tone": "good" },
-    { "label": "Next Exam", "value": "CLC9015 - Tue Oct 28, 2025" }
-  ],
-  "sections": [
+  "terms": [
     {
-      "title": "Student notes",
-      "rows": [
-        { "label": "Seating plan", "value": "Available 2 hours before exam" },
-        { "label": "Exam venue", "value": "Jackie Chan Gymnasium" }
-      ]
-    }
-  ],
-  "datasets": [
-    {
-      "id": "exam-summary",
-      "title": "Exam Summary",
-      "endpoint": "GET /StudentExamTimetable",
-      "purpose": "Return examination information for a specific student.",
-      "filters": ["UserNm"],
-      "columns": ["StudentId", "UserNm", "TermCode", "TermDescription", "NoOfCourses"],
-      "rows": [
-        {
-          "StudentId": "4048115",
-          "UserNm": "dannyyip",
-          "TermCode": "202601",
-          "TermDescription": "2nd Term 2025 - 2026",
-          "NoOfCourses": "2"
-        },
-        {
-          "StudentId": "4048115",
-          "UserNm": "dannyyip",
-          "TermCode": "202509",
-          "TermDescription": "1nd Term 2025 - 2026",
-          "NoOfCourses": "1"
-        }
-      ]
+      "code": "202601",
+      "description": "2nd Term 2025 - 2026",
+      "isDefault": false,
+      "noOfCourses": "2"
     },
     {
-      "id": "exam-courses",
-      "title": "Exam Courses",
-      "endpoint": "GET /StudentExamCourses",
-      "purpose": "Return student examination schedule and course information.",
-      "filters": ["UserNm"],
-      "columns": ["UserNm", "TermCode", "CourseCode", "CourseTitle", "ExamDate", "ExamTime", "Venue"],
-      "rows": [
-        {
-          "UserNm": "dannyyip",
-          "TermCode": "202601",
-          "CourseCode": "SCE4012",
-          "CourseTitle": "Advanced Coaching Analytics",
-          "ExamDate": "Fri Mar 06, 2026",
-          "ExamTime": "02:00 PM - 04:00 PM",
-          "Venue": "Simon and Eleanor Kwok Building"
-        },
-        {
-          "UserNm": "dannyyip",
-          "TermCode": "202601",
-          "CourseCode": "SCE4013",
-          "CourseTitle": "Sports Performance Lab",
-          "ExamDate": "Mon Mar 09, 2026",
-          "ExamTime": "09:30 AM - 11:30 AM",
-          "Venue": "Chan Tak Tai Auditorium"
-        },
-        {
-          "UserNm": "dannyyip",
-          "TermCode": "202509",
-          "CourseCode": "CLC9015",
-          "CourseTitle": "HumanRelationship&Interp Skill",
-          "ExamDate": "Tue Oct 28, 2025",
-          "ExamTime": "09:30 AM - 11:30 AM",
-          "Venue": "Jackie Chan Gymnasium"
-        }
-      ]
-    },
-    {
-      "id": "exam-details",
-      "title": "Exam Details",
-      "endpoint": "GET /StudentExamDetails",
-      "purpose": "Return student examination details and course information.",
-      "filters": ["UserNm", "CourseCode"],
-      "columns": ["UserNm", "CourseCode", "ExamDate", "BeginTime", "EndTime", "Venue", "SeatNumber", "GoogleMap"],
-      "rows": [
-        {
-          "UserNm": "dannyyip",
-          "TermCode": "202601",
-          "CourseCode": "SCE4012",
-          "ExamDate": "06 Mar 2026 (Fri)",
-          "BeginTime": "02:00 PM",
-          "EndTime": "04:00 PM",
-          "Venue": "Simon and Eleanor Kwok Building",
-          "SeatNumber": "B-12",
-          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
-        },
-        {
-          "UserNm": "dannyyip",
-          "TermCode": "202601",
-          "CourseCode": "SCE4013",
-          "ExamDate": "09 Mar 2026 (Mon)",
-          "BeginTime": "09:30 AM",
-          "EndTime": "11:30 AM",
-          "Venue": "Chan Tak Tai Auditorium",
-          "SeatNumber": "C-08",
-          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
-        },
-        {
-          "UserNm": "dannyyip",
-          "CourseCode": "CLC9015",
-          "ExamDate": "28 Oct 2025 (Tue)",
-          "BeginTime": "09:30 AM",
-          "EndTime": "11:30 AM",
-          "Venue": "Jackie Chan Gymnasium",
-          "SeatNumber": "Y-6",
-          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
-        }
-      ]
+      "code": "202509",
+      "description": "1st Term 2025 - 2026",
+      "isDefault": true,
+      "noOfCourses": "1"
     }
-  ]
+  ],
+  "itemsByTerm": {
+    "202601": [
+      {
+        "id": "SCE4012",
+        "courseCode": "SCE4012",
+        "courseTitle": "Advanced Coaching Analytics",
+        "examDate": "Fri Mar 06, 2026",
+        "examDay": "Fri",
+        "examTime": "02:00 PM - 04:00 PM",
+        "beginTime": "02:00 PM",
+        "endTime": "04:00 PM",
+        "venue": "Simon and Eleanor Kwok Building"
+      },
+      {
+        "id": "SCE4013",
+        "courseCode": "SCE4013",
+        "courseTitle": "Sports Performance Lab",
+        "examDate": "Mon Mar 09, 2026",
+        "examDay": "Mon",
+        "examTime": "09:30 AM - 11:30 AM",
+        "beginTime": "09:30 AM",
+        "endTime": "11:30 AM",
+        "venue": "Chan Tak Tai Auditorium"
+      }
+    ],
+    "202509": [
+      {
+        "id": "CLC9015",
+        "courseCode": "CLC9015",
+        "courseTitle": "HumanRelationship&Interp Skill",
+        "examDate": "Tue Oct 28, 2025",
+        "examDay": "Tue",
+        "examTime": "09:30 AM - 11:30 AM",
+        "beginTime": "09:30 AM",
+        "endTime": "11:30 AM",
+        "venue": "Jackie Chan Gymnasium"
+      }
+    ]
+  },
+  "detailsById": {
+    "SCE4012": {
+      "courseCode": "SCE4012",
+      "courseTitle": "Advanced Coaching Analytics",
+      "termCode": "202601",
+      "termDescription": "2nd Term 2025 - 2026",
+      "examDate": "Fri Mar 06, 2026",
+      "examDay": "Fri",
+      "beginTime": "02:00 PM",
+      "endTime": "04:00 PM",
+      "venue": "Simon and Eleanor Kwok Building",
+      "seatNumber": "B-12",
+      "googleMap": "https://map.ln.edu.hk/?f=p&t=2",
+      "seatingPlanLink": "https://www.ln.edu.hk/reg/exam/seating-plan",
+      "seatNotes": "Arrive 15 minutes early. Bring student ID."
+    },
+    "SCE4013": {
+      "courseCode": "SCE4013",
+      "courseTitle": "Sports Performance Lab",
+      "termCode": "202601",
+      "termDescription": "2nd Term 2025 - 2026",
+      "examDate": "Mon Mar 09, 2026",
+      "examDay": "Mon",
+      "beginTime": "09:30 AM",
+      "endTime": "11:30 AM",
+      "venue": "Chan Tak Tai Auditorium",
+      "seatNumber": "C-08",
+      "googleMap": "https://map.ln.edu.hk/?f=p&t=2",
+      "seatingPlanLink": "https://www.ln.edu.hk/reg/exam/seating-plan",
+      "seatNotes": "Seating plan available 2 hours before exam."
+    },
+    "CLC9015": {
+      "courseCode": "CLC9015",
+      "courseTitle": "HumanRelationship&Interp Skill",
+      "termCode": "202509",
+      "termDescription": "1st Term 2025 - 2026",
+      "examDate": "Tue Oct 28, 2025",
+      "examDay": "Tue",
+      "beginTime": "09:30 AM",
+      "endTime": "11:30 AM",
+      "venue": "Jackie Chan Gymnasium",
+      "seatNumber": "Y-6",
+      "googleMap": "https://map.ln.edu.hk/?f=p&t=2",
+      "seatingPlanLink": "https://www.ln.edu.hk/reg/exam/seating-plan",
+      "seatNotes": "Enter via Gymnasium main gate."
+    }
+  }
 }

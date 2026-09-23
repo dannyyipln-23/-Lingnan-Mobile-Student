@@ -1,6 +1,6 @@
 {
   "title": "My Academic Results",
-  "subtitle": "Student-first grade overview powered by GradeTerms and Grades API payload samples",
+  "subtitle": "Select a term, then a course to view grade details",
   "lastUpdated": "2026-09-23",
   "studentContext": {
     "studentId": "4048115",
@@ -8,91 +8,115 @@
     "termCode": "202509",
     "termLevelCode": "202509_UG"
   },
-  "summary": [
-    { "label": "cGPA", "value": "3.72", "tone": "good" },
-    { "label": "Credits Earned", "value": "84" },
-    { "label": "Credits In Progress", "value": "15" },
-    { "label": "Latest Posted Grade", "value": "B+ (2026-06-01)", "tone": "warn" }
-  ],
-  "sections": [
+  "overview": {
+    "cgpa": "3.72",
+    "creditsEarned": "84",
+    "creditsInProgress": "15"
+  },
+  "terms": [
     {
-      "title": "Highlights",
-      "rows": [
-        { "label": "Default viewing term", "value": "1st Term 2025 - 2026" },
-        { "label": "Most recent release time", "value": "2026-06-01 11:08" }
-      ]
-    }
-  ],
-  "datasets": [
-    {
-      "id": "grade-terms",
-      "title": "Grade Terms",
-      "endpoint": "GET /GradeTerms",
-      "purpose": "Get the grade terms for a student.",
-      "filters": ["StudentId"],
-      "columns": ["StudentId", "LevelTermCode", "LevelTermDesc"],
-      "rows": [
-        {
-          "StudentId": "4048115",
-          "LevelTermCode": "202601_UG",
-          "LevelTermDesc": "2nd Term 2025 - 2026"
-        },
-        {
-          "StudentId": "4048115",
-          "LevelTermCode": "202509_UG",
-          "LevelTermDesc": "1st Term 2025 - 2026"
-        }
-      ]
+      "code": "202601_UG",
+      "termCode": "202601",
+      "description": "2nd Term 2025 - 2026",
+      "isDefault": false
     },
     {
-      "id": "grades",
-      "title": "Grades",
-      "endpoint": "GET /Grades",
-      "purpose": "Get grades information for a student for a term.",
-      "filters": ["StudentId", "TermLevelCode", "CourseRegistrationNumber"],
-      "columns": ["StudentId", "TermCode", "CRN", "SubjectCode", "CourseNumber", "CourseTitle", "FinalGrade", "GradeDate"],
-      "rows": [
-        {
-          "StudentId": "4048115",
-          "TermCode": "202509",
-          "CRN": "936",
-          "SubjectCode": "SCE",
-          "CourseNumber": "4007",
-          "CourseTitle": "Practicing Sports TrainingPrin",
-          "FinalGrade": "B+",
-          "GradeDate": "2026-06-01 11:08:38"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202509",
-          "CRN": "935",
-          "SubjectCode": "SCE",
-          "CourseNumber": "4006",
-          "CourseTitle": "Foundation Sports Psy forCoach",
-          "FinalGrade": "B+",
-          "GradeDate": "2026-06-01 11:08:37"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202601",
-          "CRN": "1023",
-          "SubjectCode": "SCE",
-          "CourseNumber": "4012",
-          "CourseTitle": "Advanced Coaching Analytics",
-          "FinalGrade": "A-",
-          "GradeDate": "2026-11-28 09:15:20"
-        },
-        {
-          "StudentId": "4048115",
-          "TermCode": "202601",
-          "CRN": "1024",
-          "SubjectCode": "SCE",
-          "CourseNumber": "4013",
-          "CourseTitle": "Sports Performance Lab",
-          "FinalGrade": "A",
-          "GradeDate": "2026-11-28 09:15:22"
-        }
-      ]
+      "code": "202509_UG",
+      "termCode": "202509",
+      "description": "1st Term 2025 - 2026",
+      "isDefault": true
     }
-  ]
+  ],
+  "itemsByTerm": {
+    "202509_UG": [
+      {
+        "id": "935",
+        "subjectCode": "SCE",
+        "courseNumber": "4006",
+        "courseTitle": "Foundation Sports Psy forCoach",
+        "finalGrade": "B+",
+        "crn": "935"
+      },
+      {
+        "id": "936",
+        "subjectCode": "SCE",
+        "courseNumber": "4007",
+        "courseTitle": "Practicing Sports TrainingPrin",
+        "finalGrade": "B+",
+        "crn": "936"
+      }
+    ],
+    "202601_UG": [
+      {
+        "id": "1023",
+        "subjectCode": "SCE",
+        "courseNumber": "4012",
+        "courseTitle": "Advanced Coaching Analytics",
+        "finalGrade": "A-",
+        "crn": "1023"
+      },
+      {
+        "id": "1024",
+        "subjectCode": "SCE",
+        "courseNumber": "4013",
+        "courseTitle": "Sports Performance Lab",
+        "finalGrade": "A",
+        "crn": "1024"
+      }
+    ]
+  },
+  "detailsById": {
+    "935": {
+      "subjectCode": "SCE",
+      "courseNumber": "4006",
+      "courseTitle": "Foundation Sports Psy forCoach",
+      "crn": "935",
+      "section": "01",
+      "subjectType": "Lecture",
+      "midGrade": "B",
+      "finalGrade": "B+",
+      "gradeDate": "2026-06-01 11:08:37",
+      "termCode": "202509",
+      "termLevelCode": "202509_UG"
+    },
+    "936": {
+      "subjectCode": "SCE",
+      "courseNumber": "4007",
+      "courseTitle": "Practicing Sports TrainingPrin",
+      "crn": "936",
+      "section": "01",
+      "subjectType": "Lecture",
+      "midGrade": "B+",
+      "finalGrade": "B+",
+      "gradeDate": "2026-06-01 11:08:38",
+      "termCode": "202509",
+      "termLevelCode": "202509_UG"
+    },
+    "1023": {
+      "subjectCode": "SCE",
+      "courseNumber": "4012",
+      "courseTitle": "Advanced Coaching Analytics",
+      "crn": "1023",
+      "section": "01",
+      "subjectType": "Lecture",
+      "midGrade": "A-",
+      "finalGrade": "A-",
+      "gradeDate": "2026-11-28 09:15:20",
+      "termCode": "202601",
+      "termLevelCode": "202601_UG"
+    },
+    "1024": {
+      "subjectCode": "SCE",
+      "courseNumber": "4013",
+      "courseTitle": "Sports Performance Lab",
+      "crn": "1024",
+      "section": "01",
+      "subjectType": "Laboratory",
+      "midGrade": "A",
+      "finalGrade": "A",
+      "gradeDate": "2026-11-28 09:15:22",
+      "termCode": "202601",
+      "termLevelCode": "202601_UG"
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "title": "Early Grade Release",
-  "subtitle": "Eligibility and release readiness view based on grade term and grade posting records",
+  "subtitle": "Select a term to view early-release eligible courses",
   "lastUpdated": "2026-09-23",
   "studentContext": {
     "studentId": "4048115",
@@ -8,83 +8,160 @@
     "termCode": "202509",
     "termLevelCode": "202509_UG"
   },
-  "summary": [
-    { "label": "Current Window", "value": "Closed", "tone": "warn" },
-    { "label": "Next Window", "value": "TBD" },
-    { "label": "Eligible Courses", "value": "2" },
-    { "label": "Latest Grade Post", "value": "2026-06-01 11:08" }
-  ],
-  "sections": [
+  "windowStatus": {
+    "currentWindow": "Closed",
+    "nextWindow": "TBD",
+    "rules": [
+      "Release availability depends on instructor confirmation",
+      "Course must be marked for early release (IS_EARLY = Y)",
+      "Final grade copy indicator must be confirmed"
+    ]
+  },
+  "terms": [
     {
-      "title": "Release Rules",
-      "rows": [
-        { "label": "Release availability", "value": "Depends on instructor confirmation" },
-        { "label": "Term-level gate", "value": "Requires valid TermLevelCode" }
-      ]
-    }
-  ],
-  "datasets": [
-    {
-      "id": "elgr-grade-terms",
-      "title": "Early Release Grade Terms",
-      "endpoint": "GET /GradeTerms",
-      "purpose": "Confirm student has valid grade term context for release checks.",
-      "filters": ["StudentId"],
-      "columns": ["StudentId", "LevelTermCode", "LevelTermDesc"],
-      "rows": [
-        {
-          "StudentId": "4048115",
-          "LevelTermCode": "202601_UG",
-          "LevelTermDesc": "2nd Term 2025 - 2026"
-        },
-        {
-          "StudentId": "4048115",
-          "LevelTermCode": "202509_UG",
-          "LevelTermDesc": "1st Term 2025 - 2026"
-        }
-      ]
+      "code": "202605",
+      "description": "Summer Term 2025 - 2026",
+      "isDefault": false
     },
     {
-      "id": "elgr-grades",
-      "title": "Early Release Eligible Course Grades",
-      "endpoint": "GET /Grades",
-      "purpose": "Track release-ready courses and latest posting timestamps.",
-      "filters": ["StudentId", "TermLevelCode", "CourseRegistrationNumber"],
-      "columns": ["CRN", "CourseTitle", "FinalGrade", "GradeDate", "ReleaseReady"],
-      "rows": [
-        {
-          "TermCode": "202601",
-          "CRN": "1201",
-          "CourseTitle": "SCE4012 Advanced Coaching Analytics",
-          "FinalGrade": "A-",
-          "GradeDate": "2026-11-28 09:15:20",
-          "ReleaseReady": "No"
-        },
-        {
-          "TermCode": "202601",
-          "CRN": "1202",
-          "CourseTitle": "SCE4013 Sports Performance Lab",
-          "FinalGrade": "In review",
-          "GradeDate": "Pending",
-          "ReleaseReady": "No"
-        },
-        {
-          "TermCode": "202509",
-          "CRN": "935",
-          "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
-          "FinalGrade": "B+",
-          "GradeDate": "2026-06-01 11:08:37",
-          "ReleaseReady": "Yes"
-        },
-        {
-          "TermCode": "202509",
-          "CRN": "936",
-          "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
-          "FinalGrade": "B+",
-          "GradeDate": "2026-06-01 11:08:38",
-          "ReleaseReady": "Yes"
-        }
-      ]
+      "code": "202601",
+      "description": "2nd Term 2025 - 2026",
+      "isDefault": false
+    },
+    {
+      "code": "202509",
+      "description": "1st Term 2025 - 2026",
+      "isDefault": true
     }
-  ]
+  ],
+  "itemsByTerm": {
+    "202605": [
+      {
+        "id": "110",
+        "crn": "110",
+        "subjectCode": "CLC",
+        "courseNumber": "9003",
+        "courseTitle": "Underst. Invest. in St. Mkt",
+        "finalGrade": "B",
+        "releaseReady": "Yes",
+        "isEarly": "Y"
+      }
+    ],
+    "202601": [
+      {
+        "id": "1201",
+        "crn": "1201",
+        "subjectCode": "SCE",
+        "courseNumber": "4012",
+        "courseTitle": "Advanced Coaching Analytics",
+        "finalGrade": "A-",
+        "releaseReady": "No",
+        "isEarly": "N"
+      },
+      {
+        "id": "1202",
+        "crn": "1202",
+        "subjectCode": "SCE",
+        "courseNumber": "4013",
+        "courseTitle": "Sports Performance Lab",
+        "finalGrade": "In review",
+        "releaseReady": "No",
+        "isEarly": "N"
+      }
+    ],
+    "202509": [
+      {
+        "id": "935",
+        "crn": "935",
+        "subjectCode": "SCE",
+        "courseNumber": "4006",
+        "courseTitle": "Foundation Sports Psy forCoach",
+        "finalGrade": "B+",
+        "releaseReady": "Yes",
+        "isEarly": "Y"
+      },
+      {
+        "id": "936",
+        "crn": "936",
+        "subjectCode": "SCE",
+        "courseNumber": "4007",
+        "courseTitle": "Practicing Sports TrainingPrin",
+        "finalGrade": "B+",
+        "releaseReady": "Yes",
+        "isEarly": "Y"
+      }
+    ]
+  },
+  "detailsById": {
+    "110": {
+      "crn": "110",
+      "subjectCode": "CLC",
+      "courseNumber": "9003",
+      "courseTitle": "Underst. Invest. in St. Mkt",
+      "finalGrade": "B",
+      "gradeDate": "2026-07-15 10:00:00",
+      "releaseReady": "Yes",
+      "isEarly": "Y",
+      "isEndo": "Y",
+      "markFinalCopyInd": "Y",
+      "termCode": "202605",
+      "sourceNote": "Mapped from testing_data.txt Early Grade sample"
+    },
+    "1201": {
+      "crn": "1201",
+      "subjectCode": "SCE",
+      "courseNumber": "4012",
+      "courseTitle": "Advanced Coaching Analytics",
+      "finalGrade": "A-",
+      "gradeDate": "2026-11-28 09:15:20",
+      "releaseReady": "No",
+      "isEarly": "N",
+      "isEndo": "N",
+      "markFinalCopyInd": "N",
+      "termCode": "202601",
+      "sourceNote": "Awaiting instructor early-release confirmation"
+    },
+    "1202": {
+      "crn": "1202",
+      "subjectCode": "SCE",
+      "courseNumber": "4013",
+      "courseTitle": "Sports Performance Lab",
+      "finalGrade": "In review",
+      "gradeDate": "Pending",
+      "releaseReady": "No",
+      "isEarly": "N",
+      "isEndo": "N",
+      "markFinalCopyInd": "N",
+      "termCode": "202601",
+      "sourceNote": "Grade not yet posted"
+    },
+    "935": {
+      "crn": "935",
+      "subjectCode": "SCE",
+      "courseNumber": "4006",
+      "courseTitle": "Foundation Sports Psy forCoach",
+      "finalGrade": "B+",
+      "gradeDate": "2026-06-01 11:08:37",
+      "releaseReady": "Yes",
+      "isEarly": "Y",
+      "isEndo": "Y",
+      "markFinalCopyInd": "Y",
+      "termCode": "202509",
+      "sourceNote": "Eligible for early grade release"
+    },
+    "936": {
+      "crn": "936",
+      "subjectCode": "SCE",
+      "courseNumber": "4007",
+      "courseTitle": "Practicing Sports TrainingPrin",
+      "finalGrade": "B+",
+      "gradeDate": "2026-06-01 11:08:38",
+      "releaseReady": "Yes",
+      "isEarly": "Y",
+      "isEndo": "Y",
+      "markFinalCopyInd": "Y",
+      "termCode": "202509",
+      "sourceNote": "Eligible for early grade release"
+    }
+  }
 }

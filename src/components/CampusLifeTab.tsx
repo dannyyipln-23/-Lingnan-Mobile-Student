@@ -14,12 +14,26 @@ import {
   Wallet,
 } from 'lucide-react';
 import { AcademicSystemKey, AcademicSystemPage } from './AcademicSystemPage';
+import { EarlyGradeReleaseFlow } from './academic/EarlyGradeReleaseFlow';
+import { MyAcademicResultsFlow } from './academic/MyAcademicResultsFlow';
+import { MyClassScheduleFlow } from './academic/MyClassScheduleFlow';
+import { MyExamTimetableFlow } from './academic/MyExamTimetableFlow';
+import { MyGraduationRequirementsFlow } from './academic/MyGraduationRequirementsFlow';
+import { useAppPreferences } from '../context/AppPreferencesContext';
 
 interface CampusLifeTabProps {
   onOpenLibraryModal: () => void;
 }
 
+const EXTERNAL_URLS: Record<string, string> = {
+  'Lingnan LMS (Moodle)': 'https://lms.ln.edu.hk',
+  'LU GenAI Portal (formerly LU ChatGPT Portal)': 'https://genai.ln.edu.hk',
+  'Anti-Fraud Online Training': 'https://www.ln.edu.hk/itsc',
+  'Wayfinding System': 'https://map.ln.edu.hk/',
+};
+
 export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal }) => {
+  const { openInAppBrowser } = useAppPreferences();
   const [activeAcademicPage, setActiveAcademicPage] = useState<AcademicSystemKey | null>(null);
 
   const sectionClass = 'rounded-2xl bg-white border border-slate-200 p-4 shadow-sm';
@@ -73,9 +87,8 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
     },
     {
       id: 'external',
-      title: 'External Website (Disabled for now)',
+      title: 'External Websites',
       icon: ExternalLink,
-      disabled: true,
       items: [
         'Lingnan LMS (Moodle)',
         'LU GenAI Portal (formerly LU ChatGPT Portal)',
@@ -85,29 +98,42 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
     },
   ];
 
+  // Only map systems that have dedicated flow UIs; unmapped academic items stay disabled.
   const academicPageMap = useMemo<Record<string, AcademicSystemKey>>(
     () => ({
-      'Academic Record Application System': 'academic-record-application-system',
       'My Academic Results': 'my-academic-results',
       'My Graduation Requirements': 'my-graduation-requirements',
       'My Class Schedule': 'my-class-schedule',
       'My Exam Timetable': 'my-exam-timetable',
-      'Student Graduation Information': 'student-graduation-information',
-      'Early Grade Release': 'early-grade-release',
-      'ELGR Extension System': 'elgr-extension-system',
-      'Accessing CTLE Scores': 'accessing-ctle-scores',
-      'Degree Works': 'degree-works',
-      'Degree Works - Student Information Dashboard': 'degree-works-student-information-dashboard',
       'Student Exam Timetable': 'my-exam-timetable',
+      'Early Grade Release': 'early-grade-release',
     }),
     [],
   );
 
   if (activeAcademicPage) {
+    const closePage = () => setActiveAcademicPage(null);
+
+    if (activeAcademicPage === 'my-academic-results') {
+      return <MyAcademicResultsFlow onBack={closePage} />;
+    }
+    if (activeAcademicPage === 'my-exam-timetable') {
+      return <MyExamTimetableFlow onBack={closePage} />;
+    }
+    if (activeAcademicPage === 'my-class-schedule') {
+      return <MyClassScheduleFlow onBack={closePage} />;
+    }
+    if (activeAcademicPage === 'early-grade-release') {
+      return <EarlyGradeReleaseFlow onBack={closePage} />;
+    }
+    if (activeAcademicPage === 'my-graduation-requirements') {
+      return <MyGraduationRequirementsFlow onBack={closePage} />;
+    }
+
     return (
       <AcademicSystemPage
         systemKey={activeAcademicPage}
-        onBack={() => setActiveAcademicPage(null)}
+        onBack={closePage}
       />
     );
   }
@@ -146,6 +172,7 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
 
           <button
             type="button"
+            onClick={() => openInAppBrowser(EXTERNAL_URLS['Wayfinding System'], 'Wayfinding')}
             className={itemButtonClass}
           >
             <div className="flex items-start space-x-2.5">
@@ -153,8 +180,8 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                 <Route className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-900">Wayfinding ready</p>
-                <p className="text-[11px] text-slate-500">External link disabled</p>
+                <p className="text-xs font-bold text-slate-900">Wayfinding</p>
+                <p className="text-[11px] text-slate-500">Opens campus map</p>
               </div>
             </div>
           </button>
@@ -205,10 +232,10 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                 </div>
                 <h3 className="text-sm font-bold text-slate-900">{group.title}</h3>
               </div>
-              {group.disabled && (
-                <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                  <Lock className="w-3 h-3" />
-                  <span>Disabled</span>
+              {group.id === 'external' && (
+                <span className="inline-flex items-center space-x-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                  <ExternalLink className="h-3 w-3" />
+                  <span>In-app</span>
                 </span>
               )}
             </div>
@@ -216,7 +243,12 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {group.items.map((item) => {
                 const pageKey = group.id === 'academic' ? academicPageMap[item] : undefined;
-                const isDisabled = Boolean(group.disabled) || (group.id === 'academic' && !pageKey);
+                const externalUrl = group.id === 'external' ? EXTERNAL_URLS[item] : undefined;
+                const isDisabled =
+                  (group.id === 'academic' && !pageKey) ||
+                  group.id === 'admin' ||
+                  group.id === 'campus' ||
+                  (group.id === 'external' && !externalUrl);
 
                 return (
                 <button
@@ -226,6 +258,10 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                   onClick={() => {
                     if (pageKey) {
                       setActiveAcademicPage(pageKey);
+                      return;
+                    }
+                    if (externalUrl) {
+                      openInAppBrowser(externalUrl, item);
                     }
                   }}
                   className={isDisabled ? disabledButtonClass : itemButtonClass}
@@ -240,7 +276,11 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                       </div>
                       <span className="text-xs font-semibold text-slate-800 text-left">{item}</span>
                     </div>
-                    {isDisabled && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-1" />}
+                    {isDisabled ? (
+                      <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-1" />
+                    ) : group.id === 'external' ? (
+                      <ExternalLink className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-1" />
+                    ) : null}
                   </div>
                 </button>
                 );

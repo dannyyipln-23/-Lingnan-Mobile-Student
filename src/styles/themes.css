@@ -1,0 +1,245 @@
+/**
+ * App theme tokens (WCAG 2.1 AA — normal text contrast ≥ 4.5:1)
+ *
+ * Update colors here; flow pages consume via `.flow-theme-*` and CSS variables.
+ * Contrast notes (approx vs white / declared surface):
+ * - --text-primary  #0f172a on #fff ≈ 16.7:1
+ * - --text-secondary #334155 on #fff ≈ 8.7:1
+ * - --text-muted     #475569 on #fff ≈ 5.9:1
+ * - --link           #9f1239 on #fff ≈ 7.0:1
+ * - chip fg/bg pairs chosen for ≥ 4.5:1 on their own surfaces
+ */
+
+:root {
+  /* Base surfaces */
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --border: #cbd5e1;
+  --border-strong: #94a3b8;
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-on-accent: #ffffff;
+
+  /* Brand / interactive */
+  --brand: #b91c1c;
+  --brand-soft: #fef2f2;
+  --brand-border: #fecaca;
+  --link: #9f1239;
+  --focus-ring: #1d4ed8;
+
+  /* Status chips (bg + fg pairs) */
+  --status-good-bg: #d1fae5;
+  --status-good-fg: #065f46;
+  --status-good-border: #6ee7b7;
+  --status-warn-bg: #fef3c7;
+  --status-warn-fg: #92400e;
+  --status-warn-border: #fcd34d;
+  --status-muted-bg: #f1f5f9;
+  --status-muted-fg: #334155;
+  --status-muted-border: #cbd5e1;
+  --status-default-bg: #e2e8f0;
+  --status-default-fg: #1e293b;
+  --status-default-border: #94a3b8;
+
+  /* Default flow wash */
+  --flow-bg-from: #e2e8f0;
+  --flow-bg-via: #f8fafc;
+  --flow-accent: #334155;
+  --flow-chip-bg: #e2e8f0;
+  --flow-chip-fg: #1e293b;
+  --flow-chip-border: #94a3b8;
+
+  /* Font scale (applied to html) */
+  --font-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+}
+
+[data-font-size='sm'] {
+  --font-scale: 0.875;
+}
+
+[data-font-size='md'] {
+  --font-scale: 1;
+}
+
+[data-font-size='lg'] {
+  --font-scale: 1.125;
+}
+
+[data-font-size='xl'] {
+  --font-scale: 1.25;
+}
+
+/* ---------- Per-page flow themes ---------- */
+
+.flow-theme-default {
+  --flow-bg-from: #e2e8f0;
+  --flow-bg-via: #f8fafc;
+  --flow-accent: #334155;
+  --flow-chip-bg: #e2e8f0;
+  --flow-chip-fg: #1e293b;
+  --flow-chip-border: #94a3b8;
+}
+
+.flow-theme-results {
+  --flow-bg-from: #bae6fd;
+  --flow-bg-via: #e0f2fe;
+  --flow-accent: #075985;
+  --flow-chip-bg: #e0f2fe;
+  --flow-chip-fg: #0c4a6e;
+  --flow-chip-border: #7dd3fc;
+}
+
+.flow-theme-exam {
+  --flow-bg-from: #fecaca;
+  --flow-bg-via: #ffedd5;
+  --flow-accent: #9f1239;
+  --flow-chip-bg: #fef2f2;
+  --flow-chip-fg: #9f1239;
+  --flow-chip-border: #fca5a5;
+}
+
+.flow-theme-schedule {
+  --flow-bg-from: #99f6e4;
+  --flow-bg-via: #ccfbf1;
+  --flow-accent: #115e59;
+  --flow-chip-bg: #ccfbf1;
+  --flow-chip-fg: #134e4a;
+  --flow-chip-border: #5eead4;
+}
+
+.flow-theme-early {
+  --flow-bg-from: #fde68a;
+  --flow-bg-via: #fef3c7;
+  --flow-accent: #92400e;
+  --flow-chip-bg: #fef3c7;
+  --flow-chip-fg: #78350f;
+  --flow-chip-border: #fbbf24;
+}
+
+.flow-theme-graduation {
+  --flow-bg-from: #a7f3d0;
+  --flow-bg-via: #d1fae5;
+  --flow-accent: #065f46;
+  --flow-chip-bg: #d1fae5;
+  --flow-chip-fg: #064e3b;
+  --flow-chip-border: #6ee7b7;
+}
+
+.flow-shell {
+  position: relative;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  margin-top: -0.5rem;
+  min-height: 70vh;
+  padding: 0.5rem 1rem 0;
+  background: linear-gradient(
+    180deg,
+    var(--flow-bg-from) 0%,
+    var(--flow-bg-via) 42%,
+    transparent 100%
+  );
+  color: var(--text-primary);
+}
+
+.flow-shell__glow {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 10rem;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.95) 0%, transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(255, 255, 255, 0.55) 0%, transparent 36%);
+}
+
+.flow-shell__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.125rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  padding: 0.375rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  backdrop-filter: blur(4px);
+}
+
+.flow-shell__back:hover {
+  background: var(--surface);
+}
+
+.flow-shell__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.flow-shell__subtitle {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.app-link {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.app-link:hover {
+  filter: brightness(0.9);
+}
+
+.status-chip {
+  display: inline-flex;
+  border-radius: 9999px;
+  border: 1px solid var(--status-default-border);
+  background: var(--status-default-bg);
+  color: var(--status-default-fg);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.status-chip--good {
+  border-color: var(--status-good-border);
+  background: var(--status-good-bg);
+  color: var(--status-good-fg);
+}
+
+.status-chip--warn {
+  border-color: var(--status-warn-border);
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+}
+
+.status-chip--muted {
+  border-color: var(--status-muted-border);
+  background: var(--status-muted-bg);
+  color: var(--status-muted-fg);
+}
+
+.theme-chip {
+  display: inline-flex;
+  border-radius: 9999px;
+  border: 1px solid var(--flow-chip-border);
+  background: var(--flow-chip-bg);
+  color: var(--flow-chip-fg);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+}

@@ -8,6 +8,7 @@ import { CampusLifeTab } from './components/CampusLifeTab';
 import { SettingsTab } from './components/SettingsTab.tsx';
 import { LibraryBookingModal } from './components/LibraryBookingModal';
 import { NotificationModal } from './components/NotificationModal';
+import { InAppBrowser } from './components/InAppBrowser';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -16,13 +17,11 @@ export default function App() {
 
   return (
     <MobileFrame>
-      {/* Top Header */}
       <StudentHeader
         onOpenNotifications={() => setIsNotificationOpen(true)}
         unreadCount={4}
       />
 
-      {/* Main Tab Views */}
       <main className="mt-2">
         {activeTab === 'home' && (
           <HomeTab
@@ -34,21 +33,17 @@ export default function App() {
         {activeTab === 'timetable' && <TimetableTab />}
 
         {activeTab === 'campus' && (
-          <CampusLifeTab
-            onOpenLibraryModal={() => setIsLibraryOpen(true)}
-          />
+          <CampusLifeTab onOpenLibraryModal={() => setIsLibraryOpen(true)} />
         )}
 
         {activeTab === 'setting' && <SettingsTab />}
       </main>
 
-      {/* Bottom Floating Navigation */}
       <NavigationBottomBar
         activeTab={activeTab}
         onChangeTab={(tab) => setActiveTab(tab)}
       />
 
-      {/* Interactive Modals */}
       <LibraryBookingModal
         isOpen={isLibraryOpen}
         onClose={() => setIsLibraryOpen(false)}
@@ -58,6 +53,8 @@ export default function App() {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
       />
+
+      <InAppBrowser />
     </MobileFrame>
   );
 }

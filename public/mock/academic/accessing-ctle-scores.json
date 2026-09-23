@@ -47,11 +47,11 @@
       "filters": ["studentId=000123456", "termCode=2526T1"],
       "columns": ["CourseCode", "CourseTitle", "CTLEScore", "PublishStatus"],
       "rows": [
-        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "CTLEScore": "4.3 / 5", "PublishStatus": "Published" },
-        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "CTLEScore": "4.6 / 5", "PublishStatus": "Published" },
-        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "CTLEScore": "-", "PublishStatus": "Pending" },
-        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "CTLEScore": "4.1 / 5", "PublishStatus": "Published" },
-        { "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "CTLEScore": "3.9 / 5", "PublishStatus": "Published" }
+        { "TermCode": "2526T1", "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "CTLEScore": "4.3 / 5", "PublishStatus": "Published" },
+        { "TermCode": "2526T1", "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "CTLEScore": "4.6 / 5", "PublishStatus": "Published" },
+        { "TermCode": "2526T1", "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "CTLEScore": "-", "PublishStatus": "Pending" },
+        { "TermCode": "2526T2", "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "CTLEScore": "4.1 / 5", "PublishStatus": "Published" },
+        { "TermCode": "2526T2", "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "CTLEScore": "3.9 / 5", "PublishStatus": "Published" }
       ]
     }
   ]

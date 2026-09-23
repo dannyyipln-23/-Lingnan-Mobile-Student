@@ -52,6 +52,26 @@
       "rows": [
         {
           "StudentId": "4048115",
+          "TermCode": "202601",
+          "CRN": "1201",
+          "CourseNumber": "4012",
+          "CourseTitle": "SCE4012 Advanced Coaching Analytics",
+          "Credits": "3",
+          "ScheduleType": "Lecture",
+          "RegistrationStatusCode": "RE"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202601",
+          "CRN": "1202",
+          "CourseNumber": "4013",
+          "CourseTitle": "SCE4013 Sports Performance Lab",
+          "Credits": "3",
+          "ScheduleType": "Laboratory",
+          "RegistrationStatusCode": "RE"
+        },
+        {
+          "StudentId": "4048115",
           "TermCode": "202509",
           "CRN": "935",
           "CourseNumber": "4006",

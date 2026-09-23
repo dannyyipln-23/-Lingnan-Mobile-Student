@@ -34,6 +34,11 @@
       "rows": [
         {
           "StudentId": "4048115",
+          "LevelTermCode": "202601_UG",
+          "LevelTermDesc": "2nd Term 2025 - 2026"
+        },
+        {
+          "StudentId": "4048115",
           "LevelTermCode": "202509_UG",
           "LevelTermDesc": "1st Term 2025 - 2026"
         }
@@ -48,6 +53,23 @@
       "columns": ["CRN", "CourseTitle", "FinalGrade", "GradeDate", "ReleaseReady"],
       "rows": [
         {
+          "TermCode": "202601",
+          "CRN": "1201",
+          "CourseTitle": "SCE4012 Advanced Coaching Analytics",
+          "FinalGrade": "A-",
+          "GradeDate": "2026-11-28 09:15:20",
+          "ReleaseReady": "No"
+        },
+        {
+          "TermCode": "202601",
+          "CRN": "1202",
+          "CourseTitle": "SCE4013 Sports Performance Lab",
+          "FinalGrade": "In review",
+          "GradeDate": "Pending",
+          "ReleaseReady": "No"
+        },
+        {
+          "TermCode": "202509",
           "CRN": "935",
           "CourseTitle": "SCE4006 Foundation Sports Psy forCoach",
           "FinalGrade": "B+",
@@ -55,6 +77,7 @@
           "ReleaseReady": "Yes"
         },
         {
+          "TermCode": "202509",
           "CRN": "936",
           "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
           "FinalGrade": "B+",

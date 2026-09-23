@@ -47,6 +47,20 @@
           "CourseTitle": "SCE4007 Practicing Sports TrainingPrin",
           "RegistrationStatusCode": "RE"
         }
+        ,
+        {
+          "StudentId": "4048115",
+          "TermCode": "202601",
+          "CourseNumber": "4012",
+          "CourseTitle": "SCE4012 Advanced Coaching Analytics",
+          "RegistrationStatusCode": "RE"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202601",
+          "CourseNumber": "4013",
+          "CourseTitle": "SCE4013 Sports Performance Lab",
+          "RegistrationStatusCode": "RE"
       ]
     }
   ]

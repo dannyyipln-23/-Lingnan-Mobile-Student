@@ -13,6 +13,20 @@
     { "label": "ILP Units", "value": "84 / 75", "tone": "good" },
     { "label": "Graduation Risk", "value": "Low", "tone": "good" }
   ],
+  "summaryByTerm": {
+    "202509": [
+      { "label": "Program", "value": "BBA (Hons) Risk & Insurance" },
+      { "label": "Credits Completed", "value": "84 / 120" },
+      { "label": "ILP Units", "value": "84 / 75", "tone": "good" },
+      { "label": "Graduation Risk", "value": "Low", "tone": "good" }
+    ],
+    "202601": [
+      { "label": "Program", "value": "BBA (Hons) Risk & Insurance" },
+      { "label": "Credits Completed", "value": "90 / 120" },
+      { "label": "ILP Units", "value": "90 / 75", "tone": "good" },
+      { "label": "Graduation Risk", "value": "Very Low", "tone": "good" }
+    ]
+  },
   "sections": [
     {
       "title": "Program Requirement Status",
@@ -24,6 +38,30 @@
       ]
     }
   ],
+  "sectionsByTerm": {
+    "202509": [
+      {
+        "title": "Program Requirement Status",
+        "rows": [
+          { "label": "Core Courses", "value": "Completed" },
+          { "label": "Major Electives", "value": "In Progress" },
+          { "label": "Common Core", "value": "Completed" },
+          { "label": "Capstone", "value": "Pending" }
+        ]
+      }
+    ],
+    "202601": [
+      {
+        "title": "Program Requirement Status",
+        "rows": [
+          { "label": "Core Courses", "value": "Completed" },
+          { "label": "Major Electives", "value": "Completed" },
+          { "label": "Common Core", "value": "Completed" },
+          { "label": "Capstone", "value": "In Progress" }
+        ]
+      }
+    ]
+  },
   "datasets": [
     {
       "id": "courses-terms",
@@ -53,6 +91,10 @@
       "filters": ["TermCode"],
       "columns": ["TermCode", "TermDescription"],
       "rows": [
+        {
+          "TermCode": "202601",
+          "TermDescription": "2nd Term 2025 - 2026"
+        },
         {
           "TermCode": "202509",
           "TermDescription": "1st Term 2025 - 2026"

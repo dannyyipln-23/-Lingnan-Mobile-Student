@@ -34,6 +34,11 @@
       "rows": [
         {
           "StudentId": "4048115",
+          "LevelTermCode": "202601_UG",
+          "LevelTermDesc": "2nd Term 2025 - 2026"
+        },
+        {
+          "StudentId": "4048115",
           "LevelTermCode": "202509_UG",
           "LevelTermDesc": "1st Term 2025 - 2026"
         }
@@ -66,6 +71,26 @@
           "CourseTitle": "Foundation Sports Psy forCoach",
           "FinalGrade": "B+",
           "GradeDate": "2026-06-01 11:08:37"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202601",
+          "CRN": "1023",
+          "SubjectCode": "SCE",
+          "CourseNumber": "4012",
+          "CourseTitle": "Advanced Coaching Analytics",
+          "FinalGrade": "A-",
+          "GradeDate": "2026-11-28 09:15:20"
+        },
+        {
+          "StudentId": "4048115",
+          "TermCode": "202601",
+          "CRN": "1024",
+          "SubjectCode": "SCE",
+          "CourseNumber": "4013",
+          "CourseTitle": "Sports Performance Lab",
+          "FinalGrade": "A",
+          "GradeDate": "2026-11-28 09:15:22"
         }
       ]
     }

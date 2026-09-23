@@ -33,6 +33,13 @@
         {
           "StudentId": "4048115",
           "UserNm": "dannyyip",
+          "TermCode": "202601",
+          "TermDescription": "2nd Term 2025 - 2026",
+          "NoOfCourses": "2"
+        },
+        {
+          "StudentId": "4048115",
+          "UserNm": "dannyyip",
           "TermCode": "202509",
           "TermDescription": "1nd Term 2025 - 2026",
           "NoOfCourses": "1"
@@ -47,6 +54,24 @@
       "filters": ["UserNm"],
       "columns": ["UserNm", "TermCode", "CourseCode", "CourseTitle", "ExamDate", "ExamTime", "Venue"],
       "rows": [
+        {
+          "UserNm": "dannyyip",
+          "TermCode": "202601",
+          "CourseCode": "SCE4012",
+          "CourseTitle": "Advanced Coaching Analytics",
+          "ExamDate": "Fri Mar 06, 2026",
+          "ExamTime": "02:00 PM - 04:00 PM",
+          "Venue": "Simon and Eleanor Kwok Building"
+        },
+        {
+          "UserNm": "dannyyip",
+          "TermCode": "202601",
+          "CourseCode": "SCE4013",
+          "CourseTitle": "Sports Performance Lab",
+          "ExamDate": "Mon Mar 09, 2026",
+          "ExamTime": "09:30 AM - 11:30 AM",
+          "Venue": "Chan Tak Tai Auditorium"
+        },
         {
           "UserNm": "dannyyip",
           "TermCode": "202509",
@@ -66,6 +91,28 @@
       "filters": ["UserNm", "CourseCode"],
       "columns": ["UserNm", "CourseCode", "ExamDate", "BeginTime", "EndTime", "Venue", "SeatNumber", "GoogleMap"],
       "rows": [
+        {
+          "UserNm": "dannyyip",
+          "TermCode": "202601",
+          "CourseCode": "SCE4012",
+          "ExamDate": "06 Mar 2026 (Fri)",
+          "BeginTime": "02:00 PM",
+          "EndTime": "04:00 PM",
+          "Venue": "Simon and Eleanor Kwok Building",
+          "SeatNumber": "B-12",
+          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
+        },
+        {
+          "UserNm": "dannyyip",
+          "TermCode": "202601",
+          "CourseCode": "SCE4013",
+          "ExamDate": "09 Mar 2026 (Mon)",
+          "BeginTime": "09:30 AM",
+          "EndTime": "11:30 AM",
+          "Venue": "Chan Tak Tai Auditorium",
+          "SeatNumber": "C-08",
+          "GoogleMap": "https://map.ln.edu.hk/?f=p&t=2"
+        },
         {
           "UserNm": "dannyyip",
           "CourseCode": "CLC9015",

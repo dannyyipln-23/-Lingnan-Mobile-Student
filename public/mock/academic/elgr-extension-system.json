@@ -46,11 +46,11 @@
       "filters": ["studentId=000123456", "termCode=2526T1"],
       "columns": ["CourseCode", "CourseTitle", "Grade", "ReleaseStatus"],
       "rows": [
-        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Grade": "A-", "ReleaseStatus": "Released" },
-        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Grade": "B+", "ReleaseStatus": "Released" },
-        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" },
-        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "ReleaseStatus": "Released" },
-        { "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Grade": "A", "ReleaseStatus": "Released" }
+        { "TermCode": "2526T1", "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Grade": "A-", "ReleaseStatus": "Released" },
+        { "TermCode": "2526T1", "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Grade": "B+", "ReleaseStatus": "Released" },
+        { "TermCode": "2526T1", "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" },
+        { "TermCode": "2526T2", "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "ReleaseStatus": "Released" },
+        { "TermCode": "2526T2", "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Grade": "A", "ReleaseStatus": "Released" }
       ]
     }
   ]

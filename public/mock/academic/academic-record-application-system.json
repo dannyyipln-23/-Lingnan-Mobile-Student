@@ -46,10 +46,10 @@
       "filters": ["studentId=000123456", "termCode=2526T1"],
       "columns": ["CourseCode", "CourseTitle", "Credit", "Status"],
       "rows": [
-        { "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Status": "Registered" },
-        { "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Status": "Registered" },
-        { "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Status": "Registered" },
-        { "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Credit": "2", "Status": "Completed" }
+        { "TermCode": "2526T1", "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Credit": "3", "Status": "Registered" },
+        { "TermCode": "2526T1", "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Credit": "3", "Status": "Registered" },
+        { "TermCode": "2526T1", "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Credit": "3", "Status": "Registered" },
+        { "TermCode": "2526T2", "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Credit": "2", "Status": "Completed" }
       ]
     }
   ]

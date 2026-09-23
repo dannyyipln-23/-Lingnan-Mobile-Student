@@ -47,11 +47,11 @@
       "filters": ["studentId=000123456", "termCode=all"],
       "columns": ["CourseCode", "CourseTitle", "Grade", "Category"],
       "rows": [
-        { "CourseCode": "CSCI1001", "CourseTitle": "Intro to Programming", "Grade": "A-", "Category": "Major Core" },
-        { "CourseCode": "CSCI2003", "CourseTitle": "Database Systems", "Grade": "B+", "Category": "Major Core" },
-        { "CourseCode": "GEEN1004", "CourseTitle": "Academic Writing", "Grade": "A", "Category": "University Core" },
-        { "CourseCode": "MATH2102", "CourseTitle": "Statistics for Data Science", "Grade": "A-", "Category": "Major Required" },
-        { "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "Category": "Major Elective" }
+        { "TermCode": "2425T1", "CourseCode": "CSCI1001", "CourseTitle": "Intro to Programming", "Grade": "A-", "Category": "Major Core" },
+        { "TermCode": "2425T2", "CourseCode": "CSCI2003", "CourseTitle": "Database Systems", "Grade": "B+", "Category": "Major Core" },
+        { "TermCode": "2425T2", "CourseCode": "GEEN1004", "CourseTitle": "Academic Writing", "Grade": "A", "Category": "University Core" },
+        { "TermCode": "2526T1", "CourseCode": "MATH2102", "CourseTitle": "Statistics for Data Science", "Grade": "A-", "Category": "Major Required" },
+        { "TermCode": "2526T2", "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "Category": "Major Elective" }
       ]
     }
   ]

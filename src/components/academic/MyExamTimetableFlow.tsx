@@ -55,6 +55,8 @@ interface MyExamTimetableFlowProps {
   onBack: () => void;
 }
 
+const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
+
 export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack }) => {
   const [payload, setPayload] = useState<ExamPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +155,8 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
       theme="exam"
       onBack={handleBack}
       backLabel={step === 'term' ? 'Campus' : 'Back'}
+      stepIndex={stepIndexMap[step]}
+      stepCount={3}
     >
       {step === 'term' && (
         <TermPicker
@@ -170,50 +174,56 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
       )}
 
       {step === 'list' && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-            Exams ({items.length})
-          </p>
-          {items.map((item) => (
-            <FlowListCard
-              key={item.id}
-              title={item.courseCode}
-              subtitle={item.courseTitle}
-              meta={`${item.examDate} · ${item.examTime}`}
-              status={item.venue.split(' ').slice(0, 2).join(' ')}
-              statusTone="muted"
-              onClick={() => {
-                setItemId(item.id);
-                setStep('detail');
-              }}
-            />
-          ))}
+        <div className="space-y-3">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Exam season</p>
+            <p className="flow-hero__value">
+              {items.length} <span className="text-base font-semibold text-slate-500">papers</span>
+            </p>
+            <p className="flow-hero__caption">{selectedTerm?.description}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="flow-section-label">Upcoming exams</p>
+            {items.map((item) => (
+              <FlowListCard
+                key={item.id}
+                title={item.courseCode}
+                subtitle={item.courseTitle}
+                meta={`${item.examDate} · ${item.examTime}`}
+                status={item.venue.split(' ').slice(0, 2).join(' ')}
+                statusTone="muted"
+                onClick={() => {
+                  setItemId(item.id);
+                  setStep('detail');
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
 
       {step === 'detail' && detail && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-red-100 bg-gradient-to-r from-red-50 to-orange-50 p-4 shadow-sm">
-            <p className="text-sm font-bold text-slate-900">
-              {detail.courseCode} · {detail.courseTitle}
-            </p>
-            <p className="text-xs text-slate-700 mt-1">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">{detail.courseCode}</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">{detail.courseTitle}</p>
+            <p className="mt-3 text-sm font-semibold text-slate-800">
               {detail.examDate}
               {detail.examDay ? ` (${detail.examDay})` : ''}
             </p>
-            <p className="text-xs text-slate-700">
+            <p className="text-sm text-slate-700">
               {detail.beginTime} – {detail.endTime}
             </p>
-            <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-600">
-              <MapPin className="w-3.5 h-3.5" />
+            <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600">
+              <MapPin className="h-3.5 w-3.5" />
               <span>{detail.venue}</span>
             </div>
             <button
               type="button"
               onClick={addToCalendar}
-              className="mt-3 inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-red-700"
+              className="mt-3.5 inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-red-700 shadow-sm transition hover:bg-red-50"
             >
-              <CalendarPlus className="w-3.5 h-3.5" />
+              <CalendarPlus className="h-3.5 w-3.5" />
               <span>Add to Calendar</span>
             </button>
           </div>

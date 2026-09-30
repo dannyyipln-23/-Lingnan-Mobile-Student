@@ -30,30 +30,35 @@ const settingItems = [
     title: 'Profile & Account',
     desc: 'Update contact and student profile settings',
     icon: UserRound,
+    enabled: false,
   },
   {
     id: 'privacy',
     title: 'Privacy & Security',
     desc: 'Password, session and security preferences',
     icon: Lock,
+    enabled: false,
   },
   {
     id: 'notification',
     title: 'Notifications',
     desc: 'Manage academic and campus push alerts',
     icon: Bell,
+    enabled: false,
   },
   {
     id: 'language',
     title: 'Language & Region',
     desc: 'Display language and locale format options',
     icon: Globe,
+    enabled: false,
   },
   {
     id: 'help',
     title: 'Help & Support',
     desc: 'Support center and FAQ resources',
     icon: CircleHelp,
+    enabled: false,
   },
 ];
 
@@ -260,20 +265,27 @@ export const SettingsTab: React.FC = () => {
       <div className="space-y-2.5">
         {settingItems.map((item) => {
           const Icon = item.icon;
+          const isDisabled = !item.enabled;
           return (
             <button
               key={item.id}
               type="button"
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 text-left transition hover:bg-[var(--surface-muted)]"
+              disabled={isDisabled}
+              className={`w-full rounded-2xl border border-[var(--border)] p-3.5 text-left transition ${
+                isDisabled
+                  ? 'bg-[var(--surface)] opacity-60 cursor-not-allowed'
+                  : 'bg-[var(--surface)] hover:bg-[var(--surface-muted)]'
+              }`}
             >
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
                   <Icon className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-[var(--text-primary)]">{item.title}</p>
                   <p className="mt-0.5 text-xs text-[var(--text-muted)]">{item.desc}</p>
                 </div>
+                {isDisabled && <Lock className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />}
               </div>
             </button>
           );

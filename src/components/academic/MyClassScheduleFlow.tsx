@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Clock3, MapPin } from 'lucide-react';
 import { AcademicFlowShell } from './AcademicFlowShell';
 import { DetailSection } from './DetailSection';
 import { FlowListCard } from './FlowListCard';
@@ -54,6 +55,8 @@ type SchedulePayload = {
 interface MyClassScheduleFlowProps {
   onBack: () => void;
 }
+
+const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
 
 export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack }) => {
   const [payload, setPayload] = useState<SchedulePayload | null>(null);
@@ -141,6 +144,8 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       theme="schedule"
       onBack={handleBack}
       backLabel={step === 'term' ? 'Campus' : 'Back'}
+      stepIndex={stepIndexMap[step]}
+      stepCount={3}
     >
       {step === 'term' && (
         <TermPicker
@@ -158,36 +163,52 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       )}
 
       {step === 'list' && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-            Registered courses ({items.length})
-          </p>
-          {items.map((item) => (
-            <FlowListCard
-              key={item.id}
-              title={`${item.subjectCode}${item.courseNumber}`}
-              subtitle={item.courseTitle}
-              meta={`${item.credits} credits · ${item.scheduleType}`}
-              onClick={() => {
-                setItemId(item.id);
-                setStep('detail');
-              }}
-            />
-          ))}
+        <div className="space-y-3">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">This term</p>
+            <p className="flow-hero__value">
+              {items.length} <span className="text-base font-semibold text-slate-500">courses</span>
+            </p>
+            <p className="flow-hero__caption">
+              {totalCredits} credits registered · {selectedTerm?.description}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="flow-section-label">Registered courses</p>
+            {items.map((item) => (
+              <FlowListCard
+                key={item.id}
+                title={`${item.subjectCode}${item.courseNumber}`}
+                subtitle={item.courseTitle}
+                meta={`${item.credits} credits · ${item.scheduleType}`}
+                onClick={() => {
+                  setItemId(item.id);
+                  setStep('detail');
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
 
       {step === 'detail' && detail && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-bold text-slate-900">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">
               {detail.subjectCode}
               {detail.courseNumber}
             </p>
-            <p className="text-xs text-slate-600 mt-0.5">{detail.courseTitle}</p>
-            <p className="text-[11px] text-slate-500 mt-2">
-              {detail.days ?? '—'} · {detail.startTime ?? '—'} – {detail.endTime ?? '—'}
-            </p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">{detail.courseTitle}</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1">
+                <Clock3 className="h-3 w-3" />
+                {detail.days ?? '—'} · {detail.startTime ?? '—'} – {detail.endTime ?? '—'}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1">
+                <MapPin className="h-3 w-3" />
+                {detail.building ?? '—'} {detail.room ?? ''}
+              </span>
+            </div>
           </div>
           <DetailSection
             title="Meeting"

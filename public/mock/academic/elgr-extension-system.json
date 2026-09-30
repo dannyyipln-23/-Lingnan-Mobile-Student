@@ -1,57 +1,75 @@
 {
   "title": "ELGR Extension System",
-  "subtitle": "Request or track extension windows for early grade release workflows",
-  "lastUpdated": "2026-09-23 09:00",
-  "studentContext": {
-    "studentId": "000123456",
-    "userNm": "STUDENT_A",
-    "termCode": "2526T1",
-    "termLevelCode": "UG"
+  "subtitle": "English Language Graduation Requirement · extension applications",
+  "overview": {
+    "studentId": "4191821",
+    "studentName": "Yip Tak Hung Danny",
+    "studyYear": "Fourth Year",
+    "admitTerm": "1st Term 2022 - 2023",
+    "catalogueYear": "2020-21",
+    "academicYearCode": "2020",
+    "program": "BA (Hons) Translation",
+    "majorCode": "TRA4",
+    "elgrResult": "Not Fulfilled",
+    "catalogTermDeadline": "2025-08-31T00:00:00Z",
+    "extendedDeadline": "2026-08-31T00:00:00Z",
+    "currentExtensionStatus": "Approved"
   },
-  "summary": [
-    { "label": "Open extension requests", "value": "1", "tone": "warn" },
-    { "label": "Approved requests", "value": "2", "tone": "good" },
-    { "label": "Current ELGR window", "value": "Open", "tone": "good" }
-  ],
-  "sections": [
+  "applications": [
     {
-      "title": "Extension guidance",
-      "rows": [
-        { "label": "Eligible users", "value": "Students with approved supporting reason" },
-        { "label": "Review authority", "value": "Department admin and registry" },
-        { "label": "Cut-off", "value": "Before ELGR close date" }
-      ]
-    }
-  ],
-  "datasets": [
-    {
-      "id": "elgr-term-window",
-      "title": "ELGR Term Window",
-      "endpoint": "GET /GradeTerms",
-      "purpose": "Returns ELGR-enabled terms and their publication state.",
-      "filters": ["studentId=000123456"],
-      "columns": ["TermCode", "TermDescription", "ELGRWindow", "Status"],
-      "rows": [
-        { "TermCode": "2425T2", "TermDescription": "2024/25 Semester 2", "ELGRWindow": "2025-06-10 to 2025-06-17", "Status": "Closed" },
-        { "TermCode": "2526T1", "TermDescription": "2025/26 Semester 1", "ELGRWindow": "2026-01-10 to 2026-01-17", "Status": "Open" },
-        { "TermCode": "2526T2", "TermDescription": "2025/26 Semester 2", "ELGRWindow": "2026-06-12 to 2026-06-19", "Status": "Scheduled" },
-        { "TermCode": "2627T1", "TermDescription": "2026/27 Semester 1", "ELGRWindow": "2027-01-11 to 2027-01-18", "Status": "Scheduled" }
-      ]
+      "id": "5066",
+      "catalogTerm": "202009",
+      "majorCode": "TRA4",
+      "statusCode": "AP",
+      "status": "Approved",
+      "createdAt": "2026-01-20T07:54:09Z",
+      "catalogTermDeadline": "2025-08-31T00:00:00Z",
+      "extendedDate": "2026-08-31T00:00:00Z",
+      "program": "BA (Hons) Translation",
+      "detail": {
+        "reason": "I previously obtained a score of 6.5 in the Password Test, which was just 0.5 points short of the passing mark. However, as I am currently working full-time, my schedule has been quite busy, making it difficult for me to adequately prepare at this moment.",
+        "plan": "In my last test, I failed in the writing part. During the Lunar New Year holiday, I plan to use my time to review and strengthen my language skills, particularly in writing. I will watch the tutorial video on Youtube and learn some skills particularly for Password Test.",
+        "timeline": "I plan to book the next available test date after the Lunar New Year. I will try my best in the coming test.",
+        "requestedExtendDate": "2026-08-31T00:00:00Z",
+        "ieltsTaken": true,
+        "attachmentName": "password test result 2025.pdf"
+      }
     },
     {
-      "id": "elgr-grade-preview",
-      "title": "Early Grade Preview",
-      "endpoint": "GET /Grades",
-      "purpose": "Shows current grade publication state for ELGR-eligible courses.",
-      "filters": ["studentId=000123456", "termCode=2526T1"],
-      "columns": ["CourseCode", "CourseTitle", "Grade", "ReleaseStatus"],
-      "rows": [
-        { "TermCode": "2526T1", "CourseCode": "CSCI3001", "CourseTitle": "Mobile Application Design", "Grade": "A-", "ReleaseStatus": "Released" },
-        { "TermCode": "2526T1", "CourseCode": "CSCI3012", "CourseTitle": "Machine Learning", "Grade": "B+", "ReleaseStatus": "Released" },
-        { "TermCode": "2526T1", "CourseCode": "GEEN2002", "CourseTitle": "Data and Society", "Grade": "In review", "ReleaseStatus": "Pending" },
-        { "TermCode": "2526T2", "CourseCode": "CSCI3201", "CourseTitle": "Software Engineering", "Grade": "B", "ReleaseStatus": "Released" },
-        { "TermCode": "2526T2", "CourseCode": "LANG2101", "CourseTitle": "Professional Communication", "Grade": "A", "ReleaseStatus": "Released" }
-      ]
+      "id": "5006",
+      "catalogTerm": "202009",
+      "majorCode": "TRA4",
+      "statusCode": "CC",
+      "status": "Case Closed",
+      "createdAt": "2026-01-19T00:19:07Z",
+      "catalogTermDeadline": "2025-08-31T00:00:00Z",
+      "extendedDate": null,
+      "program": "BA (Hons) Translation",
+      "detail": null
+    },
+    {
+      "id": "4244",
+      "catalogTerm": "202009",
+      "majorCode": "TRA4",
+      "statusCode": "AP",
+      "status": "Approved",
+      "createdAt": "2025-08-26T16:19:56Z",
+      "catalogTermDeadline": "2025-08-31T00:00:00Z",
+      "extendedDate": null,
+      "program": "BA (Hons) Translation",
+      "detail": null
+    },
+    {
+      "id": "4003",
+      "catalogTerm": "202009",
+      "majorCode": "TRA4",
+      "statusCode": "RJ",
+      "status": "Rejected",
+      "createdAt": "2025-08-11T07:36:55Z",
+      "catalogTermDeadline": "2025-08-31T00:00:00Z",
+      "extendedDate": null,
+      "program": "BA (Hons) Translation",
+      "detail": null
     }
   ]
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Calendar, Compass, Settings, CalendarDays } from 'lucide-react';
 
-export type TabType = 'home' | 'calendar' | 'campus' | 'setting';
+export type TabType = 'home' | 'calendar' | 'events' | 'campus' | 'setting';
 
 interface NavigationBottomBarProps {
   activeTab: TabType;
@@ -24,6 +24,11 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
       icon: Calendar,
     },
     {
+      id: 'events' as TabType,
+      label: 'EMS',
+      icon: CalendarDays,
+    },
+    {
       id: 'campus' as TabType,
       label: 'Campus',
       icon: Compass,
@@ -38,7 +43,7 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
 
   return (
     <nav className="z-40 shrink-0 border-t border-slate-200 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur-md">
-      <div className="grid grid-cols-4 gap-0 px-1 py-1">
+      <div className="grid grid-cols-5 gap-0 px-1 py-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

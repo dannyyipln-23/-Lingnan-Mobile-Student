@@ -53,6 +53,8 @@ interface MyAcademicResultsFlowProps {
   onBack: () => void;
 }
 
+const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
+
 export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ onBack }) => {
   const [payload, setPayload] = useState<ResultsPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -136,21 +138,32 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
       theme="results"
       onBack={handleBack}
       backLabel={step === 'term' ? 'Campus' : 'Back'}
+      stepIndex={stepIndexMap[step]}
+      stepCount={3}
     >
       {step === 'term' && (
         <div className="space-y-3">
           {payload.overview && (
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: 'cGPA', value: payload.overview.cgpa },
-                { label: 'Earned', value: payload.overview.creditsEarned },
-                { label: 'In progress', value: payload.overview.creditsInProgress },
-              ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center shadow-sm">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{stat.label}</p>
-                  <p className="text-sm font-bold text-slate-900 mt-0.5">{stat.value ?? '—'}</p>
+            <div className="flow-hero">
+              <p className="flow-hero__eyebrow">Cumulative overview</p>
+              <p className="flow-hero__value">{payload.overview.cgpa ?? '—'}</p>
+              <p className="flow-hero__caption">cGPA across all terms</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-blue-100 pt-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Earned</p>
+                  <p className="mt-0.5 text-sm font-bold text-slate-900">
+                    {payload.overview.creditsEarned ?? '—'}
+                  </p>
                 </div>
-              ))}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                    In progress
+                  </p>
+                  <p className="mt-0.5 text-sm font-bold text-slate-900">
+                    {payload.overview.creditsInProgress ?? '—'}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
           <TermPicker
@@ -169,9 +182,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
 
       {step === 'list' && (
         <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-            Courses ({items.length})
-          </p>
+          <p className="flow-section-label">Courses ({items.length})</p>
           {items.length === 0 && (
             <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
               No grades for this term.
@@ -196,10 +207,10 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
 
       {step === 'detail' && detail && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm">
-            <p className="text-xs font-bold text-slate-500">Final grade</p>
-            <p className="text-3xl font-bold text-slate-900 mt-1">{detail.finalGrade}</p>
-            <p className="text-sm font-semibold text-slate-800 mt-2">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Final grade</p>
+            <p className="flow-hero__value">{detail.finalGrade}</p>
+            <p className="flow-hero__caption">
               {detail.subjectCode}
               {detail.courseNumber} · {detail.courseTitle}
             </p>

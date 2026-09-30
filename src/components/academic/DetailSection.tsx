@@ -16,10 +16,12 @@ export const DetailSection: React.FC<DetailSectionProps> = ({ title, rows }) => 
   const { openInAppBrowser } = useAppPreferences();
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+    <section className="overflow-hidden rounded-[1.05rem] border border-[var(--border)] bg-[var(--surface)] shadow-[0_4px_14px_rgb(15_23_42_/_0.04)]">
       {title && (
         <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">{title}</h3>
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--text-muted)]">
+            {title}
+          </h3>
         </div>
       )}
       <dl className="divide-y divide-[var(--border)]">

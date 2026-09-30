@@ -55,6 +55,8 @@ interface EarlyGradeReleaseFlowProps {
   onBack: () => void;
 }
 
+const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
+
 export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ onBack }) => {
   const [payload, setPayload] = useState<EarlyGradePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,10 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
   );
   const items = useMemo(() => payload?.itemsByTerm[termCode] ?? [], [payload, termCode]);
   const detail = itemId ? payload?.detailsById[itemId] : undefined;
+  const readyCount = useMemo(
+    () => items.filter((item) => item.releaseReady === 'Yes').length,
+    [items],
+  );
 
   const handleBack = () => {
     if (step === 'detail') {
@@ -136,25 +142,34 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
       theme="early"
       onBack={handleBack}
       backLabel={step === 'term' ? 'Campus' : 'Back'}
+      stepIndex={stepIndexMap[step]}
+      stepCount={3}
     >
       {step === 'term' && (
         <div className="space-y-3">
           {payload.windowStatus && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm space-y-2">
-              <div className="flex items-center justify-between gap-2">
+            <div className="flow-hero space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Current window</p>
-                  <p className="text-sm font-bold text-slate-900">{payload.windowStatus.currentWindow}</p>
+                  <p className="flow-hero__eyebrow">Current window</p>
+                  <p className="mt-1 text-base font-bold tracking-tight text-slate-900">
+                    {payload.windowStatus.currentWindow}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Next</p>
-                  <p className="text-sm font-bold text-slate-900">{payload.windowStatus.nextWindow}</p>
+                  <p className="flow-hero__eyebrow">Next</p>
+                  <p className="mt-1 text-base font-bold tracking-tight text-slate-900">
+                    {payload.windowStatus.nextWindow}
+                  </p>
                 </div>
               </div>
               {payload.windowStatus.rules && (
-                <ul className="text-[11px] text-slate-600 space-y-1 list-disc pl-4">
+                <ul className="space-y-1 border-t border-amber-200/70 pt-2.5 text-[11px] leading-relaxed text-slate-600">
                   {payload.windowStatus.rules.map((rule) => (
-                    <li key={rule}>{rule}</li>
+                    <li key={rule} className="flex gap-1.5">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
+                      <span>{rule}</span>
+                    </li>
                   ))}
                 </ul>
               )}
@@ -163,12 +178,12 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
           <TermPicker
             terms={payload.terms.map((term) => {
               const termItems = payload.itemsByTerm[term.code] ?? [];
-              const readyCount = termItems.filter((item) => item.releaseReady === 'Yes').length;
+              const termReady = termItems.filter((item) => item.releaseReady === 'Yes').length;
               return {
                 code: term.code,
                 description: term.description,
                 isDefault: term.isDefault,
-                meta: `${readyCount} ready / ${termItems.length} course(s)`,
+                meta: `${termReady} ready / ${termItems.length} course(s)`,
               };
             })}
             onSelect={(code) => {
@@ -180,44 +195,46 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
       )}
 
       {step === 'list' && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-            Courses ({items.length})
-          </p>
-          {items.map((item) => {
-            const ready = item.releaseReady === 'Yes';
-            return (
-              <FlowListCard
-                key={item.id}
-                title={`${item.subjectCode}${item.courseNumber}`}
-                subtitle={item.courseTitle}
-                meta={`Grade ${item.finalGrade} · Early ${item.isEarly}`}
-                status={ready ? 'Ready' : 'Not ready'}
-                statusTone={ready ? 'good' : 'warn'}
-                onClick={() => {
-                  setItemId(item.id);
-                  setStep('detail');
-                }}
-              />
-            );
-          })}
+        <div className="space-y-3">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Release ready</p>
+            <p className="flow-hero__value">
+              {readyCount}
+              <span className="text-base font-semibold text-slate-500"> / {items.length}</span>
+            </p>
+            <p className="flow-hero__caption">courses available for early viewing</p>
+          </div>
+          <div className="space-y-2">
+            <p className="flow-section-label">Courses</p>
+            {items.map((item) => {
+              const ready = item.releaseReady === 'Yes';
+              return (
+                <FlowListCard
+                  key={item.id}
+                  title={`${item.subjectCode}${item.courseNumber}`}
+                  subtitle={item.courseTitle}
+                  meta={`Grade ${item.finalGrade} · Early ${item.isEarly}`}
+                  status={ready ? 'Ready' : 'Not ready'}
+                  statusTone={ready ? 'good' : 'warn'}
+                  onClick={() => {
+                    setItemId(item.id);
+                    setStep('detail');
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
       {step === 'detail' && detail && (
         <div className="space-y-3">
-          <div
-            className={`rounded-2xl border p-4 shadow-sm ${
-              detail.releaseReady === 'Yes'
-                ? 'border-emerald-100 bg-emerald-50'
-                : 'border-amber-100 bg-amber-50'
-            }`}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Release status</p>
-            <p className="text-xl font-bold text-slate-900 mt-1">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Release status</p>
+            <p className="flow-hero__value">
               {detail.releaseReady === 'Yes' ? 'Ready' : 'Not ready'}
             </p>
-            <p className="text-sm font-semibold text-slate-800 mt-2">
+            <p className="flow-hero__caption">
               {detail.subjectCode}
               {detail.courseNumber} · {detail.courseTitle}
             </p>

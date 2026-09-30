@@ -44,6 +44,8 @@ interface MyGraduationRequirementsFlowProps {
   onBack: () => void;
 }
 
+const stepIndexMap: Record<FlowStep, number> = { overview: 0, history: 1, detail: 2 };
+
 export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlowProps> = ({
   onBack,
 }) => {
@@ -131,28 +133,28 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
       theme="graduation"
       onBack={handleBack}
       backLabel={step === 'overview' ? 'Campus' : 'Back'}
+      stepIndex={stepIndexMap[step]}
+      stepCount={3}
     >
       {step === 'overview' && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-end justify-between gap-2">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Progress</p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5">
-                  {fulfilledCount}/{totalRequirements}
-                </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">checklist items met</p>
-              </div>
-              <p className="text-sm font-bold text-slate-700">{progressPct}%</p>
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Checklist progress</p>
+            <div className="mt-1 flex items-end justify-between gap-2">
+              <p className="flow-hero__value">
+                {fulfilledCount}
+                <span className="text-base font-semibold text-slate-500">/{totalRequirements}</span>
+              </p>
+              <p className="pb-1 text-sm font-bold text-emerald-800">{progressPct}%</p>
             </div>
-            <div className="mt-3 h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-emerald-100">
               <div
-                className="h-full rounded-full bg-emerald-500 transition-all"
+                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
             {payload.program && (
-              <p className="text-[11px] text-slate-500 mt-3">
+              <p className="flow-hero__caption">
                 {payload.program.degreeCode}
                 {payload.program.siteName ? ` · ${payload.program.siteName}` : ''}
               </p>
@@ -160,28 +162,26 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
           </div>
 
           <div className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-              Requirements
-            </p>
+            <p className="flow-section-label">Requirements</p>
             {payload.requirements.map((req) => (
               <div
                 key={req.id}
-                className="rounded-2xl border border-slate-200 bg-white px-3.5 py-3 shadow-sm flex items-start gap-2.5"
+                className="flex items-start gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3.5 py-3 shadow-[0_4px_14px_rgb(15_23_42_/_0.04)]"
               >
                 {req.fulfilled ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 ) : (
-                  <CircleAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-slate-900">{req.label}</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{req.detail}</p>
+                  <p className="text-sm font-bold tracking-tight text-slate-900">{req.label}</p>
+                  <p className="mt-0.5 text-[11px] text-slate-500">{req.detail}</p>
                 </div>
                 <span
                   className={`ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
                     req.fulfilled
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                      : 'bg-amber-50 text-amber-800 border-amber-100'
+                      ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                      : 'border-amber-100 bg-amber-50 text-amber-800'
                   }`}
                 >
                   {req.fulfilled ? 'Done' : 'Pending'}
@@ -193,30 +193,28 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
           <button
             type="button"
             onClick={() => setStep('history')}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-left shadow-sm hover:bg-slate-50 transition"
+            className="list-card"
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 pl-1.5">
               <div>
-                <p className="text-sm font-bold text-slate-900">Academic History</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-sm font-bold tracking-tight text-slate-900">Academic History</p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
                   {payload.academicHistory.length} term record(s) · GPA & standing
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="h-4 w-4 text-slate-400" />
             </div>
           </button>
 
           {payload.sourceNote && (
-            <p className="text-[10px] text-slate-400 px-0.5">{payload.sourceNote}</p>
+            <p className="px-0.5 text-[10px] text-slate-400">{payload.sourceNote}</p>
           )}
         </div>
       )}
 
       {step === 'history' && (
         <div className="space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-0.5">
-            Terms
-          </p>
+          <p className="flow-section-label">Terms</p>
           {payload.academicHistory.map((row) => (
             <FlowListCard
               key={row.id}
@@ -236,17 +234,19 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
 
       {step === 'detail' && historyItem && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-bold text-slate-900">{historyItem.description}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">{historyItem.academicYear}</p>
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">{historyItem.academicYear}</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+              {historyItem.description}
+            </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase text-slate-500">Term GPA</p>
-                <p className="text-lg font-bold text-slate-900">{historyItem.termGpa}</p>
+              <div className="rounded-xl border border-emerald-100 bg-white/80 px-3 py-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Term GPA</p>
+                <p className="mt-0.5 text-lg font-bold text-slate-900">{historyItem.termGpa}</p>
               </div>
-              <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
-                <p className="text-[10px] font-bold uppercase text-slate-500">cGPA</p>
-                <p className="text-lg font-bold text-slate-900">{historyItem.cumGpa}</p>
+              <div className="rounded-xl border border-emerald-100 bg-white/80 px-3 py-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">cGPA</p>
+                <p className="mt-0.5 text-lg font-bold text-slate-900">{historyItem.cumGpa}</p>
               </div>
             </div>
           </div>

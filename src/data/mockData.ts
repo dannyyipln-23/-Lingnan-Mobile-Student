@@ -3,8 +3,8 @@ import { StudentProfile, CourseSession, ILPProgress, CampusFacility } from '../t
 export const CURRENT_STUDENT: StudentProfile = {
   id: 'stu-2024-8902',
   studentNumber: '20241088',
-  fullName: 'Danny Ka-Long Yip',
-  email: 'dannyyipln@gmail.com',
+  fullName: 'Yip Tak Hung Danny',
+  email: 'dannyyip@ln.edu.hk',
   major: 'BBA (Hons) in Risk & Insurance Management',
   faculty: 'Faculty of Business',
   yearOfStudy: 3,
@@ -13,9 +13,6 @@ export const CURRENT_STUDENT: StudentProfile = {
   hostel: 'Hall B (The Jockey Club Hall)',
   hostelRoom: 'Room B-618',
   gpa: 3.72,
-  printQuotaPages: 240,
-  octopusCardLinked: '9283-XXXX-1',
-  octopusBalance: 88.50,
 };
 
 export const COURSES: CourseSession[] = [

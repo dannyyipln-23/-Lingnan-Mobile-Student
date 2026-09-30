@@ -1,7 +1,28 @@
-import React from 'react';
-import { Bell, CircleHelp, Globe, Lock, Type, UserRound } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  Bell,
+  Calendar,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  Globe,
+  GraduationCap,
+  LayoutGrid,
+  Library,
+  Lock,
+  Map,
+  Notebook,
+  Type,
+  UserRound,
+} from 'lucide-react';
 import { CURRENT_STUDENT } from '../data/mockData';
-import { FontSizeOption, useAppPreferences } from '../context/AppPreferencesContext';
+import {
+  FontSizeOption,
+  HOME_SHORTCUT_OPTIONS,
+  HomeShortcutId,
+  useAppPreferences,
+} from '../context/AppPreferencesContext';
 
 const settingItems = [
   {
@@ -44,7 +65,105 @@ const fontSizeOptions: Array<{ id: FontSizeOption; label: string; sample: string
 ];
 
 export const SettingsTab: React.FC = () => {
-  const { fontSize, setFontSize } = useAppPreferences();
+  const { fontSize, setFontSize, homeShortcuts, setHomeShortcuts } = useAppPreferences();
+  const [settingsPage, setSettingsPage] = useState<'main' | 'shortcuts'>('main');
+
+  const shortcutIconMap = useMemo<Record<HomeShortcutId, React.ComponentType<{ className?: string }>>>(
+    () => ({
+      calendar: Calendar,
+      'book-seat': Library,
+      'campus-apps': LayoutGrid,
+      wayfinding: Map,
+      'moodle-assignments': Notebook,
+      'exam-timetable': Bell,
+      'graduation-progress': GraduationCap,
+    }),
+    [],
+  );
+
+  const toggleShortcut = (shortcutId: HomeShortcutId) => {
+    if (homeShortcuts.includes(shortcutId)) {
+      if (homeShortcuts.length <= 1) return;
+      setHomeShortcuts(homeShortcuts.filter((item) => item !== shortcutId));
+      return;
+    }
+
+    if (homeShortcuts.length >= 6) return;
+    setHomeShortcuts([...homeShortcuts, shortcutId]);
+  };
+
+  if (settingsPage === 'shortcuts') {
+    return (
+      <div className="page-shell page-shell--settings space-y-4">
+        <div className="px-1">
+          <button
+            type="button"
+            onClick={() => setSettingsPage('main')}
+            className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)]"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Back to Settings
+          </button>
+          <h2 className="mt-2 text-lg font-bold text-[var(--text-primary)]">Home Shortcuts</h2>
+          <p className="text-xs text-[var(--text-muted)]">
+            Choose 1 to 6 shortcuts from campus functions and core app actions.
+          </p>
+        </div>
+
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
+              Selected: {homeShortcuts.length} / 6
+            </p>
+            <p className="text-[10px] text-[var(--text-muted)]">
+              At least 1 shortcut required
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {HOME_SHORTCUT_OPTIONS.map((option) => {
+              const Icon = shortcutIconMap[option.id];
+              const selected = homeShortcuts.includes(option.id);
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => toggleShortcut(option.id)}
+                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                    selected
+                      ? 'border-[var(--brand)] bg-[var(--brand-soft)]'
+                      : 'border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="inline-flex min-w-0 items-center gap-2.5">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[var(--text-primary)]">{option.label}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">{option.description}</p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                        selected
+                          ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
+                          : 'border-[var(--border)] bg-[var(--surface)] text-transparent'
+                      }`}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="page-shell page-shell--settings space-y-4">
@@ -113,6 +232,29 @@ export const SettingsTab: React.FC = () => {
             );
           })}
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setSettingsPage('shortcuts')}
+          className="w-full text-left"
+        >
+          <div className="flex items-center justify-between">
+            <div className="inline-flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
+                <LayoutGrid className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[var(--text-primary)]">Home shortcut preferences</p>
+                <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                  Select which campus and app functions appear in Student Shortcuts.
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[var(--text-muted)]" />
+          </div>
+        </button>
       </section>
 
       <div className="space-y-2.5">

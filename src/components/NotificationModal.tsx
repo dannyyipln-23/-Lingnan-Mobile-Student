@@ -1,51 +1,54 @@
 import React from 'react';
 import { X, Bell, Award, BookOpen, AlertTriangle, Calendar } from 'lucide-react';
 
+export type NotificationKind = 'award' | 'library' | 'exam' | 'alert' | 'study';
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  desc: string;
+  time: string;
+  kind: NotificationKind;
+  isRead: boolean;
+}
+
 interface NotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  notifications: AppNotification[];
+  onMarkAllRead: () => void;
 }
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
   isOpen,
   onClose,
+  notifications,
+  onMarkAllRead,
 }) => {
   if (!isOpen) return null;
 
-  const notifications = [
-    {
-      id: 'n1',
-      title: 'ILP Units Approved & Credited',
-      desc: 'Your participation in "Lingnan Centenary Campus Heritage Tour" has been verified and awarded 3 Civic Education units.',
-      time: '10 mins ago',
+  const iconMap: Record<NotificationKind, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
+    award: {
       icon: Award,
       color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     },
-    {
-      id: 'n2',
-      title: 'Library Book Due Date Reminder',
-      desc: 'Borrowed book "Principles of Risk Management" is due in 3 days. You can renew online via 1-Search.',
-      time: '2 hours ago',
+    library: {
       icon: BookOpen,
       color: 'text-amber-600 bg-amber-50 border-amber-200',
     },
-    {
-      id: 'n3',
-      title: 'Term 1 Final Exam Timetable Released',
-      desc: 'The Registry has published the final examination venues and schedule on the myLingnan portal.',
-      time: '1 day ago',
+    exam: {
       icon: Calendar,
       color: 'text-blue-600 bg-blue-50 border-blue-200',
     },
-    {
-      id: 'n4',
-      title: 'Campus Weather & Transit Alert',
-      desc: 'Standby Signal No. 1 is in effect. All classes and Siu Hong MTR campus shuttle bus services remain normal.',
-      time: '1 day ago',
+    alert: {
       icon: AlertTriangle,
       color: 'text-red-600 bg-red-50 border-red-200',
     },
-  ];
+    study: {
+      icon: Bell,
+      color: 'text-violet-700 bg-violet-50 border-violet-200',
+    },
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -75,13 +78,16 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
         <div className="space-y-2.5">
           {notifications.map((item) => {
-            const Icon = item.icon;
+            const meta = iconMap[item.kind];
+            const Icon = meta.icon;
             return (
               <div
                 key={item.id}
-                className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-start space-x-3"
+                className={`p-3 rounded-2xl border flex items-start space-x-3 ${
+                  item.isRead ? 'bg-slate-50 border-slate-200' : 'bg-white border-red-200'
+                }`}
               >
-                <div className={`p-2 rounded-xl border shrink-0 ${item.color}`}>
+                <div className={`p-2 rounded-xl border shrink-0 ${meta.color}`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0 space-y-0.5">
@@ -104,7 +110,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            onMarkAllRead();
+            onClose();
+          }}
           className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition border border-slate-200"
         >
           Mark All as Read

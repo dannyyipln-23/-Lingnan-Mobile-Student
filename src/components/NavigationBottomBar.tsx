@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, Calendar, Compass, Settings } from 'lucide-react';
+import { Home, Calendar, Compass, Settings, CalendarDays } from 'lucide-react';
 
-export type TabType = 'home' | 'timetable' | 'campus' | 'setting';
+export type TabType = 'home' | 'calendar' | 'campus' | 'setting';
 
 interface NavigationBottomBarProps {
   activeTab: TabType;
@@ -19,8 +19,8 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
       icon: Home,
     },
     {
-      id: 'timetable' as TabType,
-      label: 'Timetable',
+      id: 'calendar' as TabType,
+      label: 'Calendar',
       icon: Calendar,
     },
     {

@@ -23,6 +23,7 @@ import { useAppPreferences } from '../context/AppPreferencesContext';
 
 interface CampusLifeTabProps {
   onOpenLibraryModal: () => void;
+  onOpenEventsPage: () => void;
 }
 
 const EXTERNAL_URLS: Record<string, string> = {
@@ -32,7 +33,7 @@ const EXTERNAL_URLS: Record<string, string> = {
   'Wayfinding System': 'https://map.ln.edu.hk/',
 };
 
-export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal }) => {
+export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal, onOpenEventsPage }) => {
   const { openInAppBrowser } = useAppPreferences();
   const [activeAcademicPage, setActiveAcademicPage] = useState<AcademicSystemKey | null>(null);
 
@@ -113,6 +114,85 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
     [],
   );
 
+  const groupedJourney = [
+    {
+      id: 'course',
+      title: 'Course',
+      accent: 'border-red-200 bg-red-50 text-red-700',
+      items: [
+        {
+          id: 'course-outline',
+          label: 'Course outline and curriculum overview',
+          icon: BookOpen,
+          onClick: () => setActiveAcademicPage('my-class-schedule'),
+        },
+        {
+          id: 'enrolled-courses',
+          label: 'Enrolled courses and class schedule',
+          icon: Calendar,
+          onClick: () => setActiveAcademicPage('my-class-schedule'),
+        },
+      ],
+    },
+    {
+      id: 'assignment',
+      title: 'Assignment',
+      accent: 'border-blue-200 bg-blue-50 text-blue-700',
+      items: [
+        {
+          id: 'moodle-assignments',
+          label: 'Moodle assignments dashboard (API source)',
+          icon: School,
+          onClick: () => openInAppBrowser(EXTERNAL_URLS['Lingnan LMS (Moodle)'], 'Moodle Assignments'),
+        },
+        {
+          id: 'moodle-submissions',
+          label: 'Moodle submission status and due tasks',
+          icon: FileText,
+          onClick: () => openInAppBrowser(EXTERNAL_URLS['Lingnan LMS (Moodle)'], 'Moodle Submission Status'),
+        },
+      ],
+    },
+    {
+      id: 'exam',
+      title: 'Examation',
+      accent: 'border-amber-200 bg-amber-50 text-amber-700',
+      items: [
+        {
+          id: 'exam-timetable',
+          label: 'My exam timetable and arrangements',
+          icon: GraduationCap,
+          onClick: () => setActiveAcademicPage('my-exam-timetable'),
+        },
+        {
+          id: 'early-grade-release',
+          label: 'Early grade release information',
+          icon: ExternalLink,
+          onClick: () => setActiveAcademicPage('early-grade-release'),
+        },
+      ],
+    },
+    {
+      id: 'grade',
+      title: 'Academic results',
+      accent: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+      items: [
+        {
+          id: 'academic-results',
+          label: 'My academic results and GPA summary',
+          icon: Landmark,
+          onClick: () => setActiveAcademicPage('my-academic-results'),
+        },
+        {
+          id: 'degree-works',
+          label: 'Graduation and degree works progress',
+          icon: Route,
+          onClick: () => setActiveAcademicPage('my-graduation-requirements'),
+        },
+      ],
+    },
+  ];
+
   if (activeAcademicPage) {
     const closePage = () => setActiveAcademicPage(null);
 
@@ -143,80 +223,50 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
   return (
     <div className="page-shell page-shell--campus space-y-3">
       <div className="px-0.5">
-        <h2 className="text-lg font-bold text-slate-900">Campus Applications Hub</h2>
+        <h2 className="text-lg font-bold text-slate-900">Campus Life Journey</h2>
         <p className="text-xs text-slate-600">
-          Grouped systems and services for academics, admin and campus life
+          Grouped path: course details, assignments, exams, and grades
         </p>
       </div>
 
-      <div className={sectionClass}>
-        <h3 className={sectionTitleClass}>Pinned tools</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveAcademicPage('my-class-schedule')}
-            className={itemButtonClass}
-          >
-            <div className="flex items-start space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-700 border border-red-200 flex items-center justify-center shrink-0">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">My Class Schedule</p>
-                <p className="text-[11px] text-slate-500">Quick academic view</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => openInAppBrowser(EXTERNAL_URLS['Wayfinding System'], 'Wayfinding')}
-            className={itemButtonClass}
-          >
-            <div className="flex items-start space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center shrink-0">
-                <Route className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Wayfinding</p>
-                <p className="text-[11px] text-slate-500">Opens campus map</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenLibraryModal}
-            className={itemButtonClass}
-          >
-            <div className="flex items-start space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
-                <Library className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Library booking</p>
-                <p className="text-[11px] text-slate-500">Open seat booking modal</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveAcademicPage('my-graduation-requirements')}
-            className={itemButtonClass}
-          >
-            <div className="flex items-start space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-fuchsia-100 text-fuchsia-700 border border-fuchsia-200 flex items-center justify-center shrink-0">
-                <GraduationCap className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Graduation progress</p>
-                <p className="text-[11px] text-slate-500">Requirements overview</p>
-              </div>
-            </div>
-          </button>
+      <section className={sectionClass}>
+        <div className="flex items-center justify-between mb-2.5">
+          <h3 className={sectionTitleClass}>Academic journey</h3>
         </div>
-      </div>
+
+        <div className="space-y-2">
+          {groupedJourney.map((group) => (
+            <div key={group.id} className="rounded-xl border border-slate-200 bg-white p-2.5">
+              <div className={`mb-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${group.accent}`}>
+                {group.title}
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onClick}
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-left hover:bg-slate-100 transition"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="inline-flex min-w-0 items-center gap-2">
+                          <div className="h-7 w-7 shrink-0 rounded-lg border border-slate-200 bg-white text-slate-700 flex items-center justify-center">
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-800 leading-snug">{item.label}</span>
+                        </div>
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {appGroups.map((group) => {
         const Icon = group.icon;
@@ -242,10 +292,11 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
               {group.items.map((item) => {
                 const pageKey = group.id === 'academic' ? academicPageMap[item] : undefined;
                 const externalUrl = group.id === 'external' ? EXTERNAL_URLS[item] : undefined;
+                const isEventManagementSystem = group.id === 'campus' && item === 'Event Management System';
                 const isDisabled =
                   (group.id === 'academic' && !pageKey) ||
                   group.id === 'admin' ||
-                  group.id === 'campus' ||
+                  (group.id === 'campus' && !isEventManagementSystem) ||
                   (group.id === 'external' && !externalUrl);
 
                 return (
@@ -256,6 +307,10 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenLibraryModal
                     onClick={() => {
                       if (pageKey) {
                         setActiveAcademicPage(pageKey);
+                        return;
+                      }
+                      if (isEventManagementSystem) {
+                        onOpenEventsPage();
                         return;
                       }
                       if (externalUrl) {

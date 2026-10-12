@@ -27,8 +27,8 @@ export const HOME_SHORTCUT_OPTIONS: Array<{
   },
   {
     id: 'campus-apps',
-    label: 'Campus Apps',
-    description: 'Open Campus functions hub',
+    label: 'Services',
+    description: 'Open Student Life & Services hub',
   },
   {
     id: 'wayfinding',
@@ -43,7 +43,7 @@ export const HOME_SHORTCUT_OPTIONS: Array<{
   {
     id: 'exam-timetable',
     label: 'Exam Timetable',
-    description: 'Jump to exam related functions via Campus',
+    description: 'Jump to exam related functions via Academic',
   },
   {
     id: 'graduation-progress',

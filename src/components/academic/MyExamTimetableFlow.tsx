@@ -154,7 +154,7 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
       }
       theme="exam"
       onBack={handleBack}
-      backLabel={step === 'term' ? 'Campus' : 'Back'}
+      backLabel={step === 'term' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

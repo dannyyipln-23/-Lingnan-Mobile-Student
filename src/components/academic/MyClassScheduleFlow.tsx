@@ -143,7 +143,7 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       }
       theme="schedule"
       onBack={handleBack}
-      backLabel={step === 'term' ? 'Campus' : 'Back'}
+      backLabel={step === 'term' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

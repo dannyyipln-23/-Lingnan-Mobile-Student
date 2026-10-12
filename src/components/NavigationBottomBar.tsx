@@ -1,7 +1,13 @@
 import React from 'react';
-import { Home, Calendar, Compass, Settings, CalendarDays } from 'lucide-react';
+import {
+  CalendarDays,
+  Compass,
+  GraduationCap,
+  Home,
+  Settings,
+} from 'lucide-react';
 
-export type TabType = 'home' | 'calendar' | 'events' | 'campus' | 'setting';
+export type TabType = 'home' | 'calendar' | 'academic' | 'campus' | 'events' | 'setting';
 
 interface NavigationBottomBarProps {
   activeTab: TabType;
@@ -21,11 +27,16 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
     {
       id: 'calendar' as TabType,
       label: 'Calendar',
-      icon: Calendar,
+      icon: CalendarDays,
+    },
+    {
+      id: 'academic' as TabType,
+      label: 'Academic',
+      icon: GraduationCap,
     },
     {
       id: 'campus' as TabType,
-      label: 'Campus',
+      label: 'Services',
       icon: Compass,
     },
     {
@@ -38,7 +49,7 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
 
   return (
     <nav className="z-40 shrink-0 border-t border-slate-200 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur-md">
-      <div className="grid grid-cols-4 gap-0 px-1 py-1">
+      <div className="grid grid-cols-5 gap-0 px-0.5 py-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -52,7 +63,7 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
               }`}
             >
               {tab.highlight && !isActive && (
-                <span className="absolute right-[28%] top-1 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white" />
+                <span className="absolute right-[22%] top-1 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white" />
               )}
               <div
                 className={`rounded-xl p-1.5 transition-all ${
@@ -63,7 +74,7 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <span className="max-w-full truncate px-0.5 text-[10px] leading-none tracking-tight">
+              <span className="max-w-full truncate px-0.5 text-[9px] leading-none tracking-tight">
                 {tab.label}
               </span>
             </button>

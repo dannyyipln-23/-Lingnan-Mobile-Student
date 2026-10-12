@@ -141,7 +141,7 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
       }
       theme="early"
       onBack={handleBack}
-      backLabel={step === 'term' ? 'Campus' : 'Back'}
+      backLabel={step === 'term' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

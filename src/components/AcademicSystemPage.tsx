@@ -342,7 +342,7 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
           className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-600"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Campus</span>
+          <span>Back to Academic</span>
         </button>
       </div>
 

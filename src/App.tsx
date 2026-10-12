@@ -5,6 +5,7 @@ import { NavigationBottomBar, TabType } from './components/NavigationBottomBar';
 import { HomeTab } from './components/HomeTab';
 import { TimetableTab } from './components/TimetableTab';
 import { EventsTab } from './components/EventsTab';
+import { AcademicTab } from './components/AcademicTab';
 import { CampusLifeTab } from './components/CampusLifeTab';
 import { SettingsTab } from './components/SettingsTab.tsx';
 import { LibraryBookingModal } from './components/LibraryBookingModal';
@@ -97,6 +98,8 @@ export default function App() {
         )}
 
         {activeTab === 'events' && <EventsTab />}
+
+        {activeTab === 'academic' && <AcademicTab />}
 
         {activeTab === 'campus' && (
           <CampusLifeTab

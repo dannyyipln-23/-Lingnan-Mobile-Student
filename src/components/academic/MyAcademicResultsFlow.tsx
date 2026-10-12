@@ -137,7 +137,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
       subtitle={subtitle}
       theme="results"
       onBack={handleBack}
-      backLabel={step === 'term' ? 'Campus' : 'Back'}
+      backLabel={step === 'term' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

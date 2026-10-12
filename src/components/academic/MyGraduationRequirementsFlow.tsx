@@ -132,7 +132,7 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
       }
       theme="graduation"
       onBack={handleBack}
-      backLabel={step === 'overview' ? 'Campus' : 'Back'}
+      backLabel={step === 'overview' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

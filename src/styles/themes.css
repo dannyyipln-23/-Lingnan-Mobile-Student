@@ -199,6 +199,11 @@ html {
   --page-bg-via: #f8fafc;
 }
 
+.page-shell--academic {
+  --page-bg-from: #fee2e2;
+  --page-bg-via: #f8fafc;
+}
+
 .page-shell--timetable {
   --page-bg-from: #ffedd5;
   --page-bg-via: #f8fafc;

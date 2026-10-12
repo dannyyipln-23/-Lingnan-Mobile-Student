@@ -189,7 +189,7 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
       }
       theme="elgr"
       onBack={handleBack}
-      backLabel={step === 'overview' ? 'Campus' : 'Back'}
+      backLabel={step === 'overview' ? 'Academic' : 'Back'}
       stepIndex={stepIndexMap[step]}
       stepCount={3}
     >

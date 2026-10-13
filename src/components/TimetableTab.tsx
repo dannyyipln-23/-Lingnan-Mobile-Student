@@ -154,6 +154,17 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
     [activeMonth, activeYear, selectedWeek],
   );
 
+  const weekRangeLabel = useMemo(() => {
+    const start = weekDays[0]?.date;
+    const end = weekDays[6]?.date;
+    if (!start || !end) {
+      return '';
+    }
+    const formatDay = (date: Date) =>
+      new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+    return `${formatDay(start)} – ${formatDay(end)}`;
+  }, [weekDays]);
+
   const monthCells = useMemo(() => {
     const gridStart = getMonthGridStart(activeYear, activeMonth);
 
@@ -199,6 +210,15 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
     setSelectedWeek(1);
     setSelectedDay(1);
     setSelectedDate(nextDate);
+  };
+
+  const handleShiftWeek = (offset: number) => {
+    const nextDate = new Date(selectedDate);
+    nextDate.setDate(selectedDate.getDate() + offset * 7);
+    setSelectedDate(nextDate);
+    setSelectedDay(mapJsDayToAcademicDay(nextDate.getDay()));
+    setSelectedWeek(getWeekOfMonth(nextDate));
+    setCalendarAnchor(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
   };
 
   const handleToggleTask = (id: string) => {
@@ -292,30 +312,31 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
 
         {viewMode === 'week' ? (
           <>
-            <div className="grid grid-cols-6 gap-1.5">
-              {[1, 2, 3, 4, 5, 6].map((week) => {
-                const isSelected = selectedWeek === week;
-                return (
-                  <button
-                    key={week}
-                    type="button"
-                    onClick={() => handleSelectDay(week, selectedDay)}
-                    className={`py-1.5 rounded-lg text-xs font-semibold border transition ${
-                      isSelected
-                        ? 'bg-red-50 border-red-200 text-red-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                    }`}
-                  >
-                    Week {week}
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1">
+              <button
+                type="button"
+                onClick={() => handleShiftWeek(-1)}
+                className="rounded-md p-1.5 text-slate-600 hover:bg-white hover:text-slate-900"
+                aria-label="Previous week"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <p className="min-w-0 flex-1 text-center text-xs font-semibold text-slate-800">
+                {weekRangeLabel}
+              </p>
+              <button
+                type="button"
+                onClick={() => handleShiftWeek(1)}
+                className="rounded-md p-1.5 text-slate-600 hover:bg-white hover:text-slate-900"
+                aria-label="Next week"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
 
             <div className="grid grid-cols-7 gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-200">
               {weekDays.map((item) => {
                 const isSelected = selectedDay === item.day;
-                const count = COURSES.filter((c) => c.dayOfWeek === item.day).length;
 
                 return (
                   <button

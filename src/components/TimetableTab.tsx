@@ -439,9 +439,9 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
               </div>
 
               <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2">
-                <span className="text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                {/* <span className="text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
                   Attendance: {course.attendanceRate}%
-                </span>
+                </span> */}
                 <span className="text-red-600 font-medium flex items-center space-x-0.5">
                   <span>Course Details</span>
                   <ChevronRight className="w-3 h-3" />
@@ -494,14 +494,14 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
                 </div>
               </div>
 
-              <div className="p-3 bg-red-50/60 rounded-xl space-y-1 border border-red-100">
+              {/* <div className="p-3 bg-red-50/60 rounded-xl space-y-1 border border-red-100">
                 <span className="font-bold text-red-700 block">
                   Campus Navigation Tip
                 </span>
                 <p className="text-slate-600 text-[11px] leading-relaxed">
                   Head to {activeCourse.building}, take the central lift to the designated floor. Tap your Student e-Card at the entrance reader to register attendance.
                 </p>
-              </div>
+              </div> */}
             </div>
 
             <button

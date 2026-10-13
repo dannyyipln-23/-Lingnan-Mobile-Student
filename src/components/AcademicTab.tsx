@@ -172,7 +172,6 @@ export const AcademicTab: React.FC = () => {
   return (
     <div className="page-shell page-shell--academic space-y-3">
       <div className="px-0.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Academic</p>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">Academic Dashboard</h2>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">
           Track your courses, exams, and academic standing.

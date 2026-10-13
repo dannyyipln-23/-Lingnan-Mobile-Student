@@ -71,9 +71,6 @@ export const CampusLifeTab: React.FC<CampusLifeTabProps> = ({ onOpenEventsPage }
   return (
     <div className="page-shell page-shell--campus space-y-3">
       <div className="px-0.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
-          Student Services
-        </p>
         <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">
           Student Life & Services
         </h2>

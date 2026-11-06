@@ -1,26 +1,21 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Bell,
-  Calendar,
+  Bus,
   Check,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
   Globe,
-  GraduationCap,
-  LayoutGrid,
-  Library,
   Lock,
-  Map,
-  Notebook,
   Type,
   UserRound,
 } from 'lucide-react';
 import { CURRENT_STUDENT } from '../data/mockData';
 import {
   FontSizeOption,
-  HOME_SHORTCUT_OPTIONS,
-  HomeShortcutId,
+  HOME_TRANSPORT_OPTIONS,
+  HomeTransportRouteId,
   useAppPreferences,
 } from '../context/AppPreferencesContext';
 
@@ -70,34 +65,21 @@ const fontSizeOptions: Array<{ id: FontSizeOption; label: string; sample: string
 ];
 
 export const SettingsTab: React.FC = () => {
-  const { fontSize, setFontSize, homeShortcuts, setHomeShortcuts } = useAppPreferences();
-  const [settingsPage, setSettingsPage] = useState<'main' | 'shortcuts'>('main');
+  const { fontSize, setFontSize, homeTransportRoutes, setHomeTransportRoutes } = useAppPreferences();
+  const [settingsPage, setSettingsPage] = useState<'main' | 'transport'>('main');
 
-  const shortcutIconMap = useMemo<Record<HomeShortcutId, React.ComponentType<{ className?: string }>>>(
-    () => ({
-      calendar: Calendar,
-      'book-seat': Library,
-      'campus-apps': LayoutGrid,
-      wayfinding: Map,
-      'moodle-assignments': Notebook,
-      'exam-timetable': Bell,
-      'graduation-progress': GraduationCap,
-    }),
-    [],
-  );
-
-  const toggleShortcut = (shortcutId: HomeShortcutId) => {
-    if (homeShortcuts.includes(shortcutId)) {
-      if (homeShortcuts.length <= 1) return;
-      setHomeShortcuts(homeShortcuts.filter((item) => item !== shortcutId));
+  const toggleTransportRoute = (routeId: HomeTransportRouteId) => {
+    if (homeTransportRoutes.includes(routeId)) {
+      if (homeTransportRoutes.length <= 1) return;
+      setHomeTransportRoutes(homeTransportRoutes.filter((item) => item !== routeId));
       return;
     }
 
-    if (homeShortcuts.length >= 6) return;
-    setHomeShortcuts([...homeShortcuts, shortcutId]);
+    if (homeTransportRoutes.length >= 4) return;
+    setHomeTransportRoutes([...homeTransportRoutes, routeId]);
   };
 
-  if (settingsPage === 'shortcuts') {
+  if (settingsPage === 'transport') {
     return (
       <div className="page-shell page-shell--settings space-y-4">
         <div className="px-1">
@@ -109,32 +91,29 @@ export const SettingsTab: React.FC = () => {
             <ChevronLeft className="h-3.5 w-3.5" />
             Back to Settings
           </button>
-          <h2 className="mt-2 text-lg font-bold text-[var(--text-primary)]">Home Shortcuts</h2>
+          <h2 className="mt-2 text-lg font-bold text-[var(--text-primary)]">Home Transport</h2>
           <p className="text-xs text-[var(--text-muted)]">
-            Choose 1 to 6 shortcuts from campus functions and core app actions.
+            Choose 1 to 4 routes to preview on the Home page (for example Route K51).
           </p>
         </div>
 
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
-              Selected: {homeShortcuts.length} / 6
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
+              Selected: {homeTransportRoutes.length} / 4
             </p>
-            <p className="text-[10px] text-[var(--text-muted)]">
-              At least 1 shortcut required
-            </p>
+            <p className="text-[10px] text-[var(--text-muted)]">At least 1 route required</p>
           </div>
 
           <div className="space-y-2">
-            {HOME_SHORTCUT_OPTIONS.map((option) => {
-              const Icon = shortcutIconMap[option.id];
-              const selected = homeShortcuts.includes(option.id);
+            {HOME_TRANSPORT_OPTIONS.map((option) => {
+              const selected = homeTransportRoutes.includes(option.id);
 
               return (
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => toggleShortcut(option.id)}
+                  onClick={() => toggleTransportRoute(option.id)}
                   className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
                     selected
                       ? 'border-[var(--brand)] bg-[var(--brand-soft)]'
@@ -144,11 +123,13 @@ export const SettingsTab: React.FC = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="inline-flex min-w-0 items-center gap-2.5">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]">
-                        <Icon className="h-4 w-4" />
+                        <Bus className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-[var(--text-primary)]">{option.label}</p>
-                        <p className="text-[11px] text-[var(--text-muted)]">{option.description}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">
+                          {option.provider} · {option.description}
+                        </p>
                       </div>
                     </div>
                     <div
@@ -177,7 +158,7 @@ export const SettingsTab: React.FC = () => {
         <p className="text-xs text-[var(--text-muted)]">Account, privacy and app preferences</p>
       </div>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs">
+      {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs">
         <div className="flex items-center space-x-3.5">
           <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] shadow-xs ring-2 ring-[var(--brand)]/20">
             <img
@@ -202,7 +183,7 @@ export const SettingsTab: React.FC = () => {
             <p className="truncate text-xs text-[var(--text-muted)]">{CURRENT_STUDENT.major}</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
         <div className="mb-3 flex items-start gap-3">
@@ -240,20 +221,16 @@ export const SettingsTab: React.FC = () => {
       </section>
 
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setSettingsPage('shortcuts')}
-          className="w-full text-left"
-        >
+        <button type="button" onClick={() => setSettingsPage('transport')} className="w-full text-left">
           <div className="flex items-center justify-between">
             <div className="inline-flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-                <LayoutGrid className="h-4 w-4" />
+                <Bus className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[var(--text-primary)]">Home shortcut preferences</p>
+                <p className="text-sm font-bold text-[var(--text-primary)]">Home transport preferences</p>
                 <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                  Select which campus and app functions appear in Student Shortcuts.
+                  Pick which routes appear on Home (K51, 67M, MTR, and more).
                 </p>
               </div>
             </div>
@@ -273,7 +250,7 @@ export const SettingsTab: React.FC = () => {
               disabled={isDisabled}
               className={`w-full rounded-2xl border border-[var(--border)] p-3.5 text-left transition ${
                 isDisabled
-                  ? 'bg-[var(--surface)] opacity-60 cursor-not-allowed'
+                  ? 'cursor-not-allowed bg-[var(--surface)] opacity-60'
                   : 'bg-[var(--surface)] hover:bg-[var(--surface-muted)]'
               }`}
             >
@@ -281,7 +258,7 @@ export const SettingsTab: React.FC = () => {
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
                   <Icon className="h-4 w-4" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-[var(--text-primary)]">{item.title}</p>
                   <p className="mt-0.5 text-xs text-[var(--text-muted)]">{item.desc}</p>
                 </div>

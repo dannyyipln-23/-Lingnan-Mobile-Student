@@ -200,3 +200,102 @@ export const CAMPUS_FACILITIES: CampusFacility[] = [
     totalSeats: 60,
   },
 ];
+
+/** Demo “today” used by Calendar + Home notices (aligned). */
+export const CALENDAR_DEMO_TODAY = '2026-09-08';
+
+export type StudyTaskSource = 'moodle' | 'personal';
+
+export type StudyTaskItem = {
+  id: string;
+  text: string;
+  reminderDateTime: string;
+  done: boolean;
+  dateKey: string;
+  source: StudyTaskSource;
+};
+
+/** Shared Calendar Moodle / personal tasks — Home notices read from today’s items. */
+export const STUDY_TASKS: StudyTaskItem[] = [
+  {
+    id: 't1',
+    text: 'RIM2201 Case Study on Climate Risk Insurance',
+    reminderDateTime: `${CALENDAR_DEMO_TODAY}T23:59`,
+    done: false,
+    dateKey: CALENDAR_DEMO_TODAY,
+    source: 'moodle',
+  },
+  {
+    id: 't2',
+    text: 'CDS2001 Python Pandas assignment submission',
+    reminderDateTime: '2026-09-02T17:00',
+    done: true,
+    dateKey: '2026-09-02',
+    source: 'moodle',
+  },
+  {
+    id: 't3',
+    text: 'Review lecture notes before tutorial',
+    reminderDateTime: `${CALENDAR_DEMO_TODAY}T20:00`,
+    done: false,
+    dateKey: CALENDAR_DEMO_TODAY,
+    source: 'personal',
+  },
+];
+
+export const todaysMoodleTasks = (): StudyTaskItem[] =>
+  STUDY_TASKS.filter((task) => task.source === 'moodle' && task.dateKey === CALENDAR_DEMO_TODAY);
+
+export const todaysPersonalReminders = (): StudyTaskItem[] =>
+  STUDY_TASKS.filter((task) => task.source === 'personal' && task.dateKey === CALENDAR_DEMO_TODAY);
+
+export type HomeNoticeKind = 'efees' | 'moodle' | 'custom';
+
+export type HomeImportantNotice = {
+  id: string;
+  kind: HomeNoticeKind;
+  title: string;
+  message: string;
+  timeLabel: string;
+  href?: string;
+  /** In-app page action (takes priority over href when set). */
+  action?: 'efees' | 'calendar';
+};
+
+const moodleCourseCode = (text: string): string => {
+  const match = text.match(/^[A-Z]{2,4}\d{3,4}/);
+  return match?.[0] ?? 'Moodle';
+};
+
+const formatTaskDueLabel = (reminderDateTime: string): string => {
+  const time = reminderDateTime.split('T')[1] ?? '';
+  return time ? `Due today ${time}` : 'Due today';
+};
+
+/** Home “Important Notices” strip under Upcoming Class. */
+export const HOME_IMPORTANT_NOTICES: HomeImportantNotice[] = [
+  {
+    id: 'notice-efees-1',
+    kind: 'efees',
+    title: 'eFees Note',
+    message: 'eTuition Fee Note TE3310717T202609R1 — Overdue. Please pay immediately.',
+    timeLabel: 'Due 18 May 2026',
+    action: 'efees',
+  },
+  ...todaysMoodleTasks().map((task) => ({
+    id: `notice-moodle-${task.id}`,
+    kind: 'moodle' as const,
+    title: moodleCourseCode(task.text),
+    message: task.text,
+    timeLabel: formatTaskDueLabel(task.reminderDateTime),
+    href: 'https://lms.ln.edu.hk/',
+  })),
+  ...todaysPersonalReminders().map((task) => ({
+    id: `notice-personal-${task.id}`,
+    kind: 'custom' as const,
+    title: 'Reminder',
+    message: task.text,
+    timeLabel: formatTaskDueLabel(task.reminderDateTime),
+    action: 'calendar' as const,
+  })),
+];

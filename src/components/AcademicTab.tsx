@@ -3,16 +3,16 @@ import {
   BookOpen,
   Calendar,
   ChevronRight,
+  ClipboardCheck,
   ClipboardList,
   ExternalLink,
   FileText,
   GraduationCap,
   Landmark,
-  Lock,
   Route,
   School,
 } from 'lucide-react';
-import { AcademicSystemKey, AcademicSystemPage } from './AcademicSystemPage';
+import { AcademicSystemKey } from './AcademicSystemPage';
 import { EarlyGradeReleaseFlow } from './academic/EarlyGradeReleaseFlow';
 import { ElgrExtensionFlow } from './academic/ElgrExtensionFlow';
 import { MyAcademicResultsFlow } from './academic/MyAcademicResultsFlow';
@@ -21,128 +21,178 @@ import { MyExamTimetableFlow } from './academic/MyExamTimetableFlow';
 import { MyGraduationRequirementsFlow } from './academic/MyGraduationRequirementsFlow';
 import { useAppPreferences } from '../context/AppPreferencesContext';
 
-const MOODLE_URL = 'https://lms.ln.edu.hk';
+type AcademicAction =
+  | { type: 'flow'; key: AcademicSystemKey }
+  | { type: 'url'; href: string };
+
+type JourneyItem = {
+  id: string;
+  label: string;
+  icon: typeof BookOpen;
+  action: AcademicAction;
+};
+
+type JourneyGroup = {
+  id: string;
+  title: string;
+  hint: string;
+  accent: string;
+  items: JourneyItem[];
+};
 
 export const AcademicTab: React.FC = () => {
   const { openInAppBrowser } = useAppPreferences();
   const [activeAcademicPage, setActiveAcademicPage] = useState<AcademicSystemKey | null>(null);
 
-  const sectionClass = 'rounded-2xl bg-white border border-slate-200 p-3 shadow-sm';
-  const itemButtonClass =
-    'w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-left hover:bg-slate-100 transition';
-  const disabledButtonClass =
-    'w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-left opacity-60 cursor-not-allowed';
-
-  const academicSystems = [
-    'Academic Record Application System',
-    'My Academic Results',
-    'My Graduation Requirements',
-    'My Class Schedule',
-    'My Exam Timetable',
-    'Student Exam Timetable',
-    'Student Graduation Information',
-    'Early Grade Release',
-    'ELGR Extension System',
-    'Accessing CTLE Scores',
-    'Degree Works',
-    'Degree Works - Student Information Dashboard',
-  ];
-
-  const academicPageMap = useMemo<Record<string, AcademicSystemKey>>(
-    () => ({
-      'My Academic Results': 'my-academic-results',
-      'My Graduation Requirements': 'my-graduation-requirements',
-      'My Class Schedule': 'my-class-schedule',
-      'My Exam Timetable': 'my-exam-timetable',
-      'Student Exam Timetable': 'my-exam-timetable',
-      'Early Grade Release': 'early-grade-release',
-      'ELGR Extension System': 'elgr-extension-system',
-    }),
+  const groupedJourney = useMemo<JourneyGroup[]>(
+    () => [
+      {
+        id: 'course-information',
+        title: 'Course Information',
+        hint: 'Outline, registration, degree audit, and schedule',
+        accent: '#b91c1c',
+        items: [
+          {
+            id: 'course-outline',
+            label: 'Course Outline',
+            icon: BookOpen,
+            action: { type: 'url', href: 'https://webapp.ln.edu.hk/sys/depository/' },
+          },
+          {
+            id: 'course-registration',
+            label: 'Course Registration',
+            icon: School,
+            action: {
+              type: 'url',
+              href: 'https://banner.ln.edu.hk:8443/ssomanager/c/SSB?pkg=usr_registration.redirect',
+            },
+          },
+          {
+            id: 'degree-works',
+            label: 'Degree Works',
+            icon: Route,
+            action: { type: 'url', href: 'https://academicp6.ln.edu.hk:8445' },
+          },
+          {
+            id: 'my-class-schedule',
+            label: 'My Class Schedule',
+            icon: Calendar,
+            action: { type: 'flow', key: 'my-class-schedule' },
+          },
+        ],
+      },
+      {
+        id: 'assignment',
+        title: 'Assignment',
+        hint: 'Moodle tasks, deadlines, and submissions',
+        accent: '#1d4ed8',
+        items: [
+          {
+            id: 'moodle-assignments',
+            label: 'Assignments dashboard',
+            icon: ClipboardList,
+            action: { type: 'url', href: 'https://lms.ln.edu.hk/' },
+          },
+          {
+            id: 'moodle-submissions',
+            label: 'Submission status & due tasks',
+            icon: FileText,
+            action: { type: 'url', href: 'https://lms.ln.edu.hk/' },
+          },
+        ],
+      },
+      {
+        id: 'examination',
+        title: 'Examination',
+        hint: 'Exam seats, venues, and early release',
+        accent: '#b45309',
+        items: [
+          {
+            id: 'early-grade-release',
+            label: 'Early Grade Release',
+            icon: ExternalLink,
+            action: { type: 'flow', key: 'early-grade-release' },
+          },
+          {
+            id: 'my-exam-timetable',
+            label: 'My Exam Timetable',
+            icon: GraduationCap,
+            action: { type: 'flow', key: 'my-exam-timetable' },
+          },
+        ],
+      },
+      {
+        id: 'online-application',
+        title: 'Online Application',
+        hint: 'Transcripts, approvals, CTLE, and ELGR',
+        accent: '#7c3aed',
+        items: [
+          {
+            id: 'testimonial-transcript',
+            label: 'Testimonial / Transcript',
+            icon: FileText,
+            action: { type: 'url', href: 'https://uniapp.ln.edu.hk/arms' },
+          },
+          {
+            id: 'special-approval',
+            label: 'Special Approval on Course Enrolment',
+            icon: ClipboardCheck,
+            action: { type: 'url', href: 'https://bannerapp.ln.edu.hk/aadc/' },
+          },
+          {
+            id: 'exemption-prerequisite',
+            label: 'Exemption of Prerequisite for Courses',
+            icon: FileText,
+            action: { type: 'url', href: 'https://bannerapp.ln.edu.hk/aepc/stud' },
+          },
+          {
+            id: 'ctle-scores',
+            label: 'Accessing CTLE Scores',
+            icon: Landmark,
+            action: {
+              type: 'url',
+              href: 'https://banner.ln.edu.hk:8443/ssomanager/c/SSB?pkg=usr_stu_ctle.apply',
+            },
+          },
+          {
+            id: 'elgr-extension',
+            label: 'ELGR Extension System',
+            icon: BookOpen,
+            action: { type: 'flow', key: 'elgr-extension-system' },
+          },
+        ],
+      },
+      {
+        id: 'academic-results',
+        title: 'Academic results',
+        hint: 'GPA summary and graduation checklist',
+        accent: '#047857',
+        items: [
+          {
+            id: 'my-academic-results',
+            label: 'My Academic Results',
+            icon: Landmark,
+            action: { type: 'flow', key: 'my-academic-results' },
+          },
+          {
+            id: 'my-graduation-requirements',
+            label: 'My Graduation Requirements',
+            icon: Route,
+            action: { type: 'flow', key: 'my-graduation-requirements' },
+          },
+        ],
+      },
+    ],
     [],
   );
 
-  const groupedJourney = [
-    {
-      id: 'course',
-      title: 'Course',
-      hint: 'Outline, enrolment, and weekly timetable',
-      accent: '#b91c1c',
-      items: [
-        {
-          id: 'course-outline',
-          label: 'Course outline & curriculum',
-          icon: BookOpen,
-          onClick: () => setActiveAcademicPage('my-class-schedule'),
-        },
-        {
-          id: 'enrolled-courses',
-          label: 'Enrolled courses & schedule',
-          icon: Calendar,
-          onClick: () => setActiveAcademicPage('my-class-schedule'),
-        },
-      ],
-    },
-    {
-      id: 'assignment',
-      title: 'Assignment',
-      hint: 'Moodle tasks, deadlines, and submissions',
-      accent: '#1d4ed8',
-      items: [
-        {
-          id: 'moodle-assignments',
-          label: 'Assignments dashboard',
-          icon: ClipboardList,
-          onClick: () => openInAppBrowser(MOODLE_URL, 'Moodle Assignments'),
-        },
-        {
-          id: 'moodle-submissions',
-          label: 'Submission status & due tasks',
-          icon: FileText,
-          onClick: () => openInAppBrowser(MOODLE_URL, 'Moodle Submission Status'),
-        },
-      ],
-    },
-    {
-      id: 'exam',
-      title: 'Examination',
-      hint: 'Exam seats, venues, and early release',
-      accent: '#b45309',
-      items: [
-        {
-          id: 'exam-timetable',
-          label: 'Exam timetable & venues',
-          icon: GraduationCap,
-          onClick: () => setActiveAcademicPage('my-exam-timetable'),
-        },
-        {
-          id: 'early-grade-release',
-          label: 'Early grade release',
-          icon: ExternalLink,
-          onClick: () => setActiveAcademicPage('early-grade-release'),
-        },
-      ],
-    },
-    {
-      id: 'grade',
-      title: 'Academic results',
-      hint: 'GPA summary and graduation checklist',
-      accent: '#047857',
-      items: [
-        {
-          id: 'academic-results',
-          label: 'Results & GPA summary',
-          icon: Landmark,
-          onClick: () => setActiveAcademicPage('my-academic-results'),
-        },
-        {
-          id: 'degree-works',
-          label: 'Graduation progress',
-          icon: Route,
-          onClick: () => setActiveAcademicPage('my-graduation-requirements'),
-        },
-      ],
-    },
-  ];
+  const runAction = (action: AcademicAction) => {
+    if (action.type === 'flow') {
+      setActiveAcademicPage(action.key);
+      return;
+    }
+    openInAppBrowser(action.href);
+  };
 
   if (activeAcademicPage) {
     const closePage = () => setActiveAcademicPage(null);
@@ -166,22 +216,22 @@ export const AcademicTab: React.FC = () => {
       return <MyGraduationRequirementsFlow onBack={closePage} />;
     }
 
-    return <AcademicSystemPage systemKey={activeAcademicPage} onBack={closePage} />;
+    return null;
   }
 
   return (
     <div className="page-shell page-shell--academic space-y-3">
       <div className="px-0.5">
-        <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">Academic Dashboard</h2>
+        <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">Academic Service</h2>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">
-          Track your courses, exams, and academic standing.
+          Track your courses, exams, applications, and academic standing.
         </p>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-3.5 shadow-sm backdrop-blur-sm">
         <div className="mb-3.5 flex items-end justify-between gap-2">
           <div>
-            <h3 className="text-sm font-bold tracking-tight text-slate-900">Academic Stages</h3>
+            <h3 className="text-sm font-bold tracking-tight text-slate-900">Academic Journey</h3>
           </div>
         </div>
 
@@ -203,18 +253,24 @@ export const AcademicTab: React.FC = () => {
                 <div className="mt-2.5 space-y-1.5">
                   {group.items.map((item) => {
                     const Icon = item.icon;
+                    const isExternal = item.action.type === 'url';
+
                     return (
                       <button
                         key={item.id}
                         type="button"
-                        onClick={item.onClick}
+                        onClick={() => runAction(item.action)}
                         className="journey-action"
                       >
                         <div className="journey-action__icon">
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <span className="journey-action__label">{item.label}</span>
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                        {isExternal ? (
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-blue-700" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                        )}
                       </button>
                     );
                   })}
@@ -222,50 +278,6 @@ export const AcademicTab: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className={sectionClass}>
-        <div className="mb-2.5 flex items-center justify-between">
-          <div className="inline-flex items-center space-x-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-700">
-              <School className="h-4 w-4" />
-            </div>
-            <h3 className="text-sm font-bold text-slate-900">Academic Systems</h3>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-1.5">
-          {academicSystems.map((item) => {
-            const pageKey = academicPageMap[item];
-            const isDisabled = !pageKey;
-
-            return (
-              <button
-                key={item}
-                type="button"
-                disabled={isDisabled}
-                onClick={() => {
-                  if (pageKey) {
-                    setActiveAcademicPage(pageKey);
-                  }
-                }}
-                className={isDisabled ? disabledButtonClass : itemButtonClass}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="inline-flex min-w-0 items-center gap-2">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
-                      <BookOpen className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-left text-xs font-semibold leading-snug text-slate-800">
-                      {item}
-                    </span>
-                  </div>
-                  {isDisabled ? <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" /> : null}
-                </div>
-              </button>
-            );
-          })}
         </div>
       </section>
     </div>

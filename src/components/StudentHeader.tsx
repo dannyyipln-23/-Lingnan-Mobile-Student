@@ -1,13 +1,14 @@
 import React from 'react';
 import { Bell } from 'lucide-react';
-import { CURRENT_STUDENT } from '../data/mockData';
 
 interface StudentHeaderProps {
+  pageTitle: string;
   onOpenNotifications: () => void;
   unreadCount: number;
 }
 
 export const StudentHeader: React.FC<StudentHeaderProps> = ({
+  pageTitle,
   onOpenNotifications,
   unreadCount,
 }) => {
@@ -31,33 +32,22 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600" />
             </div>
             <h1 className="truncate text-sm font-extrabold leading-tight tracking-tight text-slate-900">
-              Student Mobile Portal
+              {pageTitle}
             </h1>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center space-x-2">
-          <button
-            type="button"
-            onClick={onOpenNotifications}
-            className="relative rounded-full border border-slate-200 bg-slate-50 p-2 text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Campus Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 h-2 w-2 animate-pulse rounded-full bg-red-600 ring-2 ring-white" />
-            )}
-          </button>
-
-          <div className="h-8 w-8 overflow-hidden rounded-full border border-slate-200 bg-slate-100 shadow-xs ring-2 ring-red-500/20">
-            <img
-              src={CURRENT_STUDENT.avatarUrl}
-              alt={CURRENT_STUDENT.fullName}
-              className="h-full w-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={onOpenNotifications}
+          className="relative shrink-0 rounded-full border border-slate-200 bg-slate-50 p-2 text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+          aria-label="Campus Notifications"
+        >
+          <Bell className="h-4 w-4" />
+          {unreadCount > 0 && (
+            <span className="absolute right-1 top-1 h-2 w-2 animate-pulse rounded-full bg-red-600 ring-2 ring-white" />
+          )}
+        </button>
       </div>
     </header>
   );

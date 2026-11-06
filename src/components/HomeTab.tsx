@@ -1,36 +1,33 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { 
-  BookOpen, 
-  Compass,
-  CloudLightning,
-  FileText,
-  Flame,
-  GraduationCap,
-  LayoutGrid,
-  MapPin, 
-  Route,
-  Snowflake,
-  Clock, 
-  CheckCircle2, 
-  Calendar,
-  SunMedium, 
-  Check,
-  Umbrella,
-  Wind,
-  AlertTriangle
-} from 'lucide-react';
-import { COURSES } from '../data/mockData';
-import { TabType } from './NavigationBottomBar';
+import React, { useEffect, useState } from 'react';
 import {
-  HOME_SHORTCUT_OPTIONS,
-  HomeShortcutId,
-  useAppPreferences,
-} from '../context/AppPreferencesContext';
-import emsBg from '../assets/images/ems-bg-1-768x360.jpg';
+  AlertTriangle,
+  Bell,
+  BookOpen,
+  Bus,
+  ChevronRight,
+  Clock,
+  CloudLightning,
+  Flame,
+  MapPin,
+  Snowflake,
+  SunMedium,
+  Umbrella,
+  Wallet,
+  Wind,
+} from 'lucide-react';
+import { COURSES, HOME_IMPORTANT_NOTICES, HomeNoticeKind } from '../data/mockData';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import {
+  fetchHomeTransportEtas,
+  HomeTransportEtaRow,
+} from '../lib/homeTransport';
+import { TabType } from './NavigationBottomBar';
+import homeBanner from '../assets/images/home_banner_1.jpg';
 
 interface HomeTabProps {
   onNavigate: (tab: TabType) => void;
   onOpenLibraryModal: () => void;
+  onOpenEfeesNotes?: () => void;
 }
 
 type PlaceReading = {
@@ -140,6 +137,35 @@ const getWarningIcon = (code: string): React.ComponentType<{ className?: string 
   return AlertTriangle;
 };
 
+const noticeMeta: Record<
+  HomeNoticeKind,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    chipClass: string;
+    cardClass: string;
+  }
+> = {
+  efees: {
+    label: 'eFees',
+    icon: Wallet,
+    chipClass: 'border-rose-200 bg-rose-50 text-rose-700',
+    cardClass: 'border-rose-100 bg-rose-50/40 hover:border-rose-200',
+  },
+  moodle: {
+    label: 'Moodle',
+    icon: BookOpen,
+    chipClass: 'border-indigo-200 bg-indigo-50 text-indigo-700',
+    cardClass: 'border-indigo-100 bg-indigo-50/40 hover:border-indigo-200',
+  },
+  custom: {
+    label: 'Reminder',
+    icon: Bell,
+    chipClass: 'border-amber-200 bg-amber-50 text-amber-800',
+    cardClass: 'border-amber-100 bg-amber-50/40 hover:border-amber-200',
+  },
+};
+
 const extractSpecialTip = (payload: unknown): string => {
   if (Array.isArray(payload) && payload.length > 0) {
     const first = payload[0] as Record<string, unknown>;
@@ -160,13 +186,10 @@ const extractSpecialTip = (payload: unknown): string => {
   return '';
 };
 
-export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal }) => {
-  const { homeShortcuts, openInAppBrowser } = useAppPreferences();
-  const [checkedInCourses, setCheckedInCourses] = useState<Record<string, boolean>>({
-    c1: true,
-  });
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isTipExpanded, setIsTipExpanded] = useState<boolean>(false);
+export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }) => {
+  const { homeTransportRoutes, openInAppBrowser } = useAppPreferences();
+  const [transportRows, setTransportRows] = useState<HomeTransportEtaRow[]>([]);
+  const [transportLoading, setTransportLoading] = useState<boolean>(true);
   const [weather, setWeather] = useState<HomeWeatherState>({
     temperatureC: null,
     humidityPct: null,
@@ -177,84 +200,50 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
     isLoading: true,
   });
 
-  const shortcutConfig = useMemo<Record<HomeShortcutId, {
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-    colorClass: string;
-    action: () => void;
-  }>>(
-    () => ({
-      calendar: {
-        label: 'Calendar',
-        icon: Calendar,
-        colorClass: 'bg-red-50 text-red-600 border-red-100',
-        action: () => onNavigate('calendar'),
-      },
-      'book-seat': {
-        label: 'Book Seat',
-        icon: BookOpen,
-        colorClass: 'bg-blue-50 text-blue-600 border-blue-100',
-        action: onOpenLibraryModal,
-      },
-      'campus-apps': {
-        label: 'Services',
-        icon: LayoutGrid,
-        colorClass: 'bg-amber-50 text-amber-600 border-amber-100',
-        action: () => onNavigate('campus'),
-      },
-      wayfinding: {
-        label: 'Wayfinding',
-        icon: Route,
-        colorClass: 'bg-sky-50 text-sky-600 border-sky-100',
-        action: () => openInAppBrowser('https://map.ln.edu.hk/', 'Wayfinding'),
-      },
-      'moodle-assignments': {
-        label: 'Moodle Tasks',
-        icon: FileText,
-        colorClass: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-        action: () => openInAppBrowser('https://lms.ln.edu.hk', 'Moodle Assignments'),
-      },
-      'exam-timetable': {
-        label: 'Exam Items',
-        icon: Compass,
-        colorClass: 'bg-purple-50 text-purple-600 border-purple-100',
-        action: () => onNavigate('academic'),
-      },
-      'graduation-progress': {
-        label: 'Grad Progress',
-        icon: GraduationCap,
-        colorClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        action: () => onNavigate('academic'),
-      },
-    }),
-    [onNavigate, onOpenLibraryModal, openInAppBrowser],
-  );
-
-  const selectedShortcutItems = useMemo(() => {
-    const validIds = homeShortcuts.length > 0
-      ? homeShortcuts
-      : HOME_SHORTCUT_OPTIONS.slice(0, 3).map((item) => item.id);
-    return validIds.slice(0, 6).map((id) => ({ id, ...shortcutConfig[id] }));
-  }, [homeShortcuts, shortcutConfig]);
-
-  const handleCheckIn = (courseId: string, courseCode: string) => {
-    setCheckedInCourses((prev) => ({ ...prev, [courseId]: true }));
-    setToastMessage(`Checked in successfully: ${courseCode} (Attendance recorded)`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const nextClass = COURSES[1]; // CDS2001 at 13:30
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTransport = async () => {
+      setTransportLoading(true);
+      try {
+        const rows = await fetchHomeTransportEtas(homeTransportRoutes);
+        if (!cancelled) {
+          setTransportRows(rows);
+        }
+      } catch {
+        if (!cancelled) {
+          setTransportRows([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setTransportLoading(false);
+        }
+      }
+    };
+
+    void loadTransport();
+    const timer = window.setInterval(() => {
+      void loadTransport();
+    }, 120000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [homeTransportRoutes]);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadWeather = async () => {
       const requests = await Promise.allSettled([
-        fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en'),
-        fetch('https://data.weather.gov.hk/weatherAPI/opendata/hourlyRainfall.php?lang=en'),
-        fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en'),
-        fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en'),
-        fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=swt&lang=en'),
+        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en'),
+        fetch('/api/hko/weatherAPI/opendata/hourlyRainfall.php?lang=en'),
+        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en'),
+        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en'),
+        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=swt&lang=en'),
       ]);
 
       const readJson = async (result: PromiseSettledResult<Response>): Promise<unknown> => {
@@ -317,230 +306,270 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenLibraryModal
 
   return (
     <div className="page-shell page-shell--home space-y-4">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg flex items-center space-x-2 animate-bounce">
-          <Check className="w-4 h-4" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={() => onNavigate('events')}
-        className="relative w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm min-h-[8.5rem] text-left"
-        style={{
-          backgroundImage: `linear-gradient(105deg, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.45) 45%, rgba(15, 23, 42, 0.2) 100%), url(${emsBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-        aria-label="Open EMS page"
+      <section
+        className="relative w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm min-h-[10.5rem]"
+        aria-label="Campus weather banner"
       >
-        <div className="p-4 text-white space-y-1.5">
-          <span className="inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 border border-white/30 uppercase tracking-wide">
-            Events
-          </span>
-          <h3 className="text-base font-bold leading-tight max-w-[14rem]">
-            Event Management System Highlights
-          </h3>
-          <p className="text-[11px] text-slate-100/90 max-w-[15rem] leading-relaxed">
-            Explore upcoming university events, registration notices, and student activities.
-          </p>
-        </div>
-      </button>
+        <img
+          src={homeBanner}
+          alt="Lingnan campus banner"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/35 to-slate-900/10" />
 
-{/*       <div className="rounded-2xl bg-gradient-to-r from-red-50/90 via-white to-slate-50 border border-red-200 p-3.5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-sm shadow-red-200 shrink-0">
-              <LayoutGrid className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-1.5">
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 uppercase tracking-wide">
-                  Campus Hub
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium">
-                  Applications and student services
-                </span>
-              </div>
-              <h3 className="text-sm font-bold text-slate-900">
-                Open categorized applications and campus tools
-              </h3>
-            </div>
+        <div className="relative z-10 flex min-h-[10.5rem] flex-col justify-between p-3.5 text-white">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {weather.warningItems.length > 0 ? (
+              weather.warningItems.slice(0, 4).map((item) => {
+                const WarningIcon = getWarningIcon(item.code);
+                return (
+                  <span
+                    key={item.code}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/35 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
+                    title={item.label}
+                  >
+                    <WarningIcon className="h-3 w-3" />
+                    <span className="max-w-[7.5rem] truncate">{item.label}</span>
+                  </span>
+                );
+              })
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/30 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
+                <SunMedium className="h-3 w-3 text-amber-300" />
+                No active warning
+              </span>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => onNavigate('campus')}
-            className="text-red-600 font-bold text-xs inline-flex items-center"
-          >
-            Open
-            <ChevronRight className="w-4 h-4 ml-0.5" />
-          </button>
+
+          <div className="space-y-1.5">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-white/80">Tuen Mun</p>
+                <p className="text-3xl font-extrabold leading-none tracking-tight">
+                  {weather.temperatureC ?? '--'}
+                  <span className="ml-0.5 text-lg font-bold text-white/85">°C</span>
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/20 bg-black/30 px-2.5 py-1.5 text-right backdrop-blur-sm">
+                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/80">
+                  <Umbrella className="h-3 w-3" />
+                  Rain
+                </p>
+                <p className="text-sm font-bold tabular-nums">
+                  {weather.rainfallMm ?? '--'}
+                  <span className="ml-0.5 text-[11px] font-semibold text-white/80">mm</span>
+                </p>
+              </div>
+            </div>
+
+            {weather.specialTip ? (
+              <p className="line-clamp-2 text-[11px] leading-relaxed text-white/90">
+                {weather.specialTip}
+              </p>
+            ) : null}
+
+            <p className="text-[10px] text-white/65">
+              Updated {weather.lastUpdated}
+              {weather.isLoading ? ' · Loading…' : ''}
+            </p>
+          </div>
         </div>
-      </div> */}
+      </section>
 
       {/* Next Upcoming Lecture Card */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-2.5">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-xs font-bold text-emerald-700 tracking-wide uppercase">
-              Next Up Today
+      <div>
+        <h3 className="text-sm font-bold tracking-tight text-slate-900 px-0.5 mb-2">
+          Upcoming Class
+        </h3>
+        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-xs font-bold text-emerald-700 tracking-wide uppercase">
+                Next Up Today
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-500 flex items-center space-x-1">
+              <Clock className="w-3 h-3 text-slate-400" />
+              <span>
+                {nextClass.startTime} - {nextClass.endTime}
+              </span>
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-slate-400" />
-            <span>{nextClass.startTime} - {nextClass.endTime}</span>
-          </span>
-        </div>
 
-        <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-black text-slate-800 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono">
                 {nextClass.courseCode}
               </span>
-              <span className="text-xs text-slate-700 font-semibold">
-                {nextClass.courseName}
-              </span>
+              <span className="text-xs text-slate-700 font-semibold">{nextClass.courseName}</span>
             </div>
             <div className="flex items-center space-x-1.5 text-xs text-slate-600 mt-2">
               <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" />
               <span className="text-slate-800 font-medium">{nextClass.venue}</span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5 pl-5">
-              {nextClass.instructor}
-            </p>
-          </div>
-
-          <div className="shrink-0 flex flex-col items-end space-y-1">
-            {checkedInCourses[nextClass.id] ? (
-              <span className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Checked In</span>
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleCheckIn(nextClass.id, nextClass.courseCode)}
-                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm shadow-red-200 transition transform active:scale-95"
-              >
-                Check In
-              </button>
-            )}
+            <p className="text-[11px] text-slate-500 mt-0.5 pl-5">{nextClass.instructor}</p>
           </div>
         </div>
       </div>
 
-      {/* Quick Access Icons Bar */}
+      {/* Important Notices — eFees, Moodle, custom campus messages */}
       <div>
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">
-          Student Shortcuts
-        </h3>
-        <div className="grid grid-cols-3 gap-2">
-          {selectedShortcutItems.map((shortcut) => {
-            const Icon = shortcut.icon;
-            return (
-              <button
-                key={shortcut.id}
-                type="button"
-                onClick={shortcut.action}
-                className="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition group shadow-xs"
-              >
-                <div className={`w-9 h-9 rounded-lg border flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform ${shortcut.colorClass}`}>
-                  <Icon className="w-4 h-4" />
+        <div className="mb-2 flex items-center justify-between px-0.5">
+          <h3 className="text-sm font-bold tracking-tight text-slate-900">Important Notices</h3>
+          <span className="text-[10px] font-semibold text-slate-500">
+            {HOME_IMPORTANT_NOTICES.length} items
+          </span>
+        </div>
+        <div className="space-y-2">
+          {HOME_IMPORTANT_NOTICES.map((notice) => {
+            const meta = noticeMeta[notice.kind];
+            const Icon = meta.icon;
+            const content = (
+              <div className="flex items-start justify-between gap-2">
+                <div className="inline-flex min-w-0 items-start gap-2.5">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                      <span
+                        className={`inline-flex rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${meta.chipClass}`}
+                      >
+                        {meta.label}
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-400">{notice.timeLabel}</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-900">{notice.title}</p>
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">{notice.message}</p>
+                  </div>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-700 text-center leading-tight">
-                  {shortcut.label}
-                </span>
-              </button>
+                {notice.action || notice.href ? (
+                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+                ) : null}
+              </div>
+            );
+
+            if (notice.action === 'efees' && onOpenEfeesNotes) {
+              return (
+                <button
+                  key={notice.id}
+                  type="button"
+                  onClick={onOpenEfeesNotes}
+                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            if (notice.action === 'calendar') {
+              return (
+                <button
+                  key={notice.id}
+                  type="button"
+                  onClick={() => onNavigate('calendar')}
+                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            if (notice.href) {
+              return (
+                <button
+                  key={notice.id}
+                  type="button"
+                  onClick={() => openInAppBrowser(notice.href!, notice.title)}
+                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            return (
+              <div
+                key={notice.id}
+                className={`rounded-2xl border p-3 shadow-xs ${meta.cardClass}`}
+              >
+                {content}
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* Graduation ILP Progress Indicator */}
-{/*       <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <div className="p-1 rounded-md bg-red-50 text-red-600">
-              <GraduationCap className="w-4 h-4" />
+      <button
+        type="button"
+        onClick={() => onNavigate('transport')}
+        className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-sm text-left hover:border-slate-300 hover:bg-slate-50/70 transition"
+        aria-label="Open transport page"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
+              <Bus className="h-5 w-5" />
             </div>
-            <h3 className="text-xs font-bold text-slate-900">
-              ILP Graduation Requirement
-            </h3>
-          </div>
-          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-            84 / 75 Units (112%)
-          </span>
-        </div>
-        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-red-500 to-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: '100%' }}
-          />
-        </div>
-        <p className="text-[11px] text-slate-500 mt-2 flex items-center justify-between">
-          <span>Graduation criterion successfully fulfilled</span>
-          <button 
-            type="button"
-            onClick={() => onNavigate('campus')}
-            className="text-red-600 font-bold hover:underline"
-          >
-            Details →
-          </button>
-        </p>
-      </div> */}
-
-      {/* Campus Live Alerts & Weather */}
-      <div className="rounded-xl bg-white border border-slate-200 p-3 text-xs shadow-xs space-y-1.5">
-        <div className="flex items-center space-x-2 text-slate-700">
-          <SunMedium className="w-4 h-4 text-amber-500 shrink-0" />
-          <span>
-            Tuen Mun: {weather.temperatureC ?? '--'}°C • RH {weather.humidityPct ?? '--'}% • Rain {weather.rainfallMm ?? '--'}mm
-          </span>
-        </div>
-        {weather.warningItems.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {weather.warningItems.map((item) => {
-              const WarningIcon = getWarningIcon(item.code);
-              return (
-                <span
-                  key={item.code}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-700"
-                >
-                  <WarningIcon className="h-3 w-3" />
-                  <span>{item.label}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded">
+                  Transport
                 </span>
-              );
-            })}
+                <span className="text-[10px] font-medium text-slate-500">
+                  {transportLoading ? 'Updating…' : 'Your routes'}
+                </span>
+              </div>
+              <h3 className="mt-1 text-sm font-bold text-slate-900 leading-tight">
+                Live ETA for selected routes
+              </h3>
+              <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
+                Configure routes in Settings · Home transport preferences
+              </p>
+
+              <div className="mt-2.5 space-y-1.5">
+                {transportRows.map((row) => (
+                  <div
+                    key={row.id}
+                    className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-bold text-slate-800">
+                        {row.label}
+                        <span className="ml-1 font-semibold text-slate-500">· {row.provider}</span>
+                      </p>
+                      <p className="truncate text-[10px] text-slate-500">
+                        {row.note || row.stopHint}
+                      </p>
+                    </div>
+                    <div className="inline-flex shrink-0 items-center gap-1">
+                      <Clock className="h-3 w-3 text-slate-400" />
+                      {row.minutes.length > 0 ? (
+                        row.minutes.map((mins) => (
+                          <span
+                            key={`${row.id}-${mins}`}
+                            className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-700"
+                          >
+                            {mins}m
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[10px] font-semibold text-slate-400">—</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!transportLoading && transportRows.length === 0 && (
+                  <p className="text-[11px] text-slate-500">No transport routes selected.</p>
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            No active weather warning
-          </p>
-        )}
-        {weather.specialTip ? (
-          <button
-            type="button"
-            onClick={() => setIsTipExpanded((prev) => !prev)}
-            className="w-full text-left"
-            aria-expanded={isTipExpanded}
-            aria-label="Toggle full weather tip"
-          >
-            <p className={`text-[11px] text-slate-500 leading-relaxed ${isTipExpanded ? '' : 'line-clamp-2'}`}>
-              Tip: {weather.specialTip}
-            </p>
-            <p className="mt-1 text-[10px] text-slate-400">
-              {isTipExpanded ? 'Tap to collapse' : 'Tap to view full message'}
-            </p>
-          </button>
-        ) : null}
-        <p className="text-[10px] text-slate-400">
-          Updated {weather.lastUpdated}{weather.isLoading ? ' • Loading...' : ''}
-        </p>
-      </div>
+          <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+        </div>
+      </button>
+
     </div>
   );
 };

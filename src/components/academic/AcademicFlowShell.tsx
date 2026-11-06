@@ -1,7 +1,15 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-export type FlowTheme = 'results' | 'exam' | 'schedule' | 'early' | 'graduation' | 'elgr' | 'default';
+export type FlowTheme =
+  | 'results'
+  | 'exam'
+  | 'schedule'
+  | 'early'
+  | 'graduation'
+  | 'elgr'
+  | 'fees'
+  | 'default';
 
 interface AcademicFlowShellProps {
   title: string;

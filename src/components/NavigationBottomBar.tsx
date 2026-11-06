@@ -7,7 +7,7 @@ import {
   Settings,
 } from 'lucide-react';
 
-export type TabType = 'home' | 'calendar' | 'academic' | 'campus' | 'events' | 'setting';
+export type TabType = 'home' | 'calendar' | 'academic' | 'campus' | 'events' | 'transport' | 'setting';
 
 interface NavigationBottomBarProps {
   activeTab: TabType;

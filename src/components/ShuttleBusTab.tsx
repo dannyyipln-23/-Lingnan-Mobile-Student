@@ -3,9 +3,10 @@ import { Bus, TrainFront, RefreshCw, MapPin, Clock3 } from 'lucide-react';
 
 type ArrivalCard = {
   route: string;
-  provider: 'KMB' | 'Citybus';
+  provider: 'KMB' | 'Citybus' | 'MTR Bus';
   direction: string;
   stopName: string;
+  stopCode?: string;
   minutes: number[];
 };
 
@@ -14,8 +15,23 @@ type TrainState = {
   down: number[];
 };
 
-const KMB_ROUTES = ['67M', '67X', '53', '261'];
+/** Official roadside codes for Lingnan University / nearby campus stops. */
+const LU_STOP_CODES = ['TM290', 'TM291', 'TM251', 'TM252', 'TM286'] as const;
+
+/**
+ * KMB Open Data uses hashed stop IDs; roadside codes appear in the stop name
+ * e.g. "LINGNAN UNIVERSITY (TM290)".
+ */
+const KMB_STOP_BY_CODE: Record<(typeof LU_STOP_CODES)[number], { stopId: string; label: string }> = {
+  TM290: { stopId: 'AA5DA45828958EAE', label: 'Lingnan University (TM290)' },
+  TM291: { stopId: 'CC3EF4757AA0964A', label: 'Lingnan University (TM291)' },
+  TM251: { stopId: 'E2AE7A37634C8FE5', label: 'Lingnan University (TM251)' },
+  TM252: { stopId: '6B3EF5D982B399E6', label: 'Lingnan University (TM252)' },
+  TM286: { stopId: 'F1D1F84A466543BE', label: 'Fu Tai Estate (TM286)' },
+};
+
 const CITYBUS_ROUTES = ['A33X', 'NA33', '960A', '960S'];
+const MTR_BUS_ROUTES = ['K51', 'K58'] as const;
 const LINGNAN_NAME_PATTERN = /lingnan university|ling nan university|\u5dba\u5357\u5927\u5b78/i;
 
 const minutesFromEta = (etaTime?: string): number | null => {
@@ -36,14 +52,15 @@ const formatMins = (minutes: number[]): string => {
   return minutes.slice(0, 3).map((m) => `${m} min`).join('  |  ');
 };
 
-const providerCardClass = (provider: 'KMB' | 'Citybus') =>
-  provider === 'KMB'
-    ? 'border-red-200 bg-red-50/30'
-    : 'border-blue-200 bg-blue-50/30';
+const providerCardClass = (provider: ArrivalCard['provider']) => {
+  if (provider === 'KMB') return 'border-red-200 bg-red-50/30';
+  if (provider === 'Citybus') return 'border-blue-200 bg-blue-50/30';
+  return 'border-emerald-200 bg-emerald-50/30';
+};
 
-const safeFetchJson = async (url: string): Promise<any | null> => {
+const safeFetchJson = async (url: string, init?: RequestInit): Promise<any | null> => {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, init);
     if (!res.ok) {
       return null;
     }
@@ -54,9 +71,17 @@ const safeFetchJson = async (url: string): Promise<any | null> => {
   }
 };
 
+const directionLabel = (dir?: string): string => {
+  if (!dir) return 'service';
+  if (dir === 'O' || dir.toLowerCase() === 'outbound') return 'outbound';
+  if (dir === 'I' || dir.toLowerCase() === 'inbound') return 'inbound';
+  return dir;
+};
+
 export const ShuttleBusTab: React.FC = () => {
   const [kmbArrivals, setKmbArrivals] = useState<ArrivalCard[]>([]);
   const [citybusArrivals, setCitybusArrivals] = useState<ArrivalCard[]>([]);
+  const [mtrBusArrivals, setMtrBusArrivals] = useState<ArrivalCard[]>([]);
   const [trainData, setTrainData] = useState<TrainState>({ up: [], down: [] });
   const [mtrBusStatus, setMtrBusStatus] = useState<string>('Loading...');
   const [loading, setLoading] = useState<boolean>(true);
@@ -64,88 +89,56 @@ export const ShuttleBusTab: React.FC = () => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const loadKmb = useCallback(async (): Promise<ArrivalCard[]> => {
-    const [kmbStopsJson, routeStopRows] = await Promise.all([
-      safeFetchJson('https://data.etabus.gov.hk/v1/transport/kmb/stop'),
-      Promise.all(
-        KMB_ROUTES.flatMap((route) =>
-          ['inbound', 'outbound'].map(async (direction) => {
-            const routeStopJson = await safeFetchJson(
-              `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/${direction}/1`,
-            );
-
-            return {
-              route,
-              direction,
-              rows: (routeStopJson?.data ?? []) as Array<{ stop: string; bound: string }>,
-            };
-          }),
-        ),
-      ),
-    ]);
-
-    const stopNameById = new Map<string, { en: string; tc: string }>();
-    const kmbStops: Array<{ stop: string; name_en?: string; name_tc?: string }> = kmbStopsJson?.data ?? [];
-    for (const stop of kmbStops) {
-      if (!stop?.stop) {
-        continue;
-      }
-
-      stopNameById.set(stop.stop, {
-        en: stop.name_en ?? '',
-        tc: stop.name_tc ?? '',
-      });
-    }
-
-    const matchedRoutes = routeStopRows
-      .map(({ route, direction, rows }) => {
-        const matched = rows.find((row) => {
-          const stopInfo = stopNameById.get(row.stop);
-          const stopNameEn = stopInfo?.en ?? '';
-          const stopNameTc = stopInfo?.tc ?? '';
-          return LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc);
-        });
-
-        if (!matched) {
-          return null;
-        }
-
-        const stopInfo = stopNameById.get(matched.stop);
+    const etaRows = await Promise.all(
+      LU_STOP_CODES.map(async (code) => {
+        const meta = KMB_STOP_BY_CODE[code];
+        const etaJson = await safeFetchJson(
+          `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${meta.stopId}`,
+        );
         return {
-          route,
-          direction,
-          stopId: matched.stop,
-          boundCode: matched.bound,
-          stopName: stopInfo?.en || stopInfo?.tc || 'Lingnan University',
+          code,
+          label: meta.label,
+          rows: (etaJson?.data ?? []) as Array<{
+            route?: string;
+            dir?: string;
+            eta?: string;
+            dest_en?: string;
+          }>,
         };
-      })
-      .filter((x): x is { route: string; direction: string; stopId: string; boundCode: string; stopName: string } => x !== null);
-
-    const uniqueStopIds = [...new Set(matchedRoutes.map((item) => item.stopId))];
-    const etaByStop = new Map<string, any[]>();
-
-    await Promise.all(
-      uniqueStopIds.map(async (stopId) => {
-        const etaJson = await safeFetchJson(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`);
-        etaByStop.set(stopId, etaJson?.data ?? []);
       }),
     );
 
-    return matchedRoutes.map((item) => {
-      const minuteList = (etaByStop.get(item.stopId) ?? [])
-        .filter((row: any) => row?.route === item.route && row?.dir === item.boundCode)
-        .map((row: any) => minutesFromEta(row?.eta))
-        .filter((x: number | null): x is number => x !== null)
-        .sort((a: number, b: number) => a - b)
-        .slice(0, 3);
+    const cards: ArrivalCard[] = [];
 
-      return {
-        route: item.route,
-        provider: 'KMB' as const,
-        direction: item.direction,
-        stopName: item.stopName,
-        minutes: minuteList,
-      };
-    });
+    for (const stop of etaRows) {
+      const byRouteDir = new Map<string, number[]>();
+
+      for (const row of stop.rows) {
+        if (!row.route) continue;
+
+        const mins = minutesFromEta(row.eta);
+        if (mins === null) continue;
+
+        const key = `${row.route}__${row.dir ?? ''}`;
+        const list = byRouteDir.get(key) ?? [];
+        list.push(mins);
+        byRouteDir.set(key, list);
+      }
+
+      for (const [key, minutes] of byRouteDir.entries()) {
+        const [route, dir] = key.split('__');
+        cards.push({
+          route,
+          provider: 'KMB',
+          direction: directionLabel(dir),
+          stopName: stop.label,
+          stopCode: stop.code,
+          minutes: [...new Set(minutes)].sort((a, b) => a - b).slice(0, 3),
+        });
+      }
+    }
+
+    return cards.sort((a, b) => a.route.localeCompare(b.route) || a.stopCode!.localeCompare(b.stopCode!));
   }, []);
 
   const loadCitybus = useCallback(async (): Promise<ArrivalCard[]> => {
@@ -193,7 +186,10 @@ export const ShuttleBusTab: React.FC = () => {
           stopName: stopInfo?.name_en || stopInfo?.name_tc || 'Lingnan University',
         };
       })
-      .filter((x): x is { route: string; direction: string; stopId: string; dirCode: string; stopName: string } => x !== null);
+      .filter(
+        (x): x is { route: string; direction: string; stopId: string; dirCode: string; stopName: string } =>
+          x !== null,
+      );
 
     const etaByStopRoute = new Map<string, any[]>();
     const uniqueEtaKeys = [...new Set(matchedRoutes.map((item) => `${item.stopId}__${item.route}`))];
@@ -201,7 +197,9 @@ export const ShuttleBusTab: React.FC = () => {
     await Promise.all(
       uniqueEtaKeys.map(async (key) => {
         const [stopId, route] = key.split('__');
-        const etaJson = await safeFetchJson(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stopId}/${route}`);
+        const etaJson = await safeFetchJson(
+          `https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stopId}/${route}`,
+        );
         etaByStopRoute.set(key, etaJson?.data ?? []);
       }),
     );
@@ -226,7 +224,9 @@ export const ShuttleBusTab: React.FC = () => {
 
   const loadMtrTrain = useCallback(async (): Promise<TrainState> => {
     try {
-      const trainRes = await fetch('https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TML&sta=SIH');
+      const trainRes = await fetch(
+        'https://rt.data.gov.hk/v1/transport/mtr/getSchedule.php?line=TML&sta=SIH',
+      );
       if (!trainRes.ok) {
         return { up: [], down: [] };
       }
@@ -251,13 +251,77 @@ export const ShuttleBusTab: React.FC = () => {
     }
   }, []);
 
-  const loadMtrBus = useCallback(async (): Promise<string> => {
-    const payload = await safeFetchJson('https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule.php?route_name=K51');
-    if (payload) {
-      return 'MTR bus API reachable (K51 test endpoint).';
+  const loadMtrBus = useCallback(async (): Promise<{ cards: ArrivalCard[]; status: string }> => {
+    const cards: ArrivalCard[] = [];
+    const notes: string[] = [];
+
+    for (const routeName of MTR_BUS_ROUTES) {
+      const payload = await safeFetchJson('https://rt.data.gov.hk/v1/transport/mtr/bus/getSchedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: 'en', routeName }),
+      });
+
+      if (!payload) {
+        notes.push(`${routeName}: API unavailable`);
+        continue;
+      }
+
+      const stops: Array<{
+        busStopId?: string;
+        busStopStatusRemarkTitle?: string | null;
+        bus?: Array<{
+          departureTimeInSecond?: string | number;
+          departureTimeText?: string;
+          arrivalTimeInSecond?: string | number;
+        }>;
+      }> = payload.busStop ?? [];
+
+      // Known Lingnan University stop IDs on MTR Bus feeder routes (U/D = bound).
+      const lingnanStopIds = new Set([
+        `${routeName}-U030`,
+        `${routeName}-D030`,
+        'K51-U030',
+        'K51-D030',
+        'K58-U030',
+        'K58-D030',
+      ]);
+      const targetStops = stops.filter((stop) => lingnanStopIds.has(stop.busStopId ?? ''));
+
+      if (!targetStops.length) {
+        const remark = payload.routeStatusRemarkTitle || payload.footerRemarks || 'no Lingnan stop ETA';
+        notes.push(`${routeName}: ${remark}`);
+        continue;
+      }
+
+      for (const stop of targetStops) {
+        const minutes = (stop.bus ?? [])
+          .map((bus) => {
+            const raw = Number(bus.departureTimeInSecond ?? bus.arrivalTimeInSecond);
+            if (!Number.isFinite(raw) || raw >= 86400) return null;
+            return Math.max(0, Math.round(raw / 60));
+          })
+          .filter((n): n is number => n !== null)
+          .sort((a, b) => a - b)
+          .slice(0, 3);
+
+        const bound = (stop.busStopId ?? '').includes('-U') ? 'outbound' : 'inbound';
+        cards.push({
+          route: routeName,
+          provider: 'MTR Bus',
+          direction: bound,
+          stopName: `Lingnan University (${stop.busStopId})`,
+          minutes,
+        });
+      }
+
+      notes.push(`${routeName}: OK`);
     }
 
-    return 'MTR bus API endpoint is currently unavailable from this app. Please check data.gov.hk endpoint updates.';
+    return {
+      cards,
+      status: notes.join(' · '),
+    };
   }, []);
 
   const loadAll = useCallback(async () => {
@@ -265,46 +329,55 @@ export const ShuttleBusTab: React.FC = () => {
     setError(null);
 
     try {
-      const [kmb, citybus, trains] = await Promise.all([
+      const [kmb, citybus, trains, mtrBus] = await Promise.all([
         loadKmb(),
         loadCitybus(),
         loadMtrTrain(),
+        loadMtrBus(),
       ]);
 
       setKmbArrivals(kmb);
       setCitybusArrivals(citybus);
       setTrainData(trains);
-      setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setMtrBusArrivals(mtrBus.cards);
+      setMtrBusStatus(mtrBus.status);
+      setLastUpdated(
+        new Date().toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      );
     } catch {
       setError('Failed to fetch one or more transport feeds. Please refresh.');
     } finally {
       setLoading(false);
     }
-  }, [loadCitybus, loadKmb, loadMtrTrain]);
+  }, [loadCitybus, loadKmb, loadMtrBus, loadMtrTrain]);
 
   useEffect(() => {
     void loadAll();
-
-    void (async () => {
-      const mtrBus = await loadMtrBus();
-      setMtrBusStatus(mtrBus);
-    })();
 
     const timer = setInterval(() => {
       void loadAll();
     }, 120000);
 
     return () => clearInterval(timer);
-  }, [loadAll, loadMtrBus]);
+  }, [loadAll]);
 
-  const allBusCards = useMemo(() => [...kmbArrivals, ...citybusArrivals], [citybusArrivals, kmbArrivals]);
+  const allBusCards = useMemo(
+    () => [...kmbArrivals, ...citybusArrivals, ...mtrBusArrivals],
+    [citybusArrivals, kmbArrivals, mtrBusArrivals],
+  );
 
   return (
     <div className="space-y-4 text-slate-800">
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Shuttle & Public Transport</h2>
-          <p className="text-xs text-slate-500">Live ETA to Lingnan University from KMB, Citybus and MTR feeds</p>
+          <p className="text-xs text-slate-500">
+            Live ETA at LU stops {LU_STOP_CODES.join(', ')}
+          </p>
         </div>
         <button
           type="button"
@@ -345,19 +418,21 @@ export const ShuttleBusTab: React.FC = () => {
 
         {!loading && allBusCards.length === 0 && (
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-            No matching Lingnan University ETA was returned for configured routes ({KMB_ROUTES.join(', ')} / {CITYBUS_ROUTES.join(', ')}).
+            No ETA returned for LU stops ({LU_STOP_CODES.join(', ')}).
           </div>
         )}
 
         <div className="space-y-2">
           {allBusCards.map((card) => (
             <div
-              key={`${card.provider}-${card.route}-${card.direction}`}
+              key={`${card.provider}-${card.route}-${card.direction}-${card.stopCode ?? card.stopName}`}
               className={`rounded-xl border p-3 ${providerCardClass(card.provider)}`}
             >
               <div className="flex items-center justify-between text-xs">
                 <div className="inline-flex items-center space-x-1.5">
-                  <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 font-bold text-slate-700">{card.provider}</span>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 font-bold text-slate-700">
+                    {card.provider}
+                  </span>
                   <span className="font-black text-slate-900">Route {card.route}</span>
                 </div>
                 <span className="text-slate-500 capitalize">{card.direction}</span>

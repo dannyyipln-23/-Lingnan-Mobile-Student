@@ -12,6 +12,17 @@ export interface AppNotification {
   isRead: boolean;
 }
 
+/** Official university push kinds shown in Campus Notices & Alerts. */
+export const OFFICIAL_PUSH_KINDS: ReadonlySet<NotificationKind> = new Set([
+  'award',
+  'library',
+  'exam',
+  'alert',
+]);
+
+export const isOfficialPushNotification = (item: AppNotification): boolean =>
+  OFFICIAL_PUSH_KINDS.has(item.kind);
+
 interface NotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,6 +37,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   onMarkAllRead,
 }) => {
   if (!isOpen) return null;
+
+  const officialNotifications = notifications.filter(isOfficialPushNotification);
 
   const iconMap: Record<NotificationKind, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
     award: {
@@ -63,7 +76,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 Campus Notices & Alerts
               </h3>
               <p className="text-[10px] text-slate-500">
-                Real-time updates on academic, ILP, and student life
+                Official university push notifications only
               </p>
             </div>
           </div>
@@ -77,35 +90,41 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         <div className="space-y-2.5">
-          {notifications.map((item) => {
-            const meta = iconMap[item.kind];
-            const Icon = meta.icon;
-            return (
-              <div
-                key={item.id}
-                className={`p-3 rounded-2xl border flex items-start space-x-3 ${
-                  item.isRead ? 'bg-slate-50 border-slate-200' : 'bg-white border-red-200'
-                }`}
-              >
-                <div className={`p-2 rounded-xl border shrink-0 ${meta.color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-slate-900 truncate pr-1">
-                      {item.title}
-                    </h4>
-                    <span className="text-[9px] text-slate-500 font-mono shrink-0">
-                      {item.time}
-                    </span>
+          {officialNotifications.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center text-[11px] text-slate-500">
+              No official push notifications yet.
+            </div>
+          ) : (
+            officialNotifications.map((item) => {
+              const meta = iconMap[item.kind];
+              const Icon = meta.icon;
+              return (
+                <div
+                  key={item.id}
+                  className={`p-3 rounded-2xl border flex items-start space-x-3 ${
+                    item.isRead ? 'bg-slate-50 border-slate-200' : 'bg-white border-red-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-xl border shrink-0 ${meta.color}`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    {item.desc}
-                  </p>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-slate-900 truncate pr-1">
+                        {item.title}
+                      </h4>
+                      <span className="text-[9px] text-slate-500 font-mono shrink-0">
+                        {item.time}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         <button

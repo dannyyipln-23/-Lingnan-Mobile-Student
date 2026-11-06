@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft,
@@ -8,10 +8,18 @@ import {
   BookOpen, 
   Plus,
   Check,
+  Bell,
   X
 } from 'lucide-react';
-import { COURSES } from '../data/mockData';
+import { CALENDAR_DEMO_TODAY, STUDY_TASKS, StudyTaskSource } from '../data/mockData';
 import { CourseSession } from '../types';
+import { fetchHkPublicHolidays, holidayMapFromList } from '../lib/hkPublicHolidays';
+import {
+  fetchRegisteredCourses,
+  isCourseActiveOnDate,
+  RegisteredCourse,
+  toCourseSession,
+} from '../lib/registeredCourses';
 
 type CalendarViewMode = 'week' | 'month';
 
@@ -87,6 +95,7 @@ interface StudyTask {
   reminderDateTime: string;
   done: boolean;
   dateKey: string;
+  source: StudyTaskSource;
 }
 
 interface TimetableTabProps {
@@ -94,37 +103,60 @@ interface TimetableTabProps {
 }
 
 export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }) => {
-  const initialSelectedDate = new Date(2026, 7, 31);
-  const initialSelectedDateKey = toDateKey(initialSelectedDate);
+  const [year, month, day] = CALENDAR_DEMO_TODAY.split('-').map(Number);
+  const initialSelectedDate = new Date(year, month - 1, day);
   const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
-  const [calendarAnchor, setCalendarAnchor] = useState<Date>(new Date(2026, 8, 1));
-  const [selectedWeek, setSelectedWeek] = useState<number>(1);
-  const [selectedDay, setSelectedDay] = useState<number>(1); // 1 = Monday
+  const [calendarAnchor, setCalendarAnchor] = useState<Date>(new Date(year, month - 1, 1));
+  const [selectedWeek, setSelectedWeek] = useState<number>(getWeekOfMonth(initialSelectedDate));
+  const [selectedDay, setSelectedDay] = useState<number>(mapJsDayToAcademicDay(initialSelectedDate.getDay()));
   const [selectedDate, setSelectedDate] = useState<Date>(initialSelectedDate);
   const [activeCourse, setActiveCourse] = useState<CourseSession | null>(null);
-  const [tasks, setTasks] = useState<StudyTask[]>([
-    {
-      id: 't1',
-      text: 'RIM2201 Case Study on Climate Risk Insurance',
-      reminderDateTime: `${initialSelectedDateKey}T23:59`,
-      done: false,
-      dateKey: initialSelectedDateKey,
-    },
-    {
-      id: 't2',
-      text: 'CDS2001 Python Pandas assignment submission',
-      reminderDateTime: '2026-09-02T17:00',
-      done: true,
-      dateKey: '2026-09-02',
-    },
-  ]);
+  const [tasks, setTasks] = useState<StudyTask[]>(() =>
+    STUDY_TASKS.map((task) => ({ ...task })),
+  );
   const [newTaskInput, setNewTaskInput] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('18:00');
+  const [holidayByDate, setHolidayByDate] = useState<Map<string, string>>(new Map());
+  const [registeredCourses, setRegisteredCourses] = useState<RegisteredCourse[]>([]);
 
   const activeYear = calendarAnchor.getFullYear();
   const activeMonth = calendarAnchor.getMonth();
 
-  const dayCourses = COURSES.filter((c) => c.dayOfWeek === selectedDay);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchRegisteredCourses()
+      .then((courses) => {
+        if (!cancelled) {
+          setRegisteredCourses(courses);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRegisteredCourses([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchHkPublicHolidays()
+      .then((holidays) => {
+        if (!cancelled) {
+          setHolidayByDate(holidayMapFromList(holidays));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHolidayByDate(new Map());
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selectedDateLabel = useMemo(
     () => new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(selectedDate),
@@ -132,10 +164,21 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
   );
 
   const selectedDateKey = useMemo(() => toDateKey(selectedDate), [selectedDate]);
+  const selectedHolidayName = holidayByDate.get(selectedDateKey);
   const selectedDayTasks = useMemo(
     () => tasks.filter((task) => task.dateKey === selectedDateKey),
     [selectedDateKey, tasks],
   );
+
+  const dayCourses = useMemo(() => {
+    return registeredCourses
+      .filter(
+        (course) =>
+          course.dayOfWeek === selectedDay && isCourseActiveOnDate(course, selectedDateKey),
+      )
+      .map(toCourseSession)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }, [registeredCourses, selectedDateKey, selectedDay]);
 
   const monthLabel = useMemo(
     () => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(calendarAnchor),
@@ -175,9 +218,14 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
       const academicDay = mapJsDayToAcademicDay(date.getDay());
       const isInMonth = date.getMonth() === activeMonth;
       const isWeekend = academicDay >= 6;
-      const courseCount = isInMonth && !isWeekend
-        ? COURSES.filter((course) => course.dayOfWeek === academicDay).length
-        : 0;
+      const dateKey = toDateKey(date);
+      const courseCount =
+        isInMonth && !isWeekend
+          ? registeredCourses.filter(
+              (course) =>
+                course.dayOfWeek === academicDay && isCourseActiveOnDate(course, dateKey),
+            ).length
+          : 0;
 
       return {
         date,
@@ -187,7 +235,7 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
         courseCount,
       };
     });
-  }, [activeMonth, activeYear]);
+  }, [activeMonth, activeYear, registeredCourses]);
 
   const handleSelectDay = (week: number, day: number) => {
     const newDate = getDateByWeekAndDay(activeYear, activeMonth, week, day);
@@ -239,6 +287,7 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
         reminderDateTime,
         done: false,
         dateKey: selectedDateKey,
+        source: 'personal',
       },
     ]);
     onAddStudyReminder(normalizedTask, reminderDateTime);
@@ -252,10 +301,11 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
       <div className="px-1">
         <div>
           <h2 className="text-lg font-bold text-slate-900">
-            Course Calendar
+            Personal Calendar
           </h2>
           <p className="text-xs text-slate-500">
-            2025/2026 Academic Year • Term 1
+            {registeredCourses.find((course) => isCourseActiveOnDate(course, selectedDateKey))
+              ?.termDescription || 'Registered courses'}
           </p>
         </div>
       </div>
@@ -337,20 +387,30 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
             <div className="grid grid-cols-7 gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-200">
               {weekDays.map((item) => {
                 const isSelected = selectedDay === item.day;
+                const dateKey = toDateKey(item.date);
+                const isHoliday = holidayByDate.has(dateKey);
 
                 return (
                   <button
                     key={`${item.label}-${item.date.toISOString()}`}
                     type="button"
                     onClick={() => handleSelectDay(selectedWeek, item.day)}
+                    title={holidayByDate.get(dateKey)}
                     className={`py-2 px-1 rounded-lg flex flex-col items-center justify-center transition-all ${
                       isSelected
                         ? 'bg-red-600 text-white shadow-xs font-bold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                        : isHoliday
+                          ? 'bg-red-50 text-red-700 font-bold hover:bg-red-100'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                     }`}
                   >
                     <span className="text-xs">{item.label}</span>
-                    <span className="text-[10px] mt-0.5 opacity-85">{item.date.getDate()}</span>
+                    <span className={`text-[10px] mt-0.5 ${isHoliday && !isSelected ? 'text-red-600 font-bold' : 'opacity-85'}`}>
+                      {item.date.getDate()}
+                    </span>
+                    {isHoliday && !isSelected ? (
+                      <span className="mt-0.5 h-1 w-1 rounded-full bg-red-500" />
+                    ) : null}
                   </button>
                 );
               })}
@@ -371,6 +431,9 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
             <div className="grid grid-cols-7 gap-1">
               {monthCells.map((cell) => {
                 const isSelected = isSameDate(cell.date, selectedDate);
+                const dateKey = toDateKey(cell.date);
+                const holidayName = holidayByDate.get(dateKey);
+                const isHoliday = Boolean(holidayName);
 
                 return (
                   <button
@@ -378,29 +441,53 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
                     type="button"
                     onClick={() => handleSelectMonthCell(cell.date, cell.academicDay)}
                     disabled={!cell.isInMonth}
+                    title={holidayName}
                     className={`min-h-[3.25rem] rounded-lg border px-1 py-1 text-left transition ${
                       isSelected
-                        ? 'border-red-400 bg-red-50'
-                        : cell.isInMonth
-                        ? 'border-slate-200 bg-white hover:border-slate-300'
-                        : 'border-slate-100 bg-slate-50 text-slate-300'
+                        ? 'border-red-500 bg-red-100'
+                        : isHoliday && cell.isInMonth
+                          ? 'border-red-300 bg-red-50 hover:border-red-400'
+                          : cell.isInMonth
+                            ? 'border-slate-200 bg-white hover:border-slate-300'
+                            : 'border-slate-100 bg-slate-50 text-slate-300'
                     }`}
                   >
-                    <span className={`block text-[10px] font-semibold ${cell.isInMonth ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <span
+                      className={`block text-[10px] font-semibold ${
+                        !cell.isInMonth
+                          ? 'text-slate-300'
+                          : isHoliday
+                            ? 'text-red-700'
+                            : 'text-slate-700'
+                      }`}
+                    >
                       {cell.date.getDate()}
                     </span>
+                    {isHoliday && cell.isInMonth ? (
+                      <span className="mt-0.5 block truncate text-[8px] font-bold leading-tight text-red-600">
+                        PH
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
             </div>
+            <p className="px-1 text-[10px] text-slate-500">
+              <span className="font-semibold text-red-600">Red dates</span> = Hong Kong public holidays
+            </p>
           </div>
         )}
       </div>
 
-      <div className="px-1">
+      <div className="px-1 space-y-1">
         <p className="text-xs text-slate-600">
           Showing classes for <span className="font-bold text-slate-900">{selectedDateLabel}</span>
         </p>
+        {selectedHolidayName ? (
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+            Public holiday · {selectedHolidayName}
+          </p>
+        ) : null}
       </div>
 
       {/* Course List for the selected day */}
@@ -506,10 +593,6 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
                   <span className="font-bold text-slate-800">{activeCourse.instructor}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Academic Credits</span>
-                  <span className="font-bold text-slate-800">{activeCourse.credits} Credits</span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-medium">Pending Assignments</span>
                   <span className="font-bold text-amber-700">{activeCourse.assignmentsDue} Tasks</span>
                 </div>
@@ -536,19 +619,30 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
         </div>
       )}
 
-      {/* Student Study Tasks & Assignments */}
+      {/* Moodle tasks + personal reminders */}
       <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="p-1 rounded-md bg-red-50 text-red-600">
+            <div className="p-1 rounded-md bg-indigo-50 text-indigo-600">
               <BookOpen className="w-4 h-4" />
             </div>
             <h3 className="text-xs font-bold text-slate-900">
-              Assignments & Study Reminders
+              Moodle Tasks & Personal Reminders
             </h3>
           </div>
           <span className="text-[10px] font-semibold text-slate-500">
             {selectedDayTasks.filter((t) => !t.done).length} pending
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+            <BookOpen className="h-3 w-3" />
+            Moodle
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+            <Bell className="h-3 w-3" />
+            Personal
           </span>
         </div>
 
@@ -558,35 +652,61 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
               No reminders for this day yet.
             </div>
           ) : (
-            selectedDayTasks.map((task) => (
-              <div
-                key={task.id}
-                onClick={() => handleToggleTask(task.id)}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-slate-300 transition"
-              >
-                <div className="flex items-center space-x-2.5 truncate mr-2">
-                  <div
-                    className={`w-4 h-4 rounded-md flex items-center justify-center border transition ${
-                      task.done
-                        ? 'bg-emerald-600 border-emerald-500 text-white'
-                        : 'border-slate-300 bg-white'
-                    }`}
-                  >
-                    {task.done && <Check className="w-3 h-3" />}
+            selectedDayTasks.map((task) => {
+              const isPersonal = task.source === 'personal';
+              return (
+                <div
+                  key={task.id}
+                  onClick={() => handleToggleTask(task.id)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition border ${
+                    isPersonal
+                      ? 'bg-amber-50/80 border-amber-200 hover:border-amber-300'
+                      : 'bg-indigo-50/70 border-indigo-200 hover:border-indigo-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5 truncate mr-2">
+                    <div
+                      className={`w-4 h-4 rounded-md flex items-center justify-center border transition ${
+                        task.done
+                          ? 'bg-emerald-600 border-emerald-500 text-white'
+                          : isPersonal
+                            ? 'border-amber-300 bg-white'
+                            : 'border-indigo-300 bg-white'
+                      }`}
+                    >
+                      {task.done && <Check className="w-3 h-3" />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="mb-0.5 flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                            isPersonal
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-indigo-100 text-indigo-700'
+                          }`}
+                        >
+                          {isPersonal ? 'Personal' : 'Moodle'}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-xs truncate font-medium block ${
+                          task.done ? 'line-through text-slate-400' : 'text-slate-800'
+                        }`}
+                      >
+                        {task.text}
+                      </span>
+                    </div>
                   </div>
                   <span
-                    className={`text-xs truncate font-medium ${
-                      task.done ? 'line-through text-slate-400' : 'text-slate-800'
+                    className={`text-[10px] font-mono font-semibold shrink-0 ${
+                      isPersonal ? 'text-amber-700' : 'text-indigo-700'
                     }`}
                   >
-                    {task.text}
+                    {formatReminderDateTime(task.reminderDateTime)}
                   </span>
                 </div>
-                <span className="text-[10px] text-red-600 font-mono font-semibold shrink-0">
-                  {formatReminderDateTime(task.reminderDateTime)}
-                </span>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -595,21 +715,21 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
             type="text"
             value={newTaskInput}
             onChange={(e) => setNewTaskInput(e.target.value)}
-            placeholder="Add personal study task or deadline..."
-            className="w-full bg-slate-50 text-xs text-slate-800 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500"
+            placeholder="Add personal reminder..."
+            className="w-full bg-amber-50/60 text-xs text-slate-800 px-3 py-2 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-500"
           />
           <div className="flex items-center space-x-2">
             <input
               type="time"
               value={newTaskTime}
               onChange={(e) => setNewTaskTime(e.target.value)}
-              className="w-28 bg-slate-50 text-xs text-slate-800 px-2.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-red-500"
+              className="w-28 bg-amber-50/60 text-xs text-slate-800 px-2.5 py-2 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-500"
               aria-label="Reminder time"
             />
             <button
               type="submit"
-              className="p-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shrink-0 transition shadow-xs"
-              aria-label="Add reminder"
+              className="p-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition shadow-xs"
+              aria-label="Add personal reminder"
             >
               <Plus className="w-4 h-4" />
             </button>

@@ -7,11 +7,14 @@ import { TimetableTab } from './components/TimetableTab';
 import { EventsTab } from './components/EventsTab';
 import { AcademicTab } from './components/AcademicTab';
 import { CampusLifeTab } from './components/CampusLifeTab';
+import { ShuttleBusTab } from './components/ShuttleBusTab';
 import { SettingsTab } from './components/SettingsTab.tsx';
 import { LibraryBookingModal } from './components/LibraryBookingModal';
-import { AppNotification, NotificationModal } from './components/NotificationModal';
-import { InAppBrowser } from './components/InAppBrowser';
-
+import {
+  AppNotification,
+  isOfficialPushNotification,
+  NotificationModal,
+} from './components/NotificationModal';
 const initialNotifications: AppNotification[] = [
   {
     id: 'n1',
@@ -19,14 +22,6 @@ const initialNotifications: AppNotification[] = [
     desc: 'Your participation in "Lingnan Centenary Campus Heritage Tour" has been verified and awarded 3 Civic Education units.',
     time: '10 mins ago',
     kind: 'award',
-    isRead: false,
-  },
-  {
-    id: 'n2',
-    title: 'Library Book Due Date Reminder',
-    desc: 'Borrowed book "Principles of Risk Management" is due in 3 days. You can renew online via 1-Search.',
-    time: '2 hours ago',
-    kind: 'library',
     isRead: false,
   },
   {
@@ -51,9 +46,22 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
+  const [openEfeesOnCampus, setOpenEfeesOnCampus] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
 
-  const unreadCount = notifications.filter((item) => !item.isRead).length;
+  const unreadCount = notifications.filter(
+    (item) => isOfficialPushNotification(item) && !item.isRead,
+  ).length;
+
+  const pageTitleByTab: Record<TabType, string> = {
+    home: 'Home',
+    calendar: 'Personal Calendar',
+    academic: 'Academic Service',
+    campus: 'Student Life',
+    events: 'Events',
+    transport: 'Transport',
+    setting: 'Settings',
+  };
 
   const handleAddStudyReminderNotification = (taskText: string, reminderDateTime: string) => {
     const displayDateTime = reminderDateTime.replace('T', ' ');
@@ -74,6 +82,7 @@ export default function App() {
     <MobileFrame
       topBar={
         <StudentHeader
+          pageTitle={pageTitleByTab[activeTab]}
           onOpenNotifications={() => setIsNotificationOpen(true)}
           unreadCount={unreadCount}
         />
@@ -90,6 +99,10 @@ export default function App() {
           <HomeTab
             onNavigate={(tab) => setActiveTab(tab)}
             onOpenLibraryModal={() => setIsLibraryOpen(true)}
+            onOpenEfeesNotes={() => {
+              setOpenEfeesOnCampus(true);
+              setActiveTab('campus');
+            }}
           />
         )}
 
@@ -99,12 +112,20 @@ export default function App() {
 
         {activeTab === 'events' && <EventsTab />}
 
+        {activeTab === 'transport' && (
+          <div className="page-shell">
+            <ShuttleBusTab />
+          </div>
+        )}
+
         {activeTab === 'academic' && <AcademicTab />}
 
         {activeTab === 'campus' && (
           <CampusLifeTab
             onOpenLibraryModal={() => setIsLibraryOpen(true)}
             onOpenEventsPage={() => setActiveTab('events')}
+            openEfeesOnMount={openEfeesOnCampus}
+            onEfeesOpened={() => setOpenEfeesOnCampus(false)}
           />
         )}
 
@@ -120,10 +141,15 @@ export default function App() {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
         notifications={notifications}
-        onMarkAllRead={() => setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })))}
+        onMarkAllRead={() =>
+          setNotifications((prev) =>
+            prev.map((item) =>
+              isOfficialPushNotification(item) ? { ...item, isRead: true } : item,
+            ),
+          )
+        }
       />
 
-      <InAppBrowser />
     </MobileFrame>
   );
 }

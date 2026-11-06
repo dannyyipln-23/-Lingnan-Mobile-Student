@@ -70,3 +70,4 @@ Used by `src/components/ShuttleBusTab.tsx`:
 - System spec/workflow: `docs/SYSTEM_SPEC.md`
 - Implementation log: `docs/IMPLEMENTATION_LOG.md`
 - Fast onboarding guide: `SKILLS.md`
+- Useful HK government open data APIs (commute, weather, holidays, nearby services + more): `README_GOV_APIS.md`

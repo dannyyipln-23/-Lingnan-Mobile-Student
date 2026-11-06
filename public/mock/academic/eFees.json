@@ -1,0 +1,29 @@
+{
+    "success": true,
+    "data": [
+        {
+            "REPORT_ID": 7318,
+            "REPORT_UUID": "xxxxxxxx",
+            "TERM_YEAR": "2026",
+            "PAYMENT_TERM_DESC": "1st Term 2026 - 2027",
+            "NOTE_DESC": "eTuition Fee Note",
+            "NOTE_REF_NO": "TE3310717T202609R1",
+            "CHARGED_AMOUNT": 10000,
+            "PUBLISH_DATE": "2026-05-11T15:11:09",
+            "DUE_DATE": "2026-05-18",
+            "REMARKS": "",
+            "PAYMENT_REMARKS": "Overdue.  Please pay immediately.",
+            "TOTAL_AMOUNT": 10000,
+            "TOTAL_SETTLEMENT": 0,
+            "INVOICES": [],
+            "NOTE_ITEMS": [
+                {
+                    "ITEM_DESC": "English Course",
+                    "AMOUNT": 10000
+                }
+            ],
+            "SETTLEMENT_ITEMS": []
+        }
+    ],
+    "count": 1
+}

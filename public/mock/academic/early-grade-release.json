@@ -8,26 +8,7 @@
     "termCode": "202509",
     "termLevelCode": "202509_UG"
   },
-  "windowStatus": {
-    "currentWindow": "Closed",
-    "nextWindow": "TBD",
-    "rules": [
-      "Release availability depends on instructor confirmation",
-      "Course must be marked for early release (IS_EARLY = Y)",
-      "Final grade copy indicator must be confirmed"
-    ]
-  },
   "terms": [
-    {
-      "code": "202605",
-      "description": "Summer Term 2025 - 2026",
-      "isDefault": false
-    },
-    {
-      "code": "202601",
-      "description": "2nd Term 2025 - 2026",
-      "isDefault": false
-    },
     {
       "code": "202509",
       "description": "1st Term 2025 - 2026",
@@ -35,40 +16,6 @@
     }
   ],
   "itemsByTerm": {
-    "202605": [
-      {
-        "id": "110",
-        "crn": "110",
-        "subjectCode": "CLC",
-        "courseNumber": "9003",
-        "courseTitle": "Underst. Invest. in St. Mkt",
-        "finalGrade": "B",
-        "releaseReady": "Yes",
-        "isEarly": "Y"
-      }
-    ],
-    "202601": [
-      {
-        "id": "1201",
-        "crn": "1201",
-        "subjectCode": "SCE",
-        "courseNumber": "4012",
-        "courseTitle": "Advanced Coaching Analytics",
-        "finalGrade": "A-",
-        "releaseReady": "No",
-        "isEarly": "N"
-      },
-      {
-        "id": "1202",
-        "crn": "1202",
-        "subjectCode": "SCE",
-        "courseNumber": "4013",
-        "courseTitle": "Sports Performance Lab",
-        "finalGrade": "In review",
-        "releaseReady": "No",
-        "isEarly": "N"
-      }
-    ],
     "202509": [
       {
         "id": "935",

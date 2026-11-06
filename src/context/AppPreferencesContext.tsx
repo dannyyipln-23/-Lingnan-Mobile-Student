@@ -1,4 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  DEFAULT_HOME_TRANSPORT_ROUTES,
+  HOME_TRANSPORT_OPTIONS,
+  HomeTransportRouteId,
+} from '../lib/homeTransport';
 
 export type FontSizeOption = 'sm' | 'md' | 'lg' | 'xl';
 export type HomeShortcutId =
@@ -33,7 +38,7 @@ export const HOME_SHORTCUT_OPTIONS: Array<{
   {
     id: 'wayfinding',
     label: 'Wayfinding',
-    description: 'Open campus map in in-app browser',
+    description: 'Open campus map in system browser',
   },
   {
     id: 'moodle-assignments',
@@ -52,23 +57,26 @@ export const HOME_SHORTCUT_OPTIONS: Array<{
   },
 ];
 
-type InAppBrowserState = {
-  url: string;
-  title: string;
-} | null;
+export {
+  HOME_TRANSPORT_OPTIONS,
+  DEFAULT_HOME_TRANSPORT_ROUTES,
+  type HomeTransportRouteId,
+} from '../lib/homeTransport';
 
 type AppPreferencesContextValue = {
   fontSize: FontSizeOption;
   setFontSize: (size: FontSizeOption) => void;
   homeShortcuts: HomeShortcutId[];
   setHomeShortcuts: (items: HomeShortcutId[]) => void;
-  inAppBrowser: InAppBrowserState;
+  homeTransportRoutes: HomeTransportRouteId[];
+  setHomeTransportRoutes: (items: HomeTransportRouteId[]) => void;
+  /** Opens university / external URLs in the system browser (not an iframe). */
   openInAppBrowser: (url: string, title?: string) => void;
-  closeInAppBrowser: () => void;
 };
 
 const STORAGE_KEY = 'lu-mobile-font-size';
 const HOME_SHORTCUTS_STORAGE_KEY = 'lu-mobile-home-shortcuts';
+const HOME_TRANSPORT_STORAGE_KEY = 'lu-mobile-home-transport-routes';
 const DEFAULT_HOME_SHORTCUTS: HomeShortcutId[] = ['calendar', 'book-seat', 'campus-apps'];
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);
@@ -103,10 +111,32 @@ const readStoredHomeShortcuts = (): HomeShortcutId[] => {
   }
 };
 
+const readStoredHomeTransportRoutes = (): HomeTransportRouteId[] => {
+  try {
+    const raw = localStorage.getItem(HOME_TRANSPORT_STORAGE_KEY);
+    if (!raw) return DEFAULT_HOME_TRANSPORT_ROUTES;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return DEFAULT_HOME_TRANSPORT_ROUTES;
+
+    const valid = parsed.filter((item): item is HomeTransportRouteId =>
+      HOME_TRANSPORT_OPTIONS.some((option) => option.id === item),
+    );
+
+    if (valid.length === 0) return DEFAULT_HOME_TRANSPORT_ROUTES;
+    return valid.slice(0, 4);
+  } catch {
+    return DEFAULT_HOME_TRANSPORT_ROUTES;
+  }
+};
+
 export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [fontSize, setFontSizeState] = useState<FontSizeOption>(() => readStoredFontSize());
-  const [homeShortcuts, setHomeShortcutsState] = useState<HomeShortcutId[]>(() => readStoredHomeShortcuts());
-  const [inAppBrowser, setInAppBrowser] = useState<InAppBrowserState>(null);
+  const [homeShortcuts, setHomeShortcutsState] = useState<HomeShortcutId[]>(() =>
+    readStoredHomeShortcuts(),
+  );
+  const [homeTransportRoutes, setHomeTransportRoutesState] = useState<HomeTransportRouteId[]>(() =>
+    readStoredHomeTransportRoutes(),
+  );
 
   useEffect(() => {
     document.documentElement.setAttribute('data-font-size', fontSize);
@@ -125,6 +155,14 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
     }
   }, [homeShortcuts]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(HOME_TRANSPORT_STORAGE_KEY, JSON.stringify(homeTransportRoutes));
+    } catch {
+      /* ignore */
+    }
+  }, [homeTransportRoutes]);
+
   const setFontSize = useCallback((size: FontSizeOption) => {
     setFontSizeState(size);
   }, []);
@@ -136,12 +174,19 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
     setHomeShortcutsState(unique.slice(0, 6));
   }, []);
 
-  const openInAppBrowser = useCallback((url: string, title = 'External site') => {
-    setInAppBrowser({ url, title });
+  const setHomeTransportRoutes = useCallback((items: HomeTransportRouteId[]) => {
+    const unique = Array.from(new Set(items)).filter((item): item is HomeTransportRouteId =>
+      HOME_TRANSPORT_OPTIONS.some((option) => option.id === item),
+    );
+    // Keep at least one route so Home always has a transport preview.
+    setHomeTransportRoutesState(
+      unique.length > 0 ? unique.slice(0, 4) : DEFAULT_HOME_TRANSPORT_ROUTES,
+    );
   }, []);
 
-  const closeInAppBrowser = useCallback(() => {
-    setInAppBrowser(null);
+  const openInAppBrowser = useCallback((url: string, _title?: string) => {
+    // ADFS / campus SSO pages block iframe embedding; always use the system browser.
+    window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
   const value = useMemo(
@@ -150,11 +195,19 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
       setFontSize,
       homeShortcuts,
       setHomeShortcuts,
-      inAppBrowser,
+      homeTransportRoutes,
+      setHomeTransportRoutes,
       openInAppBrowser,
-      closeInAppBrowser,
     }),
-    [fontSize, setFontSize, homeShortcuts, setHomeShortcuts, inAppBrowser, openInAppBrowser, closeInAppBrowser],
+    [
+      fontSize,
+      setFontSize,
+      homeShortcuts,
+      setHomeShortcuts,
+      homeTransportRoutes,
+      setHomeTransportRoutes,
+      openInAppBrowser,
+    ],
   );
 
   return <AppPreferencesContext.Provider value={value}>{children}</AppPreferencesContext.Provider>;

@@ -3,50 +3,44 @@ import { AcademicFlowShell } from './AcademicFlowShell';
 import { DetailSection } from './DetailSection';
 import { FlowListCard } from './FlowListCard';
 import { TermPicker } from './TermPicker';
+import { fetchDataRecordXml } from '../../lib/parseDataRecordXml';
 
 type FlowStep = 'term' | 'list' | 'detail';
 
-type ResultsPayload = {
-  title: string;
-  subtitle?: string;
-  overview?: {
-    cgpa?: string;
-    creditsEarned?: string;
-    creditsInProgress?: string;
-  };
-  terms: Array<{
-    code: string;
-    termCode?: string;
-    description: string;
-    isDefault?: boolean;
-  }>;
-  itemsByTerm: Record<
-    string,
-    Array<{
-      id: string;
-      subjectCode: string;
-      courseNumber: string;
-      courseTitle: string;
-      finalGrade: string;
-      crn: string;
-    }>
-  >;
-  detailsById: Record<
-    string,
-    {
-      subjectCode: string;
-      courseNumber: string;
-      courseTitle: string;
-      crn: string;
-      section?: string;
-      subjectType?: string;
-      midGrade?: string;
-      finalGrade: string;
-      gradeDate?: string;
-      termCode?: string;
-      termLevelCode?: string;
-    }
-  >;
+type GradeTermRow = {
+  STUDENTID: string;
+  LEVELTERMCODE: string;
+  LEVELTERMDESC: string;
+};
+
+type GradeRow = {
+  STUDENTID: string;
+  TERMCODE: string;
+  COURSEREGISTRATIONNUMBER: string;
+  SUBJECTCODE: string;
+  COURSENUMBER: string;
+  COURSETITLE: string;
+  SUBJECTTYPE: string;
+  SECTION: string;
+  MIDGRADE: string;
+  FINALGRADE: string;
+  GRADEDATE: string;
+  TERMLEVELCODE: string;
+};
+
+type GradeItem = {
+  id: string;
+  subjectCode: string;
+  courseNumber: string;
+  courseTitle: string;
+  finalGrade: string;
+  midGrade: string;
+  crn: string;
+  section: string;
+  subjectType: string;
+  gradeDate: string;
+  termCode: string;
+  termLevelCode: string;
 };
 
 interface MyAcademicResultsFlowProps {
@@ -55,44 +49,119 @@ interface MyAcademicResultsFlowProps {
 
 const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
 
+const cleanGrade = (value: string): string =>
+  value.replace(/^Grade:\s*/i, '').trim() || '—';
+
+const decodeTitle = (value: string): string =>
+  value
+    .replace(/&#38;/g, '&')
+    .replace(/&amp;/g, '&')
+    .trim();
+
+const sortTermCodesDesc = (a: string, b: string): number => b.localeCompare(a);
+
 export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ onBack }) => {
-  const [payload, setPayload] = useState<ResultsPayload | null>(null);
+  const [terms, setTerms] = useState<GradeTermRow[]>([]);
+  const [grades, setGrades] = useState<GradeRow[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<FlowStep>('term');
   const [termCode, setTermCode] = useState<string>('');
   const [itemId, setItemId] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/mock/academic/my-academic-results.json')
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to load academic results (${res.status})`);
-        }
-        return res.json() as Promise<ResultsPayload>;
-      })
-      .then((data) => {
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [termRows, gradeRows] = await Promise.all([
+          fetchDataRecordXml<GradeTermRow>('/mock/academic/grade-term.xml', [
+            'STUDENTID',
+            'LEVELTERMCODE',
+            'LEVELTERMDESC',
+          ]),
+          fetchDataRecordXml<GradeRow>('/mock/academic/grades.xml', [
+            'STUDENTID',
+            'TERMCODE',
+            'COURSEREGISTRATIONNUMBER',
+            'SUBJECTCODE',
+            'COURSENUMBER',
+            'COURSETITLE',
+            'SUBJECTTYPE',
+            'SECTION',
+            'MIDGRADE',
+            'FINALGRADE',
+            'GRADEDATE',
+            'TERMLEVELCODE',
+          ]),
+        ]);
+
+        if (cancelled) return;
+
+        const sortedTerms = [...termRows].sort((a, b) =>
+          sortTermCodesDesc(a.LEVELTERMCODE, b.LEVELTERMCODE),
+        );
+        setTerms(sortedTerms);
+        setGrades(gradeRows);
+      } catch (err) {
         if (!cancelled) {
-          setPayload(data);
+          setError(err instanceof Error ? err.message : 'Failed to load academic results');
         }
-      })
-      .catch((err: Error) => {
+      } finally {
         if (!cancelled) {
-          setError(err.message);
+          setLoading(false);
         }
-      });
+      }
+    };
+
+    void load();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const selectedTerm = useMemo(
-    () => payload?.terms.find((term) => term.code === termCode),
-    [payload, termCode],
+  const pickerTerms = useMemo(
+    () =>
+      terms.map((term, index) => ({
+        code: term.LEVELTERMCODE,
+        description: term.LEVELTERMDESC.trim(),
+        meta: term.LEVELTERMCODE,
+        isDefault: index === 0,
+      })),
+    [terms],
   );
 
-  const items = useMemo(() => payload?.itemsByTerm[termCode] ?? [], [payload, termCode]);
-  const detail = itemId ? payload?.detailsById[itemId] : undefined;
+  const selectedTerm = useMemo(
+    () => terms.find((term) => term.LEVELTERMCODE === termCode),
+    [termCode, terms],
+  );
+
+  const items = useMemo<GradeItem[]>(() => {
+    if (!termCode) return [];
+    return grades
+      .filter((row) => row.TERMLEVELCODE === termCode)
+      .map((row, index) => ({
+        id: `${row.TERMLEVELCODE}-${row.SUBJECTCODE}-${row.COURSENUMBER}-${row.COURSEREGISTRATIONNUMBER || index}`,
+        subjectCode: row.SUBJECTCODE,
+        courseNumber: row.COURSENUMBER,
+        courseTitle: decodeTitle(row.COURSETITLE),
+        finalGrade: cleanGrade(row.FINALGRADE),
+        midGrade: cleanGrade(row.MIDGRADE),
+        crn: row.COURSEREGISTRATIONNUMBER || '—',
+        section: row.SECTION || '—',
+        subjectType: row.SUBJECTTYPE || '—',
+        gradeDate: row.GRADEDATE || '—',
+        termCode: row.TERMCODE,
+        termLevelCode: row.TERMLEVELCODE,
+      }));
+  }, [grades, termCode]);
+
+  const detail = useMemo(
+    () => items.find((item) => item.id === itemId),
+    [itemId, items],
+  );
 
   const handleBack = () => {
     if (step === 'detail') {
@@ -116,19 +185,21 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
     );
   }
 
-  if (!payload) {
+  if (loading) {
     return (
       <AcademicFlowShell title="My Academic Results" theme="results" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">Loading…</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+          Loading…
+        </div>
       </AcademicFlowShell>
     );
   }
 
   const subtitle =
     step === 'term'
-      ? payload.subtitle
+      ? 'Select a term to view grades'
       : step === 'list'
-        ? selectedTerm?.description
+        ? selectedTerm?.LEVELTERMDESC.trim()
         : `${detail?.subjectCode ?? ''}${detail?.courseNumber ?? ''}`;
 
   return (
@@ -143,35 +214,14 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
     >
       {step === 'term' && (
         <div className="space-y-3">
-          {payload.overview && (
-            <div className="flow-hero">
-              <p className="flow-hero__eyebrow">Cumulative overview</p>
-              <p className="flow-hero__value">{payload.overview.cgpa ?? '—'}</p>
-              <p className="flow-hero__caption">cGPA across all terms</p>
-              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-blue-100 pt-3">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Earned</p>
-                  <p className="mt-0.5 text-sm font-bold text-slate-900">
-                    {payload.overview.creditsEarned ?? '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                    In progress
-                  </p>
-                  <p className="mt-0.5 text-sm font-bold text-slate-900">
-                    {payload.overview.creditsInProgress ?? '—'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Academic results</p>
+            <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+              Choose a term first
+            </p>
+          </div> */}
           <TermPicker
-            terms={payload.terms.map((term) => ({
-              code: term.code,
-              description: term.description,
-              isDefault: term.isDefault,
-            }))}
+            terms={pickerTerms}
             onSelect={(code) => {
               setTermCode(code);
               setStep('list');
@@ -193,7 +243,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
               key={item.id}
               title={`${item.subjectCode}${item.courseNumber}`}
               subtitle={item.courseTitle}
-              meta={`CRN ${item.crn}`}
+              meta={item.crn !== '—' ? `CRN ${item.crn}` : item.termLevelCode}
               status={item.finalGrade}
               statusTone="good"
               onClick={() => {
@@ -218,13 +268,14 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
           <DetailSection
             title="Grade details"
             rows={[
-              { label: 'Mid-term', value: detail.midGrade ?? '—' },
+              { label: 'Mid-term', value: detail.midGrade },
               { label: 'Final', value: detail.finalGrade },
-              { label: 'Posted', value: detail.gradeDate ?? '—' },
+              { label: 'Posted', value: detail.gradeDate },
               { label: 'CRN', value: detail.crn },
-              { label: 'Section', value: detail.section ?? '—' },
-              { label: 'Type', value: detail.subjectType ?? '—' },
-              { label: 'Term', value: detail.termCode ?? selectedTerm?.termCode ?? termCode },
+              { label: 'Section', value: detail.section },
+              { label: 'Type', value: detail.subjectType },
+              { label: 'Term', value: detail.termCode || selectedTerm?.LEVELTERMCODE || termCode },
+              { label: 'Term level', value: detail.termLevelCode },
             ]}
           />
         </div>

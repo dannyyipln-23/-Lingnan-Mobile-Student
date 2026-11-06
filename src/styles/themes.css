@@ -148,6 +148,16 @@ html {
   --flow-chip-border: #d8b4fe;
 }
 
+.flow-theme-fees {
+  --flow-bg-from: #fecdd3;
+  --flow-bg-via: #fff1f2;
+  --flow-accent: #9f1239;
+  --flow-accent-soft: #fff1f2;
+  --flow-chip-bg: #ffe4e6;
+  --flow-chip-fg: #9f1239;
+  --flow-chip-border: #fda4af;
+}
+
 .flow-shell {
   position: relative;
   display: flex;

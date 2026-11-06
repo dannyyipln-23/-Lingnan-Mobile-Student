@@ -20,6 +20,31 @@ interface MyClassScheduleFlowProps {
 
 const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
 
+const scheduleTypeStyle = (
+  scheduleType: string,
+): { accent: string; chipClass: string } => {
+  const normalized = scheduleType.trim().toLowerCase();
+  if (normalized === 'lecture') {
+    return {
+      accent: '#2563EB',
+      chipClass:
+        'inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700',
+    };
+  }
+  if (normalized === 'tutorial') {
+    return {
+      accent: '#D97706',
+      chipClass:
+        'inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800',
+    };
+  }
+  return {
+    accent: '#64748B',
+    chipClass:
+      'inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-700',
+  };
+};
+
 export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack }) => {
   const [courses, setCourses] = useState<RegisteredCourse[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -160,18 +185,23 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
                 No registered courses for this term.
               </div>
             )}
-            {items.map((item) => (
-              <FlowListCard
-                key={item.id}
-                title={`${item.subjectCode}${item.courseNumber}`}
-                subtitle={item.courseTitle}
-                meta={item.scheduleType}
-                onClick={() => {
-                  setItemId(item.id);
-                  setStep('detail');
-                }}
-              />
-            ))}
+            {items.map((item) => {
+              const typeStyle = scheduleTypeStyle(item.scheduleType);
+              return (
+                <FlowListCard
+                  key={item.id}
+                  title={`${item.subjectCode}${item.courseNumber}`}
+                  subtitle={item.courseTitle}
+                  status={item.scheduleType}
+                  statusClassName={typeStyle.chipClass}
+                  accent={typeStyle.accent}
+                  onClick={() => {
+                    setItemId(item.id);
+                    setStep('detail');
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -179,10 +209,15 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       {step === 'detail' && detail && (
         <div className="space-y-3">
           <div className="flow-hero">
-            <p className="flow-hero__eyebrow">
-              {detail.subjectCode}
-              {detail.courseNumber}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="flow-hero__eyebrow">
+                {detail.subjectCode}
+                {detail.courseNumber}
+              </p>
+              <span className={scheduleTypeStyle(detail.scheduleType).chipClass}>
+                {detail.scheduleType}
+              </span>
+            </div>
             <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">{detail.courseTitle}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
               <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1">

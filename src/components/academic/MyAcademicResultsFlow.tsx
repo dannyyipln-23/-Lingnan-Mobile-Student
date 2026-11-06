@@ -49,14 +49,30 @@ interface MyAcademicResultsFlowProps {
 
 const stepIndexMap: Record<FlowStep, number> = { term: 0, list: 1, detail: 2 };
 
-const cleanGrade = (value: string): string =>
-  value.replace(/^Grade:\s*/i, '').trim() || '—';
+const cleanGrade = (value: string): string => {
+  const cleaned = value
+    .replace(/^Grade:\s*/i, '')
+    .replace(/&nbsp;/gi, '')
+    .replace(/\u00a0/g, '')
+    .trim();
+  return cleaned || '—';
+};
 
 const decodeTitle = (value: string): string =>
   value
     .replace(/&#38;/g, '&')
     .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/gi, ' ')
     .trim();
+
+const isTermGpaRow = (row: GradeRow): boolean =>
+  row.SUBJECTCODE.trim().toLowerCase() === 'term';
+
+const parseTermGpa = (row: GradeRow): string | null => {
+  if (!isTermGpaRow(row)) return null;
+  const match = decodeTitle(row.COURSETITLE).match(/GPA:\s*([0-9]+(?:\.[0-9]+)?)/i);
+  return match?.[1] ?? null;
+};
 
 const sortTermCodesDesc = (a: string, b: string): number => b.localeCompare(a);
 
@@ -122,15 +138,29 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
     };
   }, []);
 
+  const termGpaByLevel = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const row of grades) {
+      const gpa = parseTermGpa(row);
+      if (gpa) {
+        map.set(row.TERMLEVELCODE, gpa);
+      }
+    }
+    return map;
+  }, [grades]);
+
   const pickerTerms = useMemo(
     () =>
-      terms.map((term, index) => ({
-        code: term.LEVELTERMCODE,
-        description: term.LEVELTERMDESC.trim(),
-        meta: term.LEVELTERMCODE,
-        isDefault: index === 0,
-      })),
-    [terms],
+      terms.map((term, index) => {
+        const gpa = termGpaByLevel.get(term.LEVELTERMCODE);
+        return {
+          code: term.LEVELTERMCODE,
+          description: term.LEVELTERMDESC.trim(),
+          meta: gpa ? `Term GPA ${gpa}` : term.LEVELTERMCODE,
+          isDefault: index === 0,
+        };
+      }),
+    [termGpaByLevel, terms],
   );
 
   const selectedTerm = useMemo(
@@ -138,10 +168,12 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
     [termCode, terms],
   );
 
+  const termGpa = termCode ? termGpaByLevel.get(termCode) : undefined;
+
   const items = useMemo<GradeItem[]>(() => {
     if (!termCode) return [];
     return grades
-      .filter((row) => row.TERMLEVELCODE === termCode)
+      .filter((row) => row.TERMLEVELCODE === termCode && !isTermGpaRow(row))
       .map((row, index) => ({
         id: `${row.TERMLEVELCODE}-${row.SUBJECTCODE}-${row.COURSENUMBER}-${row.COURSEREGISTRATIONNUMBER || index}`,
         subjectCode: row.SUBJECTCODE,
@@ -231,27 +263,37 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
       )}
 
       {step === 'list' && (
-        <div className="space-y-2">
-          <p className="flow-section-label">Courses ({items.length})</p>
-          {items.length === 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-              No grades for this term.
-            </div>
-          )}
-          {items.map((item) => (
-            <FlowListCard
-              key={item.id}
-              title={`${item.subjectCode}${item.courseNumber}`}
-              subtitle={item.courseTitle}
-              meta={item.crn !== '—' ? `CRN ${item.crn}` : item.termLevelCode}
-              status={item.finalGrade}
-              statusTone="good"
-              onClick={() => {
-                setItemId(item.id);
-                setStep('detail');
-              }}
-            />
-          ))}
+        <div className="space-y-3">
+          <div className="flow-hero">
+            <p className="flow-hero__eyebrow">Term GPA</p>
+            <p className="flow-hero__value">{termGpa ?? '—'}</p>
+            <p className="flow-hero__caption">
+              {selectedTerm?.LEVELTERMDESC.trim()} · {items.length} course
+              {items.length === 1 ? '' : 's'}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="flow-section-label">Courses ({items.length})</p>
+            {items.length === 0 && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+                No grades for this term.
+              </div>
+            )}
+            {items.map((item) => (
+              <FlowListCard
+                key={item.id}
+                title={`${item.subjectCode}${item.courseNumber}`}
+                subtitle={item.courseTitle}
+                meta={item.crn !== '—' ? `CRN ${item.crn}` : item.termLevelCode}
+                status={item.finalGrade}
+                statusTone="good"
+                onClick={() => {
+                  setItemId(item.id);
+                  setStep('detail');
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
 

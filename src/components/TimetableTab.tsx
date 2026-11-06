@@ -635,7 +635,7 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        {/* <div className="flex flex-wrap gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
             <BookOpen className="h-3 w-3" />
             Moodle
@@ -644,7 +644,7 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
             <Bell className="h-3 w-3" />
             Personal
           </span>
-        </div>
+        </div> */}
 
         <div className="space-y-2">
           {selectedDayTasks.length === 0 ? (

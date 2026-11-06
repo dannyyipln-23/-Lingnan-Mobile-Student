@@ -219,7 +219,7 @@ export type StudyTaskItem = {
 export const STUDY_TASKS: StudyTaskItem[] = [
   {
     id: 't1',
-    text: 'RIM2201 Case Study on Climate Risk Insurance',
+    text: 'PMS4102 Data analytics case report draft',
     reminderDateTime: `${CALENDAR_DEMO_TODAY}T23:59`,
     done: false,
     dateKey: CALENDAR_DEMO_TODAY,
@@ -227,7 +227,7 @@ export const STUDY_TASKS: StudyTaskItem[] = [
   },
   {
     id: 't2',
-    text: 'CDS2001 Python Pandas assignment submission',
+    text: 'PMS4001 Organizational Communication reading quiz',
     reminderDateTime: '2026-09-02T17:00',
     done: true,
     dateKey: '2026-09-02',

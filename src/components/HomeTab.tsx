@@ -362,11 +362,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
               </div>
             </div>
 
-            {weather.specialTip ? (
-              <p className="line-clamp-2 text-[11px] leading-relaxed text-white/90">
-                {weather.specialTip}
-              </p>
-            ) : null}
+            
 
             <p className="text-[10px] text-white/65">
               Updated {weather.lastUpdated}

@@ -6,6 +6,7 @@ import {
 } from '../lib/homeTransport';
 
 export type FontSizeOption = 'sm' | 'md' | 'lg' | 'xl';
+export type StudentLifeLayoutOption = 'list' | 'grid';
 export type HomeShortcutId =
   | 'calendar'
   | 'book-seat'
@@ -66,6 +67,8 @@ export {
 type AppPreferencesContextValue = {
   fontSize: FontSizeOption;
   setFontSize: (size: FontSizeOption) => void;
+  studentLifeLayout: StudentLifeLayoutOption;
+  setStudentLifeLayout: (layout: StudentLifeLayoutOption) => void;
   homeShortcuts: HomeShortcutId[];
   setHomeShortcuts: (items: HomeShortcutId[]) => void;
   homeTransportRoutes: HomeTransportRouteId[];
@@ -75,9 +78,11 @@ type AppPreferencesContextValue = {
 };
 
 const STORAGE_KEY = 'lu-mobile-font-size';
+const STUDENT_LIFE_LAYOUT_STORAGE_KEY = 'lu-mobile-student-life-layout';
 const HOME_SHORTCUTS_STORAGE_KEY = 'lu-mobile-home-shortcuts';
 const HOME_TRANSPORT_STORAGE_KEY = 'lu-mobile-home-transport-routes';
 const DEFAULT_HOME_SHORTCUTS: HomeShortcutId[] = ['calendar', 'book-seat', 'campus-apps'];
+const DEFAULT_STUDENT_LIFE_LAYOUT: StudentLifeLayoutOption = 'list';
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);
 
@@ -91,6 +96,18 @@ const readStoredFontSize = (): FontSizeOption => {
     /* ignore */
   }
   return 'md';
+};
+
+const readStoredStudentLifeLayout = (): StudentLifeLayoutOption => {
+  try {
+    const value = localStorage.getItem(STUDENT_LIFE_LAYOUT_STORAGE_KEY);
+    if (value === 'list' || value === 'grid') {
+      return value;
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_STUDENT_LIFE_LAYOUT;
 };
 
 const readStoredHomeShortcuts = (): HomeShortcutId[] => {
@@ -131,6 +148,9 @@ const readStoredHomeTransportRoutes = (): HomeTransportRouteId[] => {
 
 export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [fontSize, setFontSizeState] = useState<FontSizeOption>(() => readStoredFontSize());
+  const [studentLifeLayout, setStudentLifeLayoutState] = useState<StudentLifeLayoutOption>(() =>
+    readStoredStudentLifeLayout(),
+  );
   const [homeShortcuts, setHomeShortcutsState] = useState<HomeShortcutId[]>(() =>
     readStoredHomeShortcuts(),
   );
@@ -146,6 +166,14 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
       /* ignore */
     }
   }, [fontSize]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STUDENT_LIFE_LAYOUT_STORAGE_KEY, studentLifeLayout);
+    } catch {
+      /* ignore */
+    }
+  }, [studentLifeLayout]);
 
   useEffect(() => {
     try {
@@ -165,6 +193,10 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
 
   const setFontSize = useCallback((size: FontSizeOption) => {
     setFontSizeState(size);
+  }, []);
+
+  const setStudentLifeLayout = useCallback((layout: StudentLifeLayoutOption) => {
+    setStudentLifeLayoutState(layout);
   }, []);
 
   const setHomeShortcuts = useCallback((items: HomeShortcutId[]) => {
@@ -193,6 +225,8 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
     () => ({
       fontSize,
       setFontSize,
+      studentLifeLayout,
+      setStudentLifeLayout,
       homeShortcuts,
       setHomeShortcuts,
       homeTransportRoutes,
@@ -202,6 +236,8 @@ export const AppPreferencesProvider: React.FC<{ children: React.ReactNode }> = (
     [
       fontSize,
       setFontSize,
+      studentLifeLayout,
+      setStudentLifeLayout,
       homeShortcuts,
       setHomeShortcuts,
       homeTransportRoutes,

@@ -7,6 +7,8 @@ import {
   ChevronRight,
   CircleHelp,
   Globe,
+  LayoutGrid,
+  List,
   Lock,
   Type,
   UserRound,
@@ -16,6 +18,7 @@ import {
   FontSizeOption,
   HOME_TRANSPORT_OPTIONS,
   HomeTransportRouteId,
+  StudentLifeLayoutOption,
   useAppPreferences,
 } from '../context/AppPreferencesContext';
 
@@ -64,8 +67,25 @@ const fontSizeOptions: Array<{ id: FontSizeOption; label: string; sample: string
   { id: 'xl', label: 'XL', sample: 'Extra large' },
 ];
 
+const studentLifeLayoutOptions: Array<{
+  id: StudentLifeLayoutOption;
+  label: string;
+  sample: string;
+  icon: typeof List;
+}> = [
+  { id: 'list', label: 'List', sample: 'One column', icon: List },
+  { id: 'grid', label: 'Grid', sample: 'Two columns', icon: LayoutGrid },
+];
+
 export const SettingsTab: React.FC = () => {
-  const { fontSize, setFontSize, homeTransportRoutes, setHomeTransportRoutes } = useAppPreferences();
+  const {
+    fontSize,
+    setFontSize,
+    studentLifeLayout,
+    setStudentLifeLayout,
+    homeTransportRoutes,
+    setHomeTransportRoutes,
+  } = useAppPreferences();
   const [settingsPage, setSettingsPage] = useState<'main' | 'transport'>('main');
 
   const toggleTransportRoute = (routeId: HomeTransportRouteId) => {
@@ -213,6 +233,43 @@ export const SettingsTab: React.FC = () => {
                 aria-pressed={selected}
               >
                 <p className="text-sm font-bold">{option.label}</p>
+                <p className="mt-0.5 text-[10px] font-semibold">{option.sample}</p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+        <div className="mb-3 flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
+            <LayoutGrid className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-[var(--text-primary)]">Student Life layout</p>
+            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+              Choose list or grid for the Student Life services page.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {studentLifeLayoutOptions.map((option) => {
+            const selected = studentLifeLayout === option.id;
+            const Icon = option.icon;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setStudentLifeLayout(option.id)}
+                className={`rounded-xl border px-2 py-2.5 text-center transition ${
+                  selected
+                    ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]'
+                    : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]'
+                }`}
+                aria-pressed={selected}
+              >
+                <Icon className="mx-auto h-4 w-4" />
+                <p className="mt-1 text-sm font-bold">{option.label}</p>
                 <p className="mt-0.5 text-[10px] font-semibold">{option.sample}</p>
               </button>
             );

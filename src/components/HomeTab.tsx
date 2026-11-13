@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { HOME_IMPORTANT_NOTICES, HomeNoticeKind } from '../data/mockData';
 import { useAppPreferences } from '../context/AppPreferencesContext';
+import { hkoUrl } from '../lib/externalApis';
 import {
   fetchHomeTransportEtas,
   HomeTransportEtaRow,
@@ -268,11 +269,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
 
     const loadWeather = async () => {
       const requests = await Promise.allSettled([
-        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en'),
-        fetch('/api/hko/weatherAPI/opendata/hourlyRainfall.php?lang=en'),
-        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en'),
-        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en'),
-        fetch('/api/hko/weatherAPI/opendata/weather.php?dataType=swt&lang=en'),
+        fetch(hkoUrl('/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en')),
+        fetch(hkoUrl('/weatherAPI/opendata/hourlyRainfall.php?lang=en')),
+        fetch(hkoUrl('/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en')),
+        fetch(hkoUrl('/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en')),
+        fetch(hkoUrl('/weatherAPI/opendata/weather.php?dataType=swt&lang=en')),
       ]);
 
       const readJson = async (result: PromiseSettledResult<Response>): Promise<unknown> => {

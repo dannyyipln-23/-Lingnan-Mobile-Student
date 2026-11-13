@@ -1,3 +1,5 @@
+import { gov1823Url } from './externalApis';
+
 export type HkPublicHoliday = {
   dateKey: string; // YYYY-MM-DD
   summary: string;
@@ -39,7 +41,7 @@ export const parseHkPublicHolidays = (payload: unknown): HkPublicHoliday[] => {
 };
 
 export const fetchHkPublicHolidays = async (): Promise<HkPublicHoliday[]> => {
-  const res = await fetch('/api/1823/common/ical/en.json');
+  const res = await fetch(gov1823Url('/common/ical/en.json'));
   if (!res.ok) {
     throw new Error(`Failed to load HK public holidays (${res.status})`);
   }

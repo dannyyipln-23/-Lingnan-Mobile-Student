@@ -66,7 +66,7 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
   if (error) {
     return (
       <AcademicFlowShell title="My Graduation Requirements" theme="graduation" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -74,7 +74,7 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
   if (!payload) {
     return (
       <AcademicFlowShell title="My Graduation Requirements" theme="graduation" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">Loading…</div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -92,16 +92,16 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
       <div className="space-y-3">
         <div className="flow-hero">
           <p className="flow-hero__eyebrow">Checklist progress</p>
-          <div className="mt-1 flex items-end justify-between gap-2">
+          <div className="grad-progress__head">
             <p className="flow-hero__value">
               {fulfilledCount}
-              <span className="text-base font-semibold text-slate-500">/{totalRequirements}</span>
+              <span className="flow-hero__unit">/{totalRequirements}</span>
             </p>
-            <p className="pb-1 text-sm font-bold text-emerald-800">{progressPct}%</p>
+            <p className="grad-progress__pct">{progressPct}%</p>
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-emerald-100">
+          <div className="grad-progress__track">
             <div
-              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+              className="grad-progress__bar"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -118,23 +118,19 @@ export const MyGraduationRequirementsFlow: React.FC<MyGraduationRequirementsFlow
           {payload.requirements.map((req) => (
             <div
               key={req.id}
-              className="flex items-start gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3.5 py-3 shadow-[0_4px_14px_rgb(15_23_42_/_0.04)]"
+              className="grad-req"
             >
               {req.fulfilled ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="grad-req__icon is-done" />
               ) : (
-                <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <CircleAlert className="grad-req__icon is-pending" />
               )}
-              <div className="min-w-0">
-                <p className="text-sm font-bold tracking-tight text-slate-900">{req.label}</p>
-                <p className="mt-0.5 text-[11px] text-slate-500">{req.detail}</p>
+              <div className="grad-req__body">
+                <p className="grad-req__label">{req.label}</p>
+                <p className="grad-req__detail">{req.detail}</p>
               </div>
               <span
-                className={`ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
-                  req.fulfilled
-                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                    : 'border-amber-100 bg-amber-50 text-amber-800'
-                }`}
+                className={`status-chip${req.fulfilled ? ' status-chip--good' : ' status-chip--warn'}`}
               >
                 {req.fulfilled ? 'Done' : 'Pending'}
               </span>

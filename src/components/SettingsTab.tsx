@@ -23,13 +23,7 @@ import {
 } from '../context/AppPreferencesContext';
 
 const settingItems = [
-  {
-    id: 'profile',
-    title: 'Profile & Account',
-    desc: 'Update contact and student profile settings',
-    icon: UserRound,
-    enabled: false,
-  },
+
   {
     id: 'privacy',
     title: 'Privacy & Security',
@@ -50,14 +44,7 @@ const settingItems = [
     desc: 'Display language and locale format options',
     icon: Globe,
     enabled: false,
-  },
-  {
-    id: 'help',
-    title: 'Help & Support',
-    desc: 'Support center and FAQ resources',
-    icon: CircleHelp,
-    enabled: false,
-  },
+  }
 ];
 
 const fontSizeOptions: Array<{ id: FontSizeOption; label: string; sample: string }> = [
@@ -102,30 +89,24 @@ export const SettingsTab: React.FC = () => {
   if (settingsPage === 'transport') {
     return (
       <div className="page-shell page-shell--settings space-y-4">
-        <div className="px-1">
-          <button
-            type="button"
-            onClick={() => setSettingsPage('main')}
-            className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-[11px] font-semibold text-[var(--text-secondary)]"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
+        <div className="set-heading">
+          <button type="button" onClick={() => setSettingsPage('main')} className="set-back">
+            <ChevronLeft className="set-back__icon" />
             Back to Settings
           </button>
-          <h2 className="mt-2 text-lg font-bold text-[var(--text-primary)]">Home Transport</h2>
-          <p className="text-xs text-[var(--text-muted)]">
+          <h2 className="set-heading__title set-heading__title--spaced">Home Transport</h2>
+          <p className="set-heading__desc">
             Choose 1 to 4 routes to preview on the Home page (for example Route K51).
           </p>
         </div>
 
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
-              Selected: {homeTransportRoutes.length} / 4
-            </p>
-            <p className="text-[10px] text-[var(--text-muted)]">At least 1 route required</p>
+        <section className="set-panel">
+          <div className="set-panel__meta">
+            <p className="set-panel__count">Selected: {homeTransportRoutes.length} / 4</p>
+            <p className="set-panel__hint">At least 1 route required</p>
           </div>
 
-          <div className="space-y-2">
+          <div className="set-routes">
             {HOME_TRANSPORT_OPTIONS.map((option) => {
               const selected = homeTransportRoutes.includes(option.id);
 
@@ -134,32 +115,22 @@ export const SettingsTab: React.FC = () => {
                   key={option.id}
                   type="button"
                   onClick={() => toggleTransportRoute(option.id)}
-                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
-                    selected
-                      ? 'border-[var(--brand)] bg-[var(--brand-soft)]'
-                      : 'border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface)]'
-                  }`}
+                  className={`set-route${selected ? ' is-selected' : ''}`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="inline-flex min-w-0 items-center gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]">
-                        <Bus className="h-4 w-4" />
+                  <div className="set-route__row">
+                    <div className="set-route__lead">
+                      <div className="set-route__icon">
+                        <Bus className="set-route__icon-svg" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-[var(--text-primary)]">{option.label}</p>
-                        <p className="text-[11px] text-[var(--text-muted)]">
+                      <div className="set-route__text">
+                        <p className="set-route__label">{option.label}</p>
+                        <p className="set-route__desc">
                           {option.provider} · {option.description}
                         </p>
                       </div>
                     </div>
-                    <div
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                        selected
-                          ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
-                          : 'border-[var(--border)] bg-[var(--surface)] text-transparent'
-                      }`}
-                    >
-                      <Check className="h-3.5 w-3.5" />
+                    <div className={`set-route__check${selected ? ' is-selected' : ''}`}>
+                      <Check className="set-route__check-svg" />
                     </div>
                   </div>
                 </button>
@@ -173,51 +144,18 @@ export const SettingsTab: React.FC = () => {
 
   return (
     <div className="page-shell page-shell--settings space-y-4">
-      <div className="px-1">
-        <h2 className="text-lg font-bold text-[var(--text-primary)]">Settings</h2>
-        <p className="text-xs text-[var(--text-muted)]">Account, privacy and app preferences</p>
-      </div>
 
-      {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs">
-        <div className="flex items-center space-x-3.5">
-          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] shadow-xs ring-2 ring-[var(--brand)]/20">
-            <img
-              src={CURRENT_STUDENT.avatarUrl}
-              alt={CURRENT_STUDENT.fullName}
-              className="h-full w-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center space-x-2">
-              <span className="font-mono text-xs font-bold text-[var(--brand)]">
-                {CURRENT_STUDENT.studentNumber}
-              </span>
-              <span className="rounded-md border border-[var(--brand-border)] bg-[var(--brand-soft)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--brand)]">
-                Year {CURRENT_STUDENT.yearOfStudy}
-              </span>
-            </div>
-            <h3 className="mt-0.5 truncate text-sm font-bold text-[var(--text-primary)]">
-              {CURRENT_STUDENT.fullName}
-            </h3>
-            <p className="truncate text-xs text-[var(--text-muted)]">{CURRENT_STUDENT.major}</p>
-          </div>
-        </div>
-      </div> */}
 
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
-        <div className="mb-3 flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-            <Type className="h-4 w-4" />
+      <section className="set-panel">
+        <div className="set-pref__head">
+          <div className="set-pref__icon">
+            <Type className="set-pref__icon-svg" />
           </div>
           <div>
-            <p className="text-sm font-bold text-[var(--text-primary)]">Display text size</p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-              Applies across the app. Preview: The quick brown fox.
-            </p>
+            <p className="set-pref__title">Display font size</p>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="set-choice-grid set-choice-grid--fonts">
           {fontSizeOptions.map((option) => {
             const selected = fontSize === option.id;
             return (
@@ -225,34 +163,27 @@ export const SettingsTab: React.FC = () => {
                 key={option.id}
                 type="button"
                 onClick={() => setFontSize(option.id)}
-                className={`rounded-xl border px-2 py-2.5 text-center transition ${
-                  selected
-                    ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]'
-                    : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]'
-                }`}
+                className={`set-choice${selected ? ' is-selected' : ''}`}
                 aria-pressed={selected}
               >
-                <p className="text-sm font-bold">{option.label}</p>
-                <p className="mt-0.5 text-[10px] font-semibold">{option.sample}</p>
+                <p className="set-choice__label">{option.label}</p>
+                <p className="set-choice__sample">{option.sample}</p>
               </button>
             );
           })}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
-        <div className="mb-3 flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-            <LayoutGrid className="h-4 w-4" />
+      <section className="set-panel">
+        <div className="set-pref__head">
+          <div className="set-pref__icon">
+            <LayoutGrid className="set-pref__icon-svg" />
           </div>
           <div>
-            <p className="text-sm font-bold text-[var(--text-primary)]">Student Life layout</p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-              Choose list or grid for the Student Life services page.
-            </p>
+            <p className="set-pref__title">Student Life layout</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="set-choice-grid set-choice-grid--layout">
           {studentLifeLayoutOptions.map((option) => {
             const selected = studentLifeLayout === option.id;
             const Icon = option.icon;
@@ -261,42 +192,38 @@ export const SettingsTab: React.FC = () => {
                 key={option.id}
                 type="button"
                 onClick={() => setStudentLifeLayout(option.id)}
-                className={`rounded-xl border px-2 py-2.5 text-center transition ${
-                  selected
-                    ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]'
-                    : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]'
-                }`}
+                className={`set-choice${selected ? ' is-selected' : ''}`}
                 aria-pressed={selected}
               >
-                <Icon className="mx-auto h-4 w-4" />
-                <p className="mt-1 text-sm font-bold">{option.label}</p>
-                <p className="mt-0.5 text-[10px] font-semibold">{option.sample}</p>
+                <Icon className="set-choice__icon" />
+                <p className="set-choice__label set-choice__label--spaced">{option.label}</p>
+                <p className="set-choice__sample">{option.sample}</p>
               </button>
             );
           })}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
-        <button type="button" onClick={() => setSettingsPage('transport')} className="w-full text-left">
-          <div className="flex items-center justify-between">
-            <div className="inline-flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-                <Bus className="h-4 w-4" />
+      <section className="set-panel">
+        <button type="button" onClick={() => setSettingsPage('transport')} className="set-nav">
+          <div className="set-nav__row">
+            <div className="set-nav__lead">
+              <div className="set-pref__icon">
+                <Bus className="set-pref__icon-svg" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[var(--text-primary)]">Home transport preferences</p>
-                <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                <p className="set-pref__title">Transport preferences</p>
+                <p className="set-pref__desc">
                   Pick which routes appear on Home (K51, 67M, MTR, and more).
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-[var(--text-muted)]" />
+            <ChevronRight className="set-nav__chevron" />
           </div>
         </button>
       </section>
 
-      <div className="space-y-2.5">
+      <div className="set-items">
         {settingItems.map((item) => {
           const Icon = item.icon;
           const isDisabled = !item.enabled;
@@ -305,21 +232,17 @@ export const SettingsTab: React.FC = () => {
               key={item.id}
               type="button"
               disabled={isDisabled}
-              className={`w-full rounded-2xl border border-[var(--border)] p-3.5 text-left transition ${
-                isDisabled
-                  ? 'cursor-not-allowed bg-[var(--surface)] opacity-60'
-                  : 'bg-[var(--surface)] hover:bg-[var(--surface-muted)]'
-              }`}
+              className={`set-item${isDisabled ? ' is-disabled' : ''}`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-                  <Icon className="h-4 w-4" />
+              <div className="set-item__row">
+                <div className="set-pref__icon">
+                  <Icon className="set-pref__icon-svg" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-[var(--text-primary)]">{item.title}</p>
-                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">{item.desc}</p>
+                <div className="set-item__body">
+                  <p className="set-item__title">{item.title}</p>
+                  <p className="set-item__desc">{item.desc}</p>
                 </div>
-                {isDisabled && <Lock className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />}
+                {isDisabled && <Lock className="set-item__lock" />}
               </div>
             </button>
           );

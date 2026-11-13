@@ -116,7 +116,7 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
   if (error) {
     return (
       <AcademicFlowShell title="Early Grade Release" theme="early" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -124,7 +124,7 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
   if (!payload) {
     return (
       <AcademicFlowShell title="Early Grade Release" theme="early" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">Loading…</div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -148,26 +148,26 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
       {step === 'term' && (
         <div className="space-y-3">
           {payload.windowStatus && (
-            <div className="flow-hero space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="flow-hero early-window">
+              <div className="early-window__grid">
                 <div>
                   <p className="flow-hero__eyebrow">Current window</p>
-                  <p className="mt-1 text-base font-bold tracking-tight text-slate-900">
+                  <p className="early-window__value">
                     {payload.windowStatus.currentWindow}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="early-window__next">
                   <p className="flow-hero__eyebrow">Next</p>
-                  <p className="mt-1 text-base font-bold tracking-tight text-slate-900">
+                  <p className="early-window__value">
                     {payload.windowStatus.nextWindow}
                   </p>
                 </div>
               </div>
               {payload.windowStatus.rules && (
-                <ul className="space-y-1 border-t border-amber-200/70 pt-2.5 text-[11px] leading-relaxed text-slate-600">
+                <ul className="early-rules">
                   {payload.windowStatus.rules.map((rule) => (
-                    <li key={rule} className="flex gap-1.5">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
+                    <li key={rule} className="early-rules__item">
+                      <span className="early-rules__dot" />
                       <span>{rule}</span>
                     </li>
                   ))}
@@ -200,7 +200,7 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
             <p className="flow-hero__eyebrow">Release ready</p>
             <p className="flow-hero__value">
               {readyCount}
-              <span className="text-base font-semibold text-slate-500"> / {items.length}</span>
+              <span className="flow-hero__unit"> / {items.length}</span>
             </p>
             <p className="flow-hero__caption">courses available for early viewing</p>
           </div>
@@ -213,7 +213,7 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
                   key={item.id}
                   title={`${item.subjectCode}${item.courseNumber}`}
                   subtitle={item.courseTitle}
-                  meta={`Grade ${item.finalGrade} · Early ${item.isEarly}`}
+                  meta={`Grade ${item.finalGrade}`}
                   status={ready ? 'Ready' : 'Not ready'}
                   statusTone={ready ? 'good' : 'warn'}
                   onClick={() => {
@@ -245,9 +245,6 @@ export const EarlyGradeReleaseFlow: React.FC<EarlyGradeReleaseFlowProps> = ({ on
               { label: 'Final grade', value: detail.finalGrade },
               { label: 'Posted', value: detail.gradeDate ?? '—' },
               { label: 'CRN', value: detail.crn },
-              { label: 'IS_EARLY', value: detail.isEarly },
-              { label: 'IS_ENDO', value: detail.isEndo ?? '—' },
-              { label: 'Final copy', value: detail.markFinalCopyInd ?? '—' },
               { label: 'Term', value: detail.termCode ?? termCode },
               { label: 'Note', value: detail.sourceNote ?? '—' },
             ]}

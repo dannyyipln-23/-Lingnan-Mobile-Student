@@ -1,4 +1,5 @@
 import { StudentProfile, CourseSession, ILPProgress, CampusFacility } from '../types';
+import { formatDateKey } from '../lib/appDate';
 
 export const CURRENT_STUDENT: StudentProfile = {
   id: 'stu-2024-8902',
@@ -201,9 +202,6 @@ export const CAMPUS_FACILITIES: CampusFacility[] = [
   },
 ];
 
-/** Demo “today” used by Calendar + Home notices (aligned). */
-export const CALENDAR_DEMO_TODAY = '2026-09-08';
-
 export type StudyTaskSource = 'moodle' | 'personal';
 
 export type StudyTaskItem = {
@@ -215,41 +213,22 @@ export type StudyTaskItem = {
   source: StudyTaskSource;
 };
 
-/** Shared Calendar Moodle / personal tasks — Home notices read from today’s items. */
-export const STUDY_TASKS: StudyTaskItem[] = [
-  {
-    id: 't1',
-    text: 'PMS4102 Data analytics case report draft',
-    reminderDateTime: `${CALENDAR_DEMO_TODAY}T23:59`,
-    done: false,
-    dateKey: CALENDAR_DEMO_TODAY,
-    source: 'moodle',
-  },
-  {
-    id: 't2',
-    text: 'PMS4001 Organizational Communication reading quiz',
-    reminderDateTime: '2026-09-02T17:00',
-    done: true,
-    dateKey: '2026-09-02',
-    source: 'moodle',
-  },
-  {
-    id: 't3',
-    text: 'Review lecture notes before tutorial',
-    reminderDateTime: `${CALENDAR_DEMO_TODAY}T20:00`,
-    done: false,
-    dateKey: CALENDAR_DEMO_TODAY,
-    source: 'personal',
-  },
-];
+/** Personal reminders seed — Moodle tasks load from assignment timeline JSON. */
+export const STUDY_TASKS: StudyTaskItem[] = (() => {
+  const today = formatDateKey();
+  return [
+    {
+      id: 't3',
+      text: 'LCC2210 review notes before Chinese tutorial',
+      reminderDateTime: `${today}T20:00`,
+      done: false,
+      dateKey: today,
+      source: 'personal' as const,
+    },
+  ];
+})();
 
-export const todaysMoodleTasks = (): StudyTaskItem[] =>
-  STUDY_TASKS.filter((task) => task.source === 'moodle' && task.dateKey === CALENDAR_DEMO_TODAY);
-
-export const todaysPersonalReminders = (): StudyTaskItem[] =>
-  STUDY_TASKS.filter((task) => task.source === 'personal' && task.dateKey === CALENDAR_DEMO_TODAY);
-
-export type HomeNoticeKind = 'efees' | 'moodle' | 'custom';
+export type HomeNoticeKind = 'efees' | 'custom';
 
 export type HomeImportantNotice = {
   id: string;
@@ -259,17 +238,7 @@ export type HomeImportantNotice = {
   timeLabel: string;
   href?: string;
   /** In-app page action (takes priority over href when set). */
-  action?: 'efees' | 'calendar';
-};
-
-const moodleCourseCode = (text: string): string => {
-  const match = text.match(/^[A-Z]{2,4}\d{3,4}/);
-  return match?.[0] ?? 'Moodle';
-};
-
-const formatTaskDueLabel = (reminderDateTime: string): string => {
-  const time = reminderDateTime.split('T')[1] ?? '';
-  return time ? `Due today ${time}` : 'Due today';
+  action?: 'efees';
 };
 
 /** Home “Important Notices” strip under Upcoming Class. */
@@ -282,20 +251,4 @@ export const HOME_IMPORTANT_NOTICES: HomeImportantNotice[] = [
     timeLabel: 'Due 18 May 2026',
     action: 'efees',
   },
-  ...todaysMoodleTasks().map((task) => ({
-    id: `notice-moodle-${task.id}`,
-    kind: 'moodle' as const,
-    title: moodleCourseCode(task.text),
-    message: task.text,
-    timeLabel: formatTaskDueLabel(task.reminderDateTime),
-    href: 'https://lms.ln.edu.hk/',
-  })),
-  ...todaysPersonalReminders().map((task) => ({
-    id: `notice-personal-${task.id}`,
-    kind: 'custom' as const,
-    title: 'Reminder',
-    message: task.text,
-    timeLabel: formatTaskDueLabel(task.reminderDateTime),
-    action: 'calendar' as const,
-  })),
 ];

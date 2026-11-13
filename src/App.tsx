@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MobileFrame } from './components/MobileFrame';
 import { StudentHeader } from './components/StudentHeader';
 import { NavigationBottomBar, TabType } from './components/NavigationBottomBar';
@@ -15,15 +15,24 @@ import {
   isOfficialPushNotification,
   NotificationModal,
 } from './components/NotificationModal';
+import {
+  fetchEfeesNotes,
+  formatEfeesAmount,
+  formatEfeesDate,
+  outstandingOf,
+  statusOf,
+  unpaidEfeesNotes,
+} from './lib/efeesNotes';
+
 const initialNotifications: AppNotification[] = [
-  {
+/*   {
     id: 'n1',
     title: 'ILP Units Approved & Credited',
     desc: 'Your participation in "Lingnan Centenary Campus Heritage Tour" has been verified and awarded 3 Civic Education units.',
     time: '10 mins ago',
     kind: 'award',
     isRead: false,
-  },
+  }, */
   {
     id: 'n3',
     title: 'Term 1 Final Exam Timetable Released',
@@ -42,6 +51,14 @@ const initialNotifications: AppNotification[] = [
   },
 ];
 
+const openEfeesFlow = (
+  setOpenEfeesOnCampus: React.Dispatch<React.SetStateAction<boolean>>,
+  setActiveTab: React.Dispatch<React.SetStateAction<TabType>>,
+) => {
+  setOpenEfeesOnCampus(true);
+  setActiveTab('campus');
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isLibraryOpen, setIsLibraryOpen] = useState<boolean>(false);
@@ -49,17 +66,56 @@ export default function App() {
   const [openEfeesOnCampus, setOpenEfeesOnCampus] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
 
+  useEffect(() => {
+    let cancelled = false;
+    void fetchEfeesNotes()
+      .then((notes) => {
+        if (cancelled) return;
+        const efeesNotifications: AppNotification[] = unpaidEfeesNotes(notes).map((note) => {
+          const status = statusOf(note);
+          const outstanding = outstandingOf(note);
+          const remark = note.PAYMENT_REMARKS || note.REMARKS;
+          return {
+            id: `efees-${note.REPORT_ID}`,
+            title: note.NOTE_DESC || 'eFees Note',
+            desc: [
+              note.NOTE_REF_NO,
+              remark || status.label,
+              `Outstanding HK$${formatEfeesAmount(outstanding)}`,
+            ]
+              .filter(Boolean)
+              .join(' — '),
+            time: `Due ${formatEfeesDate(note.DUE_DATE)}`,
+            kind: 'efees' as const,
+            isRead: false,
+            action: 'efees' as const,
+          };
+        });
+
+        setNotifications((prev) => [
+          ...efeesNotifications,
+          ...prev.filter((item) => item.kind !== 'efees'),
+        ]);
+      })
+      .catch(() => {
+        /* keep non-eFees notifications */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const unreadCount = notifications.filter(
     (item) => isOfficialPushNotification(item) && !item.isRead,
   ).length;
 
   const pageTitleByTab: Record<TabType, string> = {
     home: 'Home',
-    calendar: 'Personal Calendar',
+    calendar: 'My Calendar',
     academic: 'Academic Service',
     campus: 'Student Life',
     events: 'Events',
-    transport: 'Transport',
+    transport: 'Public Transport',
     setting: 'Settings',
   };
 
@@ -99,10 +155,7 @@ export default function App() {
           <HomeTab
             onNavigate={(tab) => setActiveTab(tab)}
             onOpenLibraryModal={() => setIsLibraryOpen(true)}
-            onOpenEfeesNotes={() => {
-              setOpenEfeesOnCampus(true);
-              setActiveTab('campus');
-            }}
+            onOpenEfeesNotes={() => openEfeesFlow(setOpenEfeesOnCampus, setActiveTab)}
           />
         )}
 
@@ -148,6 +201,16 @@ export default function App() {
             ),
           )
         }
+        onNotificationClick={(item) => {
+          if (item.action !== 'efees') return;
+          setIsNotificationOpen(false);
+          setNotifications((prev) =>
+            prev.map((entry) =>
+              entry.id === item.id ? { ...entry, isRead: true } : entry,
+            ),
+          );
+          openEfeesFlow(setOpenEfeesOnCampus, setActiveTab);
+        }}
       />
 
     </MobileFrame>

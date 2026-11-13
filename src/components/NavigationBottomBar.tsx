@@ -48,8 +48,8 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
   ];
 
   return (
-    <nav className="z-40 shrink-0 border-t border-slate-200 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur-md">
-      <div className="grid grid-cols-5 gap-0 px-0.5 py-1">
+    <nav className="nav-bar">
+      <div className="nav-bar__grid">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -58,23 +58,15 @@ export const NavigationBottomBar: React.FC<NavigationBottomBarProps> = ({
               key={tab.id}
               type="button"
               onClick={() => onChangeTab(tab.id)}
-              className={`relative flex flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
-                isActive ? 'text-red-700 font-bold' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`nav-item${isActive ? ' is-active' : ''}`}
             >
               {tab.highlight && !isActive && (
-                <span className="absolute right-[22%] top-1 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white" />
+                <span className="nav-item__dot" />
               )}
-              <div
-                className={`rounded-xl p-1.5 transition-all ${
-                  isActive
-                    ? 'scale-105 border border-red-200 bg-red-50 text-red-700 shadow-xs'
-                    : 'text-slate-600'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
+              <div className={`nav-item__icon${isActive ? ' is-active' : ''}`}>
+                <Icon className="nav-item__svg" />
               </div>
-              <span className="max-w-full truncate px-0.5 text-[9px] leading-none tracking-tight">
+              <span className="nav-item__label">
                 {tab.label}
               </span>
             </button>

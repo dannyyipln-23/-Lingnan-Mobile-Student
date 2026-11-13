@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   AlertTriangle,
-  Bell,
-  BookOpen,
+  Bookmark,
   Bus,
   ChevronRight,
   Clock,
@@ -15,12 +14,18 @@ import {
   Wallet,
   Wind,
 } from 'lucide-react';
-import { COURSES, HOME_IMPORTANT_NOTICES, HomeNoticeKind } from '../data/mockData';
+import { HOME_IMPORTANT_NOTICES, HomeNoticeKind } from '../data/mockData';
 import { useAppPreferences } from '../context/AppPreferencesContext';
 import {
   fetchHomeTransportEtas,
   HomeTransportEtaRow,
 } from '../lib/homeTransport';
+import {
+  fetchScheduledRegisteredCourses,
+  getUpcomingScheduledClassToday,
+  toScheduledCourseSession,
+} from '../lib/registeredCourseMeetings';
+import { RegisteredCourse } from '../lib/registeredCourses';
 import { TabType } from './NavigationBottomBar';
 import homeBanner from '../assets/images/home_banner_1.jpg';
 
@@ -149,20 +154,14 @@ const noticeMeta: Record<
   efees: {
     label: 'eFees',
     icon: Wallet,
-    chipClass: 'border-rose-200 bg-rose-50 text-rose-700',
-    cardClass: 'border-rose-100 bg-rose-50/40 hover:border-rose-200',
-  },
-  moodle: {
-    label: 'Moodle',
-    icon: BookOpen,
-    chipClass: 'border-indigo-200 bg-indigo-50 text-indigo-700',
-    cardClass: 'border-indigo-100 bg-indigo-50/40 hover:border-indigo-200',
+    chipClass: 'home-notice-chip--efees',
+    cardClass: 'home-notice-card--efees',
   },
   custom: {
-    label: 'Reminder',
-    icon: Bell,
-    chipClass: 'border-amber-200 bg-amber-50 text-amber-800',
-    cardClass: 'border-amber-100 bg-amber-50/40 hover:border-amber-200',
+    label: 'Notice',
+    icon: AlertTriangle,
+    chipClass: 'home-notice-chip--custom',
+    cardClass: 'home-notice-card--custom',
   },
 };
 
@@ -199,8 +198,38 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
     lastUpdated: '--:--',
     isLoading: true,
   });
+  const [nextClass, setNextClass] = useState<ReturnType<typeof toScheduledCourseSession> | null>(
+    null,
+  );
+  const [nextClassLoading, setNextClassLoading] = useState(true);
 
-  const nextClass = COURSES[1]; // CDS2001 at 13:30
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadUpcomingClass = async () => {
+      setNextClassLoading(true);
+      try {
+        const courses = await fetchScheduledRegisteredCourses();
+        const upcoming: RegisteredCourse | null = getUpcomingScheduledClassToday(courses);
+        if (!cancelled) {
+          setNextClass(upcoming ? toScheduledCourseSession(upcoming) : null);
+        }
+      } catch {
+        if (!cancelled) {
+          setNextClass(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setNextClassLoading(false);
+        }
+      }
+    };
+
+    void loadUpcomingClass();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -306,65 +335,60 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
 
   return (
     <div className="page-shell page-shell--home space-y-4">
-      <section
-        className="relative w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm min-h-[10.5rem]"
-        aria-label="Campus weather banner"
-      >
+      <section className="home-banner" aria-label="Campus weather banner">
         <img
           src={homeBanner}
           alt="Lingnan campus banner"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="home-banner__img"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/35 to-slate-900/10" />
+        <div className="home-banner__overlay" />
 
-        <div className="relative z-10 flex min-h-[10.5rem] flex-col justify-between p-3.5 text-white">
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="home-banner__content">
+          <div className="home-banner__chips">
             {weather.warningItems.length > 0 ? (
               weather.warningItems.slice(0, 4).map((item) => {
                 const WarningIcon = getWarningIcon(item.code);
                 return (
                   <span
                     key={item.code}
-                    className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/35 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
+                    className="home-banner__chip"
                     title={item.label}
                   >
-                    <WarningIcon className="h-3 w-3" />
-                    <span className="max-w-[7.5rem] truncate">{item.label}</span>
+                    <WarningIcon className="home-banner__chip-icon" />
+                    <span className="home-banner__chip-label">{item.label}</span>
                   </span>
                 );
               })
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/30 px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm">
-                <SunMedium className="h-3 w-3 text-amber-300" />
+              <span className="home-banner__chip home-banner__chip--clear">
+                <SunMedium className="home-banner__chip-icon home-banner__chip-icon--sun" />
                 No active warning
               </span>
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <div className="flex items-end justify-between gap-3">
+          <div className="home-banner__body">
+            <div className="home-banner__row">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-white/80">Tuen Mun</p>
-                <p className="text-3xl font-extrabold leading-none tracking-tight">
+                <p className="home-banner__place">Tuen Mun</p>
+                <p className="home-banner__temp">
                   {weather.temperatureC ?? '--'}
-                  <span className="ml-0.5 text-lg font-bold text-white/85">°C</span>
+                  <span className="home-banner__temp-unit">°C</span>
                 </p>
               </div>
-              <div className="rounded-xl border border-white/20 bg-black/30 px-2.5 py-1.5 text-right backdrop-blur-sm">
-                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/80">
-                  <Umbrella className="h-3 w-3" />
+              <div className="home-banner__rain">
+                <p className="home-banner__rain-label">
+                  <Umbrella className="home-banner__chip-icon" />
                   Rain
                 </p>
-                <p className="text-sm font-bold tabular-nums">
+                <p className="home-banner__rain-value">
                   {weather.rainfallMm ?? '--'}
-                  <span className="ml-0.5 text-[11px] font-semibold text-white/80">mm</span>
+                  <span className="home-banner__rain-unit">mm</span>
                 </p>
               </div>
             </div>
 
-            
-
-            <p className="text-[10px] text-white/65">
+            <p className="home-banner__updated">
               Updated {weather.lastUpdated}
               {weather.isLoading ? ' · Loading…' : ''}
             </p>
@@ -374,74 +398,73 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
 
       {/* Next Upcoming Lecture Card */}
       <div>
-        <h3 className="text-sm font-bold tracking-tight text-slate-900 px-0.5 mb-2">
-          Upcoming Class
-        </h3>
-        <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-xs font-bold text-emerald-700 tracking-wide uppercase">
-                Next Up Today
-              </span>
-            </div>
-            <span className="text-[11px] text-slate-500 flex items-center space-x-1">
-              <Clock className="w-3 h-3 text-slate-400" />
-              <span>
-                {nextClass.startTime} - {nextClass.endTime}
-              </span>
-            </span>
-          </div>
+        <h3 className="home-section__title">Upcoming Class</h3>
+        <div className="home-panel">
+          {nextClassLoading ? (
+            <p className="home-upcoming__empty">Loading today’s classes…</p>
+          ) : nextClass ? (
+            <>
+              <div className="home-upcoming__head">
+                <div className="home-upcoming__status">
+                  <span className="home-upcoming__ping" />
+                  <span className="home-upcoming__badge">Next Up Today</span>
+                </div>
+                <span className="home-upcoming__time">
+                  <Clock className="home-upcoming__time-icon" />
+                  <span>
+                    {nextClass.startTime} - {nextClass.endTime}
+                  </span>
+                </span>
+              </div>
 
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-black text-slate-800 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono">
-                {nextClass.courseCode}
-              </span>
-              <span className="text-xs text-slate-700 font-semibold">{nextClass.courseName}</span>
-            </div>
-            <div className="flex items-center space-x-1.5 text-xs text-slate-600 mt-2">
-              <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" />
-              <span className="text-slate-800 font-medium">{nextClass.venue}</span>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-0.5 pl-5">{nextClass.instructor}</p>
-          </div>
+              <div>
+                <div className="home-upcoming__course">
+                  <span className="home-upcoming__code">{nextClass.courseCode}</span>
+                  <span className="home-upcoming__name">{nextClass.courseName}</span>
+                </div>
+                <div className="home-upcoming__venue-row">
+                  <MapPin className="home-upcoming__venue-icon" />
+                  <span className="home-upcoming__venue">{nextClass.venue}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="home-upcoming__empty">No more classes scheduled for today.</p>
+          )}
         </div>
       </div>
 
-      {/* Important Notices — eFees, Moodle, custom campus messages */}
+      {/* Important Notices */}
       <div>
-        <div className="mb-2 flex items-center justify-between px-0.5">
-          <h3 className="text-sm font-bold tracking-tight text-slate-900">Important Notices</h3>
-          <span className="text-[10px] font-semibold text-slate-500">
+        <div className="home-section__head">
+          <h3 className="home-section__title">Important Notices</h3>
+          {/* <span className="home-section__count">
             {HOME_IMPORTANT_NOTICES.length} items
-          </span>
+          </span> */}
         </div>
-        <div className="space-y-2">
+        <div className="home-notice-list">
           {HOME_IMPORTANT_NOTICES.map((notice) => {
             const meta = noticeMeta[notice.kind];
             const Icon = meta.icon;
             const content = (
-              <div className="flex items-start justify-between gap-2">
-                <div className="inline-flex min-w-0 items-start gap-2.5">
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
-                    <Icon className="h-3.5 w-3.5" />
+              <div className="home-notice-card__content">
+                <div className="home-notice-card__lead">
+                  <div className="home-notice-card__icon">
+                    <Icon className="home-notice-card__icon-svg" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                      <span
-                        className={`inline-flex rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${meta.chipClass}`}
-                      >
+                  <div className="home-notice-card__body">
+                    <div className="home-notice-card__meta">
+                      <span className={`home-notice-chip ${meta.chipClass}`}>
                         {meta.label}
                       </span>
-                      <span className="text-[10px] font-medium text-slate-400">{notice.timeLabel}</span>
+                      <span className="home-notice-card__time">{notice.timeLabel}</span>
                     </div>
-                    <p className="text-xs font-bold text-slate-900">{notice.title}</p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">{notice.message}</p>
+                    <p className="home-notice-card__title">{notice.title}</p>
+                    <p className="home-notice-card__message">{notice.message}</p>
                   </div>
                 </div>
                 {notice.action || notice.href ? (
-                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+                  <ChevronRight className="home-notice-card__chevron" />
                 ) : null}
               </div>
             );
@@ -452,20 +475,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
                   key={notice.id}
                   type="button"
                   onClick={onOpenEfeesNotes}
-                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
-                >
-                  {content}
-                </button>
-              );
-            }
-
-            if (notice.action === 'calendar') {
-              return (
-                <button
-                  key={notice.id}
-                  type="button"
-                  onClick={() => onNavigate('calendar')}
-                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
+                  className={`home-notice-card ${meta.cardClass}`}
                 >
                   {content}
                 </button>
@@ -478,7 +488,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
                   key={notice.id}
                   type="button"
                   onClick={() => openInAppBrowser(notice.href!, notice.title)}
-                  className={`w-full rounded-2xl border p-3 text-left shadow-xs transition ${meta.cardClass}`}
+                  className={`home-notice-card ${meta.cardClass}`}
                 >
                   {content}
                 </button>
@@ -488,7 +498,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
             return (
               <div
                 key={notice.id}
-                className={`rounded-2xl border p-3 shadow-xs ${meta.cardClass}`}
+                className={`home-notice-card ${meta.cardClass}`}
               >
                 {content}
               </div>
@@ -500,69 +510,61 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigate, onOpenEfeesNotes }
       <button
         type="button"
         onClick={() => onNavigate('transport')}
-        className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-sm text-left hover:border-slate-300 hover:bg-slate-50/70 transition"
+        className="home-transport"
         aria-label="Open transport page"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-700">
-              <Bus className="h-5 w-5" />
+        <span className="home-transport__bookmark">
+          <Bookmark className="home-transport__bookmark-icon" />
+          Transport
+        </span>
+        <div className="home-transport__inner">
+          <div className="home-transport__lead">
+            <div className="home-transport__icon">
+              <Bus className="home-transport__icon-svg" />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded">
-                  Transport
-                </span>
-                <span className="text-[10px] font-medium text-slate-500">
-                  {transportLoading ? 'Updating…' : 'Your routes'}
+            <div className="home-transport__body">
+              <div className="home-transport__meta">
+                <span className="home-transport__status">
+                  {transportLoading ? 'Updating…' : 'Live'}
                 </span>
               </div>
-              <h3 className="mt-1 text-sm font-bold text-slate-900 leading-tight">
-                Live ETA for selected routes
-              </h3>
-              <p className="mt-1 text-[11px] text-slate-500 leading-relaxed">
-                Configure routes in Settings · Home transport preferences
-              </p>
 
-              <div className="mt-2.5 space-y-1.5">
+              <div className="home-transport__list">
                 {transportRows.map((row) => (
-                  <div
-                    key={row.id}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-[11px] font-bold text-slate-800">
+                  <div key={row.id} className="home-transport-row">
+                    <div className="home-transport-row__info">
+                      <p className="home-transport-row__label">
                         {row.label}
-                        <span className="ml-1 font-semibold text-slate-500">· {row.provider}</span>
+                        <span className="home-transport-row__provider">· {row.provider}</span>
                       </p>
-                      <p className="truncate text-[10px] text-slate-500">
+                      <p className="home-transport-row__note">
                         {row.note || row.stopHint}
                       </p>
                     </div>
-                    <div className="inline-flex shrink-0 items-center gap-1">
-                      <Clock className="h-3 w-3 text-slate-400" />
+                    <div className="home-transport-row__etas">
+                      <Clock className="home-transport-row__clock" />
                       {row.minutes.length > 0 ? (
                         row.minutes.map((mins) => (
                           <span
                             key={`${row.id}-${mins}`}
-                            className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-700"
+                            className="home-transport-row__eta"
                           >
                             {mins}m
                           </span>
                         ))
                       ) : (
-                        <span className="text-[10px] font-semibold text-slate-400">—</span>
+                        <span className="home-transport-row__eta--empty">—</span>
                       )}
                     </div>
                   </div>
                 ))}
                 {!transportLoading && transportRows.length === 0 && (
-                  <p className="text-[11px] text-slate-500">No transport routes selected.</p>
+                  <p className="home-transport__empty">No transport routes selected.</p>
                 )}
               </div>
             </div>
           </div>
-          <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+          <ChevronRight className="home-transport__chevron" />
         </div>
       </button>
 

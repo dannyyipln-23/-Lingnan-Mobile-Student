@@ -27,18 +27,18 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-white border border-slate-200 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 border border-red-100 flex items-center justify-center">
-              <BookOpen className="w-4 h-4" />
+    <div className="lib-overlay">
+      <div className="lib-sheet">
+        <div className="lib-head">
+          <div className="lib-head__lead">
+            <div className="lib-head__icon">
+              <BookOpen className="lib-head__icon-svg" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 className="lib-head__title">
                 Fong Sum Wood Library • Seat Reservation
               </h3>
-              <p className="text-[10px] text-slate-500">
+              <p className="lib-head__desc">
                 Check in with Student e-Card or QR Code within 15 mins
               </p>
             </div>
@@ -46,35 +46,35 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 bg-slate-100"
+            className="lib-close"
           >
-            <X className="w-4 h-4" />
+            <X className="lib-close__icon" />
           </button>
         </div>
 
         {isBooked ? (
-          <div className="py-8 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto ring-4 ring-emerald-50 animate-bounce">
-              <Check className="w-8 h-8" />
+          <div className="lib-success">
+            <div className="lib-success__icon">
+              <Check className="lib-success__check" />
             </div>
-            <h4 className="text-base font-bold text-slate-900">
+            <h4 className="lib-success__title">
               Seat Reservation Confirmed!
             </h4>
-            <p className="text-xs text-slate-600">
+            <p className="lib-success__meta">
               {selectedRoom} • {selectedTime}
             </p>
-            <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+            <p className="lib-success__hint">
               Please tap your Student e-Card at the desk sensor within 15 minutes of reservation start time.
             </p>
           </div>
         ) : (
-          <div className="space-y-4 text-xs">
+          <div className="lib-form">
             {/* Floor selector */}
             <div>
-              <label className="text-slate-600 font-bold block mb-1.5">
+              <label className="lib-label">
                 Select Library Floor Level
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="lib-floor-grid">
                 {[
                   { id: 'GF', label: 'G/F Commons', desks: '48 free' },
                   { id: '1F', label: '1/F Quiet Study', desks: '82 free' },
@@ -84,14 +84,10 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
                     key={fl.id}
                     type="button"
                     onClick={() => setSelectedFloor(fl.id)}
-                    className={`p-2.5 rounded-xl border text-center transition ${
-                      selectedFloor === fl.id
-                        ? 'bg-red-600 border-red-600 text-white font-bold shadow-xs'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
+                    className={`lib-floor${selectedFloor === fl.id ? ' is-selected' : ''}`}
                   >
-                    <span className="block text-xs">{fl.label}</span>
-                    <span className="text-[10px] opacity-80">{fl.desks}</span>
+                    <span className="lib-floor__label">{fl.label}</span>
+                    <span className="lib-floor__desks">{fl.desks}</span>
                   </button>
                 ))}
               </div>
@@ -99,10 +95,10 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
 
             {/* Room / Desk selector */}
             <div>
-              <label className="text-slate-600 font-bold block mb-1.5">
+              <label className="lib-label">
                 Select Study Carrel / Discussion Room
               </label>
-              <div className="space-y-1.5">
+              <div className="lib-seats">
                 {[
                   'Seat #142 (Window Desk with Power Socket & Reading Lamp)',
                   'Seat #148 (Single Study Carrel - Silent Reading Zone)',
@@ -111,14 +107,10 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
                   <div
                     key={seat}
                     onClick={() => setSelectedRoom(seat)}
-                    className={`p-2.5 rounded-xl border cursor-pointer transition flex items-center justify-between ${
-                      selectedRoom === seat
-                        ? 'bg-red-50 border-red-400 text-red-900 font-medium'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
+                    className={`lib-seat${selectedRoom === seat ? ' is-selected' : ''}`}
                   >
-                    <span className="truncate pr-2">{seat}</span>
-                    {selectedRoom === seat && <Check className="w-4 h-4 text-red-600 shrink-0" />}
+                    <span className="lib-seat__text">{seat}</span>
+                    {selectedRoom === seat && <Check className="lib-seat__check" />}
                   </div>
                 ))}
               </div>
@@ -126,10 +118,10 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
 
             {/* Time slot selector */}
             <div>
-              <label className="text-slate-600 font-bold block mb-1.5">
+              <label className="lib-label">
                 Reservation Time Slot (Maximum 2 Hours)
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="lib-slots">
                 {[
                   '14:00 - 16:00 (Today)',
                   '16:00 - 18:00 (Today)',
@@ -140,11 +132,7 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
                     key={slot}
                     type="button"
                     onClick={() => setSelectedTime(slot)}
-                    className={`p-2 rounded-xl border text-center transition text-[11px] font-medium ${
-                      selectedTime === slot
-                        ? 'bg-red-50 border-red-500 text-red-700 font-bold'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
+                    className={`lib-slot${selectedTime === slot ? ' is-selected' : ''}`}
                   >
                     {slot}
                   </button>
@@ -153,15 +141,15 @@ export const LibraryBookingModal: React.FC<LibraryBookingModalProps> = ({
             </div>
 
             {/* Student info confirmation */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
+            <div className="lib-student">
               <span>Student: {CURRENT_STUDENT.fullName} ({CURRENT_STUDENT.studentNumber})</span>
-              <span className="text-emerald-700 font-semibold">2 booking slots available</span>
+              <span className="lib-student__avail">2 booking slots available</span>
             </div>
 
             <button
               type="button"
               onClick={handleConfirm}
-              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition"
+              className="lib-confirm"
             >
               Confirm Library Seat Reservation
             </button>

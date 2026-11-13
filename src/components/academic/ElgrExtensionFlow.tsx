@@ -158,7 +158,7 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
   if (error) {
     return (
       <AcademicFlowShell title="ELGR Extension System" theme="elgr" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -166,7 +166,7 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
   if (!payload) {
     return (
       <AcademicFlowShell title="ELGR Extension System" theme="elgr" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">Loading…</div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -196,19 +196,19 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
       {step === 'overview' && (
         <div className="space-y-3">
           <div className="flow-hero">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flow-hero__top">
               <div className="min-w-0">
                 <p className="flow-hero__eyebrow">English Language Graduation Requirement</p>
-                <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">
+                <p className="flow-hero__title">
                   {overview.studentName}
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-500">
+                <p className="elgr-hero__id">
                   {overview.studentId} · {overview.studyYear}
                 </p>
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="elgr-chips">
               <span className={`status-chip status-chip--${fulfilled ? 'good' : 'warn'}`}>
                 {overview.elgrResult}
               </span>
@@ -217,20 +217,20 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
               </span>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-purple-100 pt-3">
+            <div className="elgr-deadlines">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                <p className="elgr-deadlines__label">
                   Catalogue deadline
                 </p>
-                <p className="mt-0.5 text-sm font-bold text-slate-900">
+                <p className="elgr-deadlines__value">
                   {formatDate(overview.catalogTermDeadline)}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                <p className="elgr-deadlines__label">
                   Extended to
                 </p>
-                <p className="mt-0.5 text-sm font-bold text-slate-900">
+                <p className="elgr-deadlines__value">
                   {formatDate(overview.extendedDeadline)}
                 </p>
               </div>
@@ -248,7 +248,7 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
             ]}
           />
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="elgr-stats">
             {[
               { label: 'Approved', value: statusCounts.approved },
               { label: 'Rejected', value: statusCounts.rejected },
@@ -256,12 +256,12 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center shadow-sm"
+                className="elgr-stat"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                <p className="elgr-stat__label">
                   {stat.label}
                 </p>
-                <p className="mt-0.5 text-sm font-bold text-slate-900">{stat.value}</p>
+                <p className="elgr-stat__value">{stat.value}</p>
               </div>
             ))}
           </div>
@@ -271,12 +271,12 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
             onClick={() => setStep('list')}
             className="list-card"
           >
-            <div className="flex items-center justify-between gap-2 pl-1.5">
+            <div className="list-card__row">
               <div>
-                <p className="text-sm font-bold tracking-tight text-slate-900">
+                <p className="list-card__title">
                   Extension applications
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-500">
+                <p className="list-card__meta">
                   View status, reasons, and supporting documents
                 </p>
               </div>
@@ -355,35 +355,29 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
               ].map((block) => (
                 <section
                   key={block.title}
-                  className="overflow-hidden rounded-[1.05rem] border border-[var(--border)] bg-[var(--surface)] shadow-[0_4px_14px_rgb(15_23_42_/_0.04)]"
+                  className="flow-detail"
                 >
-                  <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.07em] text-[var(--text-muted)]">
+                  <div className="flow-detail__head">
+                    <h3 className="flow-detail__title">
                       {block.title}
                     </h3>
                   </div>
-                  <p className="whitespace-pre-wrap px-3.5 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+                  <p className="flow-detail__body">
                     {block.body}
                   </p>
                 </section>
               ))}
 
               {selectedApp.detail.attachmentName && (
-                <div className="flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3.5 py-3 shadow-sm">
-                  <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                    style={{
-                      background: 'color-mix(in srgb, var(--flow-accent) 12%, white)',
-                      color: 'var(--flow-accent)',
-                    }}
-                  >
-                    <FileText className="h-4 w-4" />
+                <div className="elgr-attach">
+                  <div className="elgr-attach__icon">
+                    <FileText className="elgr-attach__svg" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                    <p className="elgr-attach__label">
                       Attachment
                     </p>
-                    <p className="truncate text-xs font-semibold text-slate-900">
+                    <p className="elgr-attach__name">
                       {selectedApp.detail.attachmentName}
                     </p>
                   </div>
@@ -391,7 +385,7 @@ export const ElgrExtensionFlow: React.FC<ElgrExtensionFlowProps> = ({ onBack }) 
               )}
             </>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+            <div className="flow-state">
               No detailed narrative is available for this application in the mock payload.
             </div>
           )}

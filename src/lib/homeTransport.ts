@@ -10,6 +10,7 @@ export type HomeTransportRouteId =
   | '261'
   | 'A33X'
   | 'NA33'
+  | 'B3A'
   | '960A'
   | '960S';
 
@@ -25,63 +26,69 @@ export type HomeTransportOption = {
 export const HOME_TRANSPORT_OPTIONS: HomeTransportOption[] = [
   {
     id: 'k51',
-    label: 'Route K51',
+    label: 'K51',
     provider: 'MTR Bus',
     description: 'MTR Bus feeder at Lingnan University',
   },
   {
     id: 'k58',
-    label: 'Route K58',
+    label: 'K58',
     provider: 'MTR Bus',
     description: 'MTR Bus feeder (when ETA feed is available)',
   },
   {
     id: '67M',
-    label: 'Route 67M',
+    label: '67M',
     provider: 'KMB',
     description: 'KMB at Lingnan University stop',
   },
   {
     id: '67X',
-    label: 'Route 67X',
+    label: '67X',
     provider: 'KMB',
     description: 'KMB at Lingnan University stop',
   },
   {
     id: '53',
-    label: 'Route 53',
+    label: '53',
     provider: 'KMB',
     description: 'KMB at Lingnan University stop',
   },
   {
     id: '261',
-    label: 'Route 261',
+    label: '261',
     provider: 'KMB',
     description: 'KMB at Lingnan University stop',
   },
   {
     id: 'A33X',
-    label: 'Route A33X',
-    provider: 'Citybus',
-    description: 'Citybus airport / NWNT services',
+    label: 'A33X',
+    provider: 'KMB',
+    description: 'Airport / NWNT at Lingnan University (KMB stop feed)',
   },
   {
     id: 'NA33',
-    label: 'Route NA33',
+    label: 'NA33',
+    provider: 'KMB',
+    description: 'Overnight / NWNT near Fu Tai Estate (KMB stop feed)',
+  },
+  {
+    id: 'B3A',
+    label: 'B3A',
     provider: 'Citybus',
-    description: 'Citybus overnight / NWNT services',
+    description: 'Citybus B3A at Fu Tai Estate',
   },
   {
     id: '960A',
-    label: 'Route 960A',
-    provider: 'Citybus',
-    description: 'Citybus at / near campus corridor',
+    label: '960A',
+    provider: 'KMB',
+    description: 'Cross-harbour corridor at Fu Tai Estate (KMB stop feed)',
   },
   {
     id: '960S',
-    label: 'Route 960S',
-    provider: 'Citybus',
-    description: 'Citybus at / near campus corridor',
+    label: '960S',
+    provider: 'KMB',
+    description: 'Cross-harbour corridor at Lingnan University (KMB stop feed)',
   },
   {
     id: 'mtr-tml-sih',
@@ -94,14 +101,25 @@ export const HOME_TRANSPORT_OPTIONS: HomeTransportOption[] = [
 /** Default home preview: campus feeders / KMB — not MTR train. */
 export const DEFAULT_HOME_TRANSPORT_ROUTES: HomeTransportRouteId[] = ['k51', '67M', '67X'];
 
+/** Lingnan + Fu Tai roadside stops used by Transport page KMB ETA. */
 const LU_KMB_STOPS = [
-  { code: 'TM290', stopId: 'AA5DA45828958EAE' },
-  { code: 'TM291', stopId: 'CC3EF4757AA0964A' },
-  { code: 'TM251', stopId: 'E2AE7A37634C8FE5' },
-  { code: 'TM252', stopId: '6B3EF5D982B399E6' },
+  { code: 'TM290', stopId: 'AA5DA45828958EAE', label: 'Lingnan University (TM290)' },
+  { code: 'TM291', stopId: 'CC3EF4757AA0964A', label: 'Lingnan University (TM291)' },
+  { code: 'TM251', stopId: 'E2AE7A37634C8FE5', label: 'Lingnan University (TM251)' },
+  { code: 'TM252', stopId: '6B3EF5D982B399E6', label: 'Lingnan University (TM252)' },
+  { code: 'TM286', stopId: 'F1D1F84A466543BE', label: 'Fu Tai Estate (TM286)' },
+  { code: 'FU-TAI-TERM', stopId: 'CBCE32D56C5263A9', label: 'Fu Tai Estate Bus Terminus' },
+  { code: 'FU-TAI', stopId: '2BEAF37792BFDCCA', label: 'Fu Tai Estate' },
 ] as const;
 
-const LINGNAN_NAME_PATTERN = /lingnan university|ling nan university|\u5dba\u5357\u5927\u5b78/i;
+const LINGNAN_NAME_PATTERN =
+  /lingnan university|ling nan university|lingnan|\u5dba\u5357\u5927\u5b78|\u5dba\u5357/i;
+
+/** B3A near-campus stop: Fu Tai Estate (also Fu Tai Shopping Centre inbound) */
+const FU_TAI_NAME_PATTERN = /fu\s*tai|\u5bcc\u6cf0/i;
+
+const citybusStopPatternForRoute = (route: string): RegExp =>
+  route === 'B3A' ? FU_TAI_NAME_PATTERN : LINGNAN_NAME_PATTERN;
 
 export type HomeTransportEtaRow = {
   id: HomeTransportRouteId;
@@ -129,12 +147,21 @@ const safeFetchJson = async (url: string, init?: RequestInit): Promise<any | nul
   }
 };
 
+const fetchCitybusStopInfo = async (
+  stopId: string,
+): Promise<{ name_en?: string; name_tc?: string } | null> => {
+  const json = await safeFetchJson(`https://rt.data.gov.hk/v2/transport/citybus/stop/${stopId}`);
+  return json?.data ?? null;
+};
+
 const optionById = (id: HomeTransportRouteId): HomeTransportOption =>
   HOME_TRANSPORT_OPTIONS.find((item) => item.id === id)!;
 
-const fetchKmbRouteMinutes = async (route: string): Promise<{ minutes: number[]; stopHint: string }> => {
+const fetchKmbRouteMinutes = async (
+  route: string,
+): Promise<{ minutes: number[]; stopHint: string; note?: string }> => {
   const minuteSet = new Set<number>();
-  let stopHint = 'Lingnan University';
+  let stopHint = 'Lingnan / Fu Tai';
 
   await Promise.all(
     LU_KMB_STOPS.map(async (stop) => {
@@ -147,10 +174,18 @@ const fetchKmbRouteMinutes = async (route: string): Promise<{ minutes: number[];
         const mins = minutesFromEta(row.eta);
         if (mins === null) continue;
         minuteSet.add(mins);
-        stopHint = `Lingnan University (${stop.code})`;
+        stopHint = stop.label;
       }
     }),
   );
+
+  if (!minuteSet.size) {
+    return {
+      minutes: [],
+      stopHint,
+      note: 'Not available',
+    };
+  }
 
   return {
     minutes: [...minuteSet].sort((a, b) => a - b).slice(0, 3),
@@ -160,16 +195,12 @@ const fetchKmbRouteMinutes = async (route: string): Promise<{ minutes: number[];
 
 const fetchCitybusRouteMinutes = async (
   route: string,
-): Promise<{ minutes: number[]; stopHint: string }> => {
-  const stopJson = await safeFetchJson('https://rt.data.gov.hk/v2/transport/citybus/stop/CTB');
-  const stopMap: Record<string, { name_en?: string; name_tc?: string }> = stopJson?.data ?? {};
-  if (!Object.keys(stopMap).length) {
-    return { minutes: [], stopHint: 'Lingnan University' };
-  }
-
+): Promise<{ minutes: number[]; stopHint: string; note?: string }> => {
+  const stopPattern = citybusStopPatternForRoute(route);
+  const defaultHint = route === 'B3A' ? 'Fu Tai Estate' : 'Lingnan University';
   const directions = ['inbound', 'outbound'] as const;
-  const matchedStopIds: Array<{ stopId: string; stopName: string }> = [];
 
+  const routeStopIds = new Set<string>();
   await Promise.all(
     directions.map(async (direction) => {
       const routeStopJson = await safeFetchJson(
@@ -177,22 +208,37 @@ const fetchCitybusRouteMinutes = async (
       );
       const rows: Array<{ stop: string }> = routeStopJson?.data ?? [];
       for (const row of rows) {
-        const info = stopMap[row.stop];
-        const nameEn = info?.name_en ?? '';
-        const nameTc = info?.name_tc ?? '';
-        if (LINGNAN_NAME_PATTERN.test(nameEn) || LINGNAN_NAME_PATTERN.test(nameTc)) {
-          matchedStopIds.push({
-            stopId: row.stop,
-            stopName: nameEn || nameTc || 'Lingnan University',
-          });
-        }
+        if (row.stop) routeStopIds.add(row.stop);
+      }
+    }),
+  );
+
+  if (!routeStopIds.size) {
+    return { minutes: [], stopHint: defaultHint, note: 'Route stops unavailable' };
+  }
+
+  const matchedStopIds: Array<{ stopId: string; stopName: string }> = [];
+  await Promise.all(
+    [...routeStopIds].map(async (stopId) => {
+      const info = await fetchCitybusStopInfo(stopId);
+      const nameEn = info?.name_en ?? '';
+      const nameTc = info?.name_tc ?? '';
+      if (stopPattern.test(nameEn) || stopPattern.test(nameTc)) {
+        matchedStopIds.push({
+          stopId,
+          stopName: nameEn || nameTc || defaultHint,
+        });
       }
     }),
   );
 
   const unique = [...new Map(matchedStopIds.map((item) => [item.stopId, item])).values()];
+  if (!unique.length) {
+    return { minutes: [], stopHint: defaultHint, note: `No ${defaultHint} stop on route` };
+  }
+
   const minuteSet = new Set<number>();
-  let stopHint = 'Lingnan University';
+  let stopHint = defaultHint;
 
   await Promise.all(
     unique.map(async (stop) => {
@@ -244,7 +290,7 @@ const fetchMtrBusMinutes = async (
     return {
       minutes: [],
       stopHint: 'Lingnan University',
-      note: payload.routeStatusRemarkTitle || 'No ETA at Lingnan stop',
+      note: payload.routeStatusRemarkTitle || 'Not available',
     };
   }
 
@@ -317,6 +363,7 @@ export const fetchHomeTransportEtas = async (
           provider: option.provider,
           stopHint: result.stopHint,
           minutes: result.minutes,
+          note: result.note,
         } satisfies HomeTransportEtaRow;
       }
 
@@ -327,6 +374,7 @@ export const fetchHomeTransportEtas = async (
         provider: option.provider,
         stopHint: result.stopHint,
         minutes: result.minutes,
+        note: result.note,
       } satisfies HomeTransportEtaRow;
     }),
   );

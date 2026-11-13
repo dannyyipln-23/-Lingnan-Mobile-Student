@@ -6,11 +6,12 @@ import { FlowListCard } from './FlowListCard';
 import { TermPicker } from './TermPicker';
 import {
   extractTerms,
-  fetchRegisteredCourses,
   formatClassDateRange,
   formatMeetingDays,
+  formatVenue,
   RegisteredCourse,
 } from '../../lib/registeredCourses';
+import { fetchRegisteredCoursesWithMeetings } from '../../lib/registeredCourseMeetings';
 
 type FlowStep = 'term' | 'list' | 'detail';
 
@@ -25,24 +26,12 @@ const scheduleTypeStyle = (
 ): { accent: string; chipClass: string } => {
   const normalized = scheduleType.trim().toLowerCase();
   if (normalized === 'lecture') {
-    return {
-      accent: '#2563EB',
-      chipClass:
-        'inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700',
-    };
+    return { accent: '#2563EB', chipClass: 'sched-type sched-type--lecture' };
   }
   if (normalized === 'tutorial') {
-    return {
-      accent: '#D97706',
-      chipClass:
-        'inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800',
-    };
+    return { accent: '#D97706', chipClass: 'sched-type sched-type--tutorial' };
   }
-  return {
-    accent: '#64748B',
-    chipClass:
-      'inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-700',
-  };
+  return { accent: '#64748B', chipClass: 'sched-type sched-type--default' };
 };
 
 export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack }) => {
@@ -60,7 +49,7 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       setLoading(true);
       setError(null);
       try {
-        const rows = await fetchRegisteredCourses();
+        const rows = await fetchRegisteredCoursesWithMeetings();
         if (!cancelled) {
           setCourses(rows);
         }
@@ -123,7 +112,7 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
   if (error) {
     return (
       <AcademicFlowShell title="My Class Schedule" theme="schedule" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -131,9 +120,7 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
   if (loading) {
     return (
       <AcademicFlowShell title="My Class Schedule" theme="schedule" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-          Loading…
-        </div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -174,16 +161,14 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
           <div className="flow-hero">
             <p className="flow-hero__eyebrow">This term</p>
             <p className="flow-hero__value">
-              {items.length} <span className="text-base font-semibold text-slate-500">courses</span>
+              {items.length} <span className="flow-hero__unit">courses</span>
             </p>
             <p className="flow-hero__caption">{selectedTerm?.description}</p>
           </div>
           <div className="space-y-2">
             <p className="flow-section-label">Registered courses</p>
             {items.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-                No registered courses for this term.
-              </div>
+              <div className="flow-state">No registered courses for this term.</div>
             )}
             {items.map((item) => {
               const typeStyle = scheduleTypeStyle(item.scheduleType);
@@ -209,7 +194,7 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
       {step === 'detail' && detail && (
         <div className="space-y-3">
           <div className="flow-hero">
-            <div className="flex items-center gap-2">
+            <div className="flow-hero__chips">
               <p className="flow-hero__eyebrow">
                 {detail.subjectCode}
                 {detail.courseNumber}
@@ -218,23 +203,26 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
                 {detail.scheduleType}
               </span>
             </div>
-            <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">{detail.courseTitle}</p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1">
+            <p className="flow-hero__title">{detail.courseTitle}</p>
+            <div className="flow-hero__meta">
+              <span className="flow-meta-chip">
                 <Clock3 className="h-3 w-3" />
-                {formatMeetingDays(detail.dayOfWeek)} · {detail.startTime} – {detail.endTime}
+                {formatMeetingDays(detail.meetingDays ?? detail.dayOfWeek)} · {detail.startTime} –{' '}
+                {detail.endTime}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1">
+              <span className="flow-meta-chip">
                 <MapPin className="h-3 w-3" />
-                {detail.location}
-                {detail.room !== '—' ? ` ${detail.room}` : ''}
+                {formatVenue(detail)}
               </span>
             </div>
           </div>
           <DetailSection
             title="Meeting"
             rows={[
-              { label: 'Days', value: formatMeetingDays(detail.dayOfWeek) },
+              {
+                label: 'Days',
+                value: formatMeetingDays(detail.meetingDays ?? detail.dayOfWeek),
+              },
               { label: 'Time', value: `${detail.startTime} – ${detail.endTime}` },
               { label: 'Location', value: detail.location },
               { label: 'Room', value: detail.room },
@@ -247,7 +235,6 @@ export const MyClassScheduleFlow: React.FC<MyClassScheduleFlowProps> = ({ onBack
               { label: 'CRN', value: detail.crn },
               { label: 'Type', value: detail.scheduleType },
               { label: 'Section', value: detail.section },
-              { label: 'Status', value: detail.statusMessage },
               { label: 'Class dates', value: formatClassDateRange(detail) },
               { label: 'Term', value: detail.termCode },
             ]}

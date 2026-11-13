@@ -42,166 +42,158 @@ export const StudentCardTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 text-slate-800">
+    <div className="card-page">
       {/* Title */}
-      <div className="flex items-center justify-between px-1">
+      <div className="card-heading">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="card-heading__title">
             Digital Student ID (e-Card)
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="card-heading__desc">
             Valid for Library turnstiles, Hostel gates & Sports complex
           </p>
         </div>
-        <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] text-emerald-700 font-bold">
-          <ShieldCheck className="w-3.5 h-3.5" />
+        <div className="card-status">
+          <ShieldCheck className="card-status__icon" />
           <span>Active Status</span>
         </div>
       </div>
 
       {/* Realistic Lingnan Digital Student ID Card - Lighten Red + Grey Palette */}
-      <div className="relative overflow-hidden rounded-3xl bg-white border-2 border-red-200 shadow-xl p-5">
+      <div className="card-id">
         {/* Top Metallic Red Accent Band */}
-        <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-red-600 via-red-500 to-slate-400" />
-        <div className="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-red-100/40 blur-2xl pointer-events-none" />
+        <div className="card-id__band" />
+        <div className="card-id__glow" />
 
         {/* Card Header: Lingnan University Official Emblem & Title */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3 mt-1">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-10 h-10 rounded-full bg-slate-50 p-0.5 shadow-sm ring-1 ring-red-500/30 shrink-0 flex items-center justify-center border border-slate-200">
+        <div className="card-id__header">
+          <div className="card-id__brand">
+            <div className="card-id__logo">
               <img
                 src="/lingnan-logo.svg"
                 alt="Lingnan Logo"
-                className="w-full h-full object-contain"
+                className="card-id__logo-img"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div>
-              <h3 className="text-xs font-black tracking-wider text-red-600 uppercase">
+              <h3 className="card-id__uni">
                 Lingnan University
               </h3>
-              <p className="text-[10px] text-slate-600 font-bold tracking-tight">
+              <p className="card-id__type">
                 STUDENT IDENTITY CARD
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col items-end">
-            <span className="text-[9px] font-mono font-semibold text-slate-500 tracking-wider">
+          <div className="card-id__aside">
+            <span className="card-id__tagline">
               HK LIBERAL ARTS
             </span>
-            <div className="flex items-center space-x-1 text-[10px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-md border border-red-200 mt-0.5">
-              <Wifi className="w-3 h-3 rotate-90" />
+            <div className="card-nfc">
+              <Wifi className="card-nfc__icon" />
               <span>NFC RFID</span>
             </div>
           </div>
         </div>
 
         {/* Card Body: Photo & Student Credentials */}
-        <div className="grid grid-cols-3 gap-3.5 mt-4 items-center">
+        <div className="card-id__body">
           {/* Photo */}
-          <div className="col-span-1">
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-100">
+          <div className="card-id__photo-col">
+            <div className="card-photo">
               <img
                 src={CURRENT_STUDENT.avatarUrl}
                 alt={CURRENT_STUDENT.fullName}
-                className="w-full h-full object-cover"
+                className="card-photo__img"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute bottom-0 inset-x-0 bg-red-600 text-[8px] font-bold text-white text-center py-0.5 tracking-wider">
+              <div className="card-photo__badge">
                 UG DEGREE
               </div>
             </div>
           </div>
 
           {/* Details */}
-          <div className="col-span-2 space-y-1.5 text-xs">
+          <div className="card-id__fields">
             <div>
-              <span className="text-[10px] text-slate-500 block leading-none font-medium">
+              <span className="card-field__label">
                 Full Name
               </span>
-              <p className="text-sm font-black text-slate-900">
+              <p className="card-field__name">
                 {CURRENT_STUDENT.fullName}
               </p>
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-500 block leading-none font-medium">
+              <span className="card-field__label">
                 Student Number
               </span>
-              <p className="text-base font-mono font-extrabold text-red-600 tracking-wider">
+              <p className="card-field__number">
                 {CURRENT_STUDENT.studentNumber}
               </p>
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-500 block leading-none font-medium">
+              <span className="card-field__label">
                 Major Programme
               </span>
-              <p className="text-[11px] font-semibold text-slate-700 line-clamp-2">
+              <p className="card-field__major">
                 {CURRENT_STUDENT.major}
               </p>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200">
+            <div className="card-field__footer">
               <span>Expires: {CURRENT_STUDENT.expectedGraduation}</span>
-              <span className="font-semibold text-slate-700">{CURRENT_STUDENT.hostelRoom}</span>
+              <span className="card-field__hostel">{CURRENT_STUDENT.hostelRoom}</span>
             </div>
           </div>
         </div>
 
         {/* Dynamic Anti-Counterfeit Verification Bar */}
-        <div className="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-2.5 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+        <div className="card-sync">
+          <div className="card-sync__lead">
+            <span className="card-sync__live">
+              <span className="card-sync__ping"></span>
+              <span className="card-sync__dot"></span>
             </span>
-            <span className="text-[11px] text-slate-600 font-medium">
+            <span className="card-sync__label">
               Live Security Sync:
             </span>
-            <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+            <span className="card-sync__time">
               {timestamp}
             </span>
           </div>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
+          <span className="card-sync__auth">
             LU AUTHENTIC
           </span>
         </div>
 
         {/* Code View: QR code vs Barcode */}
-        <div className="mt-4 p-3 bg-slate-50 rounded-2xl flex flex-col items-center justify-center text-slate-900 border border-slate-200">
-          <div className="flex items-center space-x-2 mb-2">
+        <div className="card-code">
+          <div className="card-code__tabs">
             <button
               type="button"
               onClick={() => setCodeMode('qr')}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition ${
-                codeMode === 'qr'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
+              className={`card-code__tab${codeMode === 'qr' ? ' is-active' : ''}`}
             >
               QR Code
             </button>
             <button
               type="button"
               onClick={() => setCodeMode('barcode')}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition ${
-                codeMode === 'barcode'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
+              className={`card-code__tab${codeMode === 'barcode' ? ' is-active' : ''}`}
             >
               Barcode
             </button>
           </div>
 
           {codeMode === 'qr' ? (
-            <div className="flex flex-col items-center py-2">
-              <div className="relative p-2 border-2 border-dashed border-red-500/80 rounded-xl bg-white shadow-xs">
+            <div className="card-qr">
+              <div className="card-qr__frame">
                 {/* Simulated SVG QR code with Lingnan emblem center */}
                 <svg
-                  className="w-44 h-44"
+                  className="card-qr__svg"
                   viewBox="0 0 100 100"
                   fill="currentColor"
                 >
@@ -242,22 +234,22 @@ export const StudentCardTab: React.FC = () => {
                   <path d="M 48 51 Q 50 58 52 59" stroke="#e2e8f0" strokeWidth="2" fill="none" />
                 </svg>
               </div>
-              <p className="text-[10px] font-mono text-slate-500 mt-1">
+              <p className="card-qr__token">
                 TOKEN: {CURRENT_STUDENT.studentNumber}-98B2
               </p>
             </div>
           ) : (
-            <div className="flex flex-col items-center py-4 w-full px-4">
-              <div className="w-full h-16 flex items-center justify-between px-2 bg-white border border-slate-300 rounded shadow-xs">
+            <div className="card-barcode">
+              <div className="card-barcode__bars">
                 {[4, 2, 6, 1, 3, 5, 2, 7, 2, 4, 1, 6, 3, 2, 5, 1, 4, 6, 2, 3, 5, 2, 4].map((width, idx) => (
                   <div
                     key={idx}
-                    className="h-12 bg-slate-900 rounded-xs"
+                    className="card-barcode__bar"
                     style={{ width: `${width * 2}px` }}
                   />
                 ))}
               </div>
-              <p className="font-mono text-sm tracking-widest font-bold text-slate-800 mt-2">
+              <p className="card-barcode__label">
                 *{CURRENT_STUDENT.studentNumber}*
               </p>
             </div>
@@ -266,11 +258,11 @@ export const StudentCardTab: React.FC = () => {
       </div>
 
       {/* Interactive Gate Tap Simulator */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 text-center shadow-sm">
+      <div className="card-tap">
         {tapSuccess ? (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex items-center justify-center space-x-2 animate-pulse">
-            <Check className="w-5 h-5 text-emerald-600" />
-            <span className="text-xs font-bold">
+          <div className="card-tap__success">
+            <Check className="card-tap__success-icon" />
+            <span className="card-tap__success-text">
               Gate Access Verified: Turnstile Opened (Beep!)
             </span>
           </div>
@@ -279,9 +271,9 @@ export const StudentCardTab: React.FC = () => {
             type="button"
             onClick={handleSimulateTap}
             disabled={isSimulatingTap}
-            className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm shadow-red-200 flex items-center justify-center space-x-2 transition active:scale-98 disabled:opacity-50"
+            className="card-tap__btn"
           >
-            <Wifi className="w-4 h-4 rotate-90" />
+            <Wifi className="card-tap__btn-icon" />
             <span>
               {isSimulatingTap
                 ? 'Reading RFID Sensor...'
@@ -290,47 +282,47 @@ export const StudentCardTab: React.FC = () => {
           </button>
         )}
 
-        <p className="text-[11px] text-slate-500 mt-2">
+        <p className="card-tap__hint">
           Supports automated NFC tap. Increase screen brightness if barcode reader fails.
         </p>
       </div>
 
       {/* Card Privileges & Rights */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-2.5 shadow-sm">
-        <h4 className="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
-          <Info className="w-4 h-4 text-red-600" />
+      <div className="card-priv">
+        <h4 className="card-priv__title">
+          <Info className="card-priv__icon" />
           <span>Card Privileges & Entitlements</span>
         </h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-medium">
+        <div className="card-priv__grid">
+          <div className="card-priv__item">
+            <span className="card-priv__label">
               Library Privileges
             </span>
-            <span className="font-semibold text-slate-800">
+            <span className="card-priv__value">
               Borrow up to 50 items
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-medium">
+          <div className="card-priv__item">
+            <span className="card-priv__label">
               Hostel Hall Access
             </span>
-            <span className="font-semibold text-slate-800">
+            <span className="card-priv__value">
               {CURRENT_STUDENT.hostel}
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-medium">
+          <div className="card-priv__item">
+            <span className="card-priv__label">
               Sports & Pool
             </span>
-            <span className="font-semibold text-slate-800">
+            <span className="card-priv__value">
               Complimentary Gym Access
             </span>
           </div>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-medium">
+          <div className="card-priv__item">
+            <span className="card-priv__label">
               Transit Concession
             </span>
-            <span className="font-semibold text-slate-800">
+            <span className="card-priv__value">
               MTR Student Scheme
             </span>
           </div>

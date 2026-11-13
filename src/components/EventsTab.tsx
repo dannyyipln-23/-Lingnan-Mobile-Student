@@ -69,69 +69,58 @@ export const EventsTab: React.FC = () => {
   }, [loadEvents]);
 
   return (
-    <div className="space-y-4 text-slate-800">
-      <div className="flex items-center justify-between px-1">
+    <div className="evt-page">
+      <div className="evt-header">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Current Events</h2>
-          <p className="text-xs text-slate-500">Template view using local testing JSON</p>
+          <h2 className="evt-header__title">Current Events</h2>
+          <p className="evt-header__subtitle">Template view using local testing JSON</p>
         </div>
-        <button
-          type="button"
-          onClick={() => void loadEvents()}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        <button type="button" onClick={() => void loadEvents()} className="evt-refresh">
+          <RefreshCw className={`evt-refresh__icon${loading ? ' is-spinning' : ''}`} />
           <span>Refresh</span>
         </button>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{error}</div>
-      )}
+      {error && <div className="evt-error">{error}</div>}
 
       {!loading && !events.length && !error && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">No events available right now.</div>
+        <div className="evt-empty">No events available right now.</div>
       )}
 
-      <div className="space-y-3">
+      <div className="evt-list">
         {events.map((event) => (
-          <article
-            key={event.event_id}
-            className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs"
-          >
-            <div className="relative h-36 w-full bg-slate-100">
+          <article key={event.event_id} className="evt-card">
+            <div className="evt-card__media">
               <img
                 src={event.event_mb_image || fallbackImage}
                 alt={event.event_title || 'Lingnan Event'}
-                className="w-full h-full object-cover"
+                className="evt-card__img"
                 referrerPolicy="no-referrer"
               />
-              <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/95 text-slate-800 border border-slate-200">
+              <span className="evt-card__status">
                 {event.availability_status || 'available'}
               </span>
             </div>
 
-            <div className="p-3.5 space-y-2">
-              <h3 className="text-sm font-bold text-slate-900 line-clamp-2">
-                {event.event_title || 'Untitled Event'}
-              </h3>
+            <div className="evt-card__body">
+              <h3 className="evt-card__title">{event.event_title || 'Untitled Event'}</h3>
 
-              <p className="text-xs text-slate-600 inline-flex items-start space-x-1.5">
-                <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+              <p className="evt-card__row">
+                <MapPin className="evt-card__icon evt-card__icon--pin" />
                 <span>{event.venue || 'Venue TBA'}</span>
               </p>
 
-              <p className="text-xs text-slate-600 inline-flex items-start space-x-1.5">
-                <CalendarDays className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+              <p className="evt-card__row">
+                <CalendarDays className="evt-card__icon evt-card__icon--cal" />
                 <span>{formatDateRange(event.global_start_datetime, event.global_end_datetime)}</span>
               </p>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                <span className="truncate mr-3">
+              <div className="evt-card__footer">
+                <span className="evt-card__host">
                   Host: {event.organiserDisplay || event.event_host || 'Lingnan University'}
                 </span>
-                <span className="inline-flex items-center space-x-1 shrink-0">
-                  <Users className="w-3.5 h-3.5" />
+                <span className="evt-card__spots">
+                  <Users className="h-3.5 w-3.5" />
                   <span>{event.total_available_spots ?? '-'} spots</span>
                 </span>
               </div>
@@ -140,9 +129,7 @@ export const EventsTab: React.FC = () => {
         ))}
       </div>
 
-      <div className="text-[11px] text-slate-500 px-1">
-        Last updated: {lastUpdated || '--:--:--'}
-      </div>
+      <div className="evt-footer">Last updated: {lastUpdated || '--:--:--'}</div>
     </div>
   );
 };

@@ -212,7 +212,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
   if (error) {
     return (
       <AcademicFlowShell title="My Academic Results" theme="results" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -220,9 +220,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
   if (loading) {
     return (
       <AcademicFlowShell title="My Academic Results" theme="results" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-          Loading…
-        </div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -274,11 +272,7 @@ export const MyAcademicResultsFlow: React.FC<MyAcademicResultsFlowProps> = ({ on
           </div>
           <div className="space-y-2">
             <p className="flow-section-label">Courses ({items.length})</p>
-            {items.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-                No grades for this term.
-              </div>
-            )}
+            {items.length === 0 && <div className="flow-state">No grades for this term.</div>}
             {items.map((item) => (
               <FlowListCard
                 key={item.id}

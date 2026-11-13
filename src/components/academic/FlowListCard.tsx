@@ -9,7 +9,7 @@ interface FlowListCardProps {
   meta?: string;
   status?: string;
   statusTone?: Tone;
-  /** Optional Tailwind classes that replace the default status tone styles. */
+  /** Optional CSS classes that replace the default status tone styles. */
   statusClassName?: string;
   /** Overrides the left accent bar color (CSS color). */
   accent?: string;

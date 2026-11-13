@@ -23,7 +23,7 @@ export const HOME_SHORTCUT_OPTIONS: Array<{
 }> = [
   {
     id: 'calendar',
-    label: 'Calendar',
+    label: 'My Calendar',
     description: 'Open your course calendar page',
   },
   {

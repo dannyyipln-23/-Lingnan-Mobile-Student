@@ -1,4 +1,5 @@
 import { CourseSession } from '../types';
+import { formatDateKey, nowMinutes, parseTimeToMinutes, toAcademicDay } from './appDate';
 import { decodeXmlText, fetchDataRecordXml } from './parseDataRecordXml';
 
 export { decodeXmlText };
@@ -48,6 +49,8 @@ export type RegisteredCourse = {
   classStartDate: string;
   classEndDate: string;
   dayOfWeek: number;
+  /** All meeting weekdays from SSRMEET when available; UI prefers this over dayOfWeek. */
+  meetingDays?: number[];
   startTime: string;
   endTime: string;
   color: string;
@@ -199,6 +202,36 @@ export const isCourseActiveOnDate = (course: RegisteredCourse, dateKey: string):
   return dateKey >= course.classStartDate && dateKey <= course.classEndDate;
 };
 
+export const getCoursesForDate = (
+  courses: RegisteredCourse[],
+  date: Date,
+): RegisteredCourse[] => {
+  const dateKey = formatDateKey(date);
+  const academicDay = toAcademicDay(date);
+  return courses
+    .filter(
+      (course) =>
+        course.dayOfWeek === academicDay && isCourseActiveOnDate(course, dateKey),
+    )
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+};
+
+/** Next registered class still running/upcoming today. */
+export const getUpcomingRegisteredClassToday = (
+  courses: RegisteredCourse[],
+  now: Date = new Date(),
+): RegisteredCourse | null => {
+  const todayCourses = getCoursesForDate(courses, now);
+  if (todayCourses.length === 0) return null;
+
+  const current = nowMinutes(now);
+  const upcoming = todayCourses.find((course) => {
+    const end = parseTimeToMinutes(course.endTime);
+    return end === null || end > current;
+  });
+  return upcoming ?? null;
+};
+
 export const formatClassDateRange = (course: RegisteredCourse): string => {
   if (!course.classStartDate && !course.classEndDate) return '—';
   return `${formatDateLabel(course.classStartDate)} → ${formatDateLabel(course.classEndDate)}`;
@@ -214,7 +247,22 @@ const DAY_LABELS: Record<number, string> = {
   7: 'Sun',
 };
 
-export const formatMeetingDays = (dayOfWeek: number): string => DAY_LABELS[dayOfWeek] ?? '—';
+export const formatMeetingDays = (dayOfWeek: number | number[]): string => {
+  const days = (Array.isArray(dayOfWeek) ? dayOfWeek : [dayOfWeek])
+    .filter((day) => DAY_LABELS[day])
+    .sort((a, b) => a - b);
+  if (!days.length) return '—';
+  return [...new Set(days)].map((day) => DAY_LABELS[day]).join(', ');
+};
+
+export const formatVenue = (course: Pick<RegisteredCourse, 'location' | 'room'>): string => {
+  if (course.room !== '—' && course.location !== '—') {
+    return `${course.room} (${course.location})`;
+  }
+  if (course.room !== '—') return course.room;
+  if (course.location !== '—') return course.location;
+  return 'TBA';
+};
 
 export const toCourseSession = (course: RegisteredCourse): CourseSession => {
   const venue =

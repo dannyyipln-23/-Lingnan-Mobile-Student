@@ -30,9 +30,13 @@ const KMB_STOP_BY_CODE: Record<(typeof LU_STOP_CODES)[number], { stopId: string;
   TM286: { stopId: 'F1D1F84A466543BE', label: 'Fu Tai Estate (TM286)' },
 };
 
-const CITYBUS_ROUTES = ['A33X', 'NA33', '960A', '960S'];
+const CITYBUS_ROUTES = ['A33X', 'NA33', 'B3A', '960A', '960S'];
 const MTR_BUS_ROUTES = ['K51', 'K58'] as const;
 const LINGNAN_NAME_PATTERN = /lingnan university|ling nan university|\u5dba\u5357\u5927\u5b78/i;
+const FU_TAI_NAME_PATTERN = /fu\s*tai(\s*estate)?|\u5bcc\u6cf0\u90b8/i;
+
+const citybusStopPatternForRoute = (route: string): RegExp =>
+  route === 'B3A' ? FU_TAI_NAME_PATTERN : LINGNAN_NAME_PATTERN;
 
 const minutesFromEta = (etaTime?: string): number | null => {
   if (!etaTime) {
@@ -44,18 +48,10 @@ const minutesFromEta = (etaTime?: string): number | null => {
   return Number.isFinite(mins) ? Math.max(0, mins) : null;
 };
 
-const formatMins = (minutes: number[]): string => {
-  if (!minutes.length) {
-    return 'No upcoming ETA';
-  }
-
-  return minutes.slice(0, 3).map((m) => `${m} min`).join('  |  ');
-};
-
 const providerCardClass = (provider: ArrivalCard['provider']) => {
-  if (provider === 'KMB') return 'border-red-200 bg-red-50/30';
-  if (provider === 'Citybus') return 'border-blue-200 bg-blue-50/30';
-  return 'border-emerald-200 bg-emerald-50/30';
+  if (provider === 'KMB') return 'bus-card bus-card--kmb';
+  if (provider === 'Citybus') return 'bus-card bus-card--citybus';
+  return 'bus-card bus-card--mtr';
 };
 
 const safeFetchJson = async (url: string, init?: RequestInit): Promise<any | null> => {
@@ -142,12 +138,6 @@ export const ShuttleBusTab: React.FC = () => {
   }, []);
 
   const loadCitybus = useCallback(async (): Promise<ArrivalCard[]> => {
-    const stopJson = await safeFetchJson('https://rt.data.gov.hk/v2/transport/citybus/stop/CTB');
-    const stopMap: Record<string, { name_en?: string; name_tc?: string }> = stopJson?.data ?? {};
-    if (!Object.keys(stopMap).length) {
-      return [];
-    }
-
     const routeStopRows = await Promise.all(
       CITYBUS_ROUTES.flatMap((route) =>
         ['inbound', 'outbound'].map(async (direction) => {
@@ -164,13 +154,30 @@ export const ShuttleBusTab: React.FC = () => {
       ),
     );
 
+    const stopIds = [
+      ...new Set(routeStopRows.flatMap(({ rows }) => rows.map((row) => row.stop).filter(Boolean))),
+    ];
+    const stopMap: Record<string, { name_en?: string; name_tc?: string }> = {};
+    await Promise.all(
+      stopIds.map(async (stopId) => {
+        const stopJson = await safeFetchJson(
+          `https://rt.data.gov.hk/v2/transport/citybus/stop/${stopId}`,
+        );
+        if (stopJson?.data) {
+          stopMap[stopId] = stopJson.data;
+        }
+      }),
+    );
+
     const matchedRoutes = routeStopRows
       .map(({ route, direction, rows }) => {
+        const stopPattern = citybusStopPatternForRoute(route);
+        const defaultName = route === 'B3A' ? 'Fu Tai Estate' : 'Lingnan University';
         const matched = rows.find((row) => {
           const stopInfo = stopMap[row.stop];
           const stopNameEn = stopInfo?.name_en ?? '';
           const stopNameTc = stopInfo?.name_tc ?? '';
-          return LINGNAN_NAME_PATTERN.test(stopNameEn) || LINGNAN_NAME_PATTERN.test(stopNameTc);
+          return stopPattern.test(stopNameEn) || stopPattern.test(stopNameTc);
         });
 
         if (!matched) {
@@ -183,7 +190,7 @@ export const ShuttleBusTab: React.FC = () => {
           direction,
           stopId: matched.stop,
           dirCode: matched.dir,
-          stopName: stopInfo?.name_en || stopInfo?.name_tc || 'Lingnan University',
+          stopName: stopInfo?.name_en || stopInfo?.name_tc || defaultName,
         };
       })
       .filter(
@@ -371,81 +378,117 @@ export const ShuttleBusTab: React.FC = () => {
   );
 
   return (
-    <div className="space-y-4 text-slate-800">
-      <div className="flex items-center justify-between px-1">
+    <div className="bus-page">
+      <div className="bus-header">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Shuttle & Public Transport</h2>
-          <p className="text-xs text-slate-500">
-            Live ETA at LU stops {LU_STOP_CODES.join(', ')}
-          </p>
         </div>
         <button
           type="button"
           onClick={() => void loadAll()}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          className="bus-refresh"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`bus-refresh__icon${loading ? ' is-spinning' : ''}`} />
           <span>Refresh</span>
         </button>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{error}</div>
-      )}
+      {error && <div className="bus-error">{error}</div>}
 
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm space-y-2.5">
-        <div className="flex items-center space-x-2">
-          <TrainFront className="w-4 h-4 text-emerald-700" />
-          <h3 className="text-sm font-bold text-slate-900">MTR Tuen Ma Line (SIH - Siu Hong)</h3>
+      <div className="bus-panel">
+        <div className="bus-panel__head">
+          <TrainFront className="bus-panel__icon bus-panel__icon--train" />
+          <h3 className="bus-panel__title">MTR Tuen Ma Line (Siu Hong)</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
-            <span className="font-semibold text-slate-700">Toward Tuen Mun (UP)</span>
-            <p className="mt-1.5 font-mono text-slate-800">{formatMins(trainData.up)}</p>
+        <div className="bus-eta-grid">
+          <div className="bus-eta-box">
+            <span className="bus-eta-box__label">Toward Tuen Mun (UP)</span>
+            <div className="bus-card__etas bus-eta-box__etas">
+              <Clock3 className="bus-card__clock" />
+              {trainData.up.length > 0 ? (
+                trainData.up.slice(0, 3).map((mins, index) => (
+                  <span
+                    key={`train-up-${mins}-${index}`}
+                    className={index === 0 ? 'bus-card__eta bus-card__eta--next' : 'bus-card__eta'}
+                  >
+                    {mins}
+                    <span className="bus-card__eta-unit">min</span>
+                  </span>
+                ))
+              ) : (
+                <span className="bus-card__eta--empty">Not available</span>
+              )}
+            </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
-            <span className="font-semibold text-slate-700">Toward Wu Kai Sha (DOWN)</span>
-            <p className="mt-1.5 font-mono text-slate-800">{formatMins(trainData.down)}</p>
+          <div className="bus-eta-box">
+            <span className="bus-eta-box__label">Toward Wu Kai Sha (DOWN)</span>
+            <div className="bus-card__etas bus-eta-box__etas">
+              <Clock3 className="bus-card__clock" />
+              {trainData.down.length > 0 ? (
+                trainData.down.slice(0, 3).map((mins, index) => (
+                  <span
+                    key={`train-down-${mins}-${index}`}
+                    className={index === 0 ? 'bus-card__eta bus-card__eta--next' : 'bus-card__eta'}
+                  >
+                    {mins}
+                    <span className="bus-card__eta-unit">min</span>
+                  </span>
+                ))
+              ) : (
+                <span className="bus-card__eta--empty">Not available</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm space-y-2.5">
-        <div className="flex items-center space-x-2">
-          <Bus className="w-4 h-4 text-amber-700" />
-          <h3 className="text-sm font-bold text-slate-900">Bus ETA at Lingnan University Stop</h3>
+      <div className="bus-panel">
+        <div className="bus-panel__head">
+          <Bus className="bus-panel__icon bus-panel__icon--bus" />
+          <h3 className="bus-panel__title">Bus</h3>
         </div>
 
         {!loading && allBusCards.length === 0 && (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+          <div className="bus-empty">
             No ETA returned for LU stops ({LU_STOP_CODES.join(', ')}).
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="bus-card-list">
           {allBusCards.map((card) => (
             <div
               key={`${card.provider}-${card.route}-${card.direction}-${card.stopCode ?? card.stopName}`}
-              className={`rounded-xl border p-3 ${providerCardClass(card.provider)}`}
+              className={providerCardClass(card.provider)}
             >
-              <div className="flex items-center justify-between text-xs">
-                <div className="inline-flex items-center space-x-1.5">
-                  <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 font-bold text-slate-700">
-                    {card.provider}
-                  </span>
-                  <span className="font-black text-slate-900">Route {card.route}</span>
+              <div className="bus-card__top">
+                <div className="bus-card__identity">
+                  <span className="bus-card__provider">{card.provider}</span>
+                  <span className="bus-card__route">{card.route}</span>
                 </div>
-                <span className="text-slate-500 capitalize">{card.direction}</span>
+                <span className="bus-card__dir">{card.direction}</span>
               </div>
 
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div className="inline-flex items-center space-x-1.5 text-slate-600">
-                  <MapPin className="w-3.5 h-3.5 text-red-600" />
+              <div className="bus-card__meta">
+                <div className="bus-card__row">
+                  <MapPin className="bus-card__pin" />
                   <span>{card.stopName}</span>
                 </div>
-                <div className="inline-flex items-center space-x-1.5 text-slate-700 font-mono">
-                  <Clock3 className="w-3.5 h-3.5 text-slate-500" />
-                  <span>{formatMins(card.minutes)}</span>
+                <div className="bus-card__etas">
+                  <Clock3 className="bus-card__clock" />
+                  {card.minutes.length > 0 ? (
+                    card.minutes.slice(0, 3).map((mins, index) => (
+                      <span
+                        key={`${card.provider}-${card.route}-${card.direction}-${mins}-${index}`}
+                        className={
+                          index === 0 ? 'bus-card__eta bus-card__eta--next' : 'bus-card__eta'
+                        }
+                      >
+                        {mins}
+                        <span className="bus-card__eta-unit">min</span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="bus-card__eta--empty">Not available</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -453,14 +496,12 @@ export const ShuttleBusTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600">
-        <p className="font-semibold text-slate-800">MTR Bus (K51 / K58)</p>
-        <p className="mt-1">{mtrBusStatus}</p>
-      </div>
+      {/* <div className="bus-status">
+        <p className="bus-status__title">MTR Bus (K51 / K58)</p>
+        <p className="bus-status__body">{mtrBusStatus}</p>
+      </div> */}
 
-      <div className="text-[11px] text-slate-500 px-1">
-        Last updated: {lastUpdated || '--:--:--'}
-      </div>
+      <div className="bus-footer">Last updated: {lastUpdated || '--:--:--'}</div>
     </div>
   );
 };

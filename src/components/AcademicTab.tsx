@@ -221,17 +221,11 @@ export const AcademicTab: React.FC = () => {
 
   return (
     <div className="page-shell page-shell--academic space-y-3">
-      <div className="px-0.5">
-        <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">Academic Service</h2>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-          Track your courses, exams, applications, and academic standing.
-        </p>
-      </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-3.5 shadow-sm backdrop-blur-sm">
-        <div className="mb-3.5 flex items-end justify-between gap-2">
+      <section className="acad-panel">
+        <div className="acad-panel__head">
           <div>
-            <h3 className="text-sm font-bold tracking-tight text-slate-900">Academic Journey</h3>
+            <h3 className="acad-panel__title">Academic Journey</h3>
           </div>
         </div>
 
@@ -244,13 +238,13 @@ export const AcademicTab: React.FC = () => {
             >
               <div className="journey-stage__rail">
                 <div className="journey-stage__marker">
-                  <span className="text-[10px] font-bold">{index + 1}</span>
+                  <span className="journey-stage__index">{index + 1}</span>
                 </div>
               </div>
               <div className="journey-stage__body">
                 <p className="journey-stage__title">{group.title}</p>
                 <p className="journey-stage__hint">{group.hint}</p>
-                <div className="mt-2.5 space-y-1.5">
+                <div className="acad-items">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     const isExternal = item.action.type === 'url';
@@ -267,9 +261,9 @@ export const AcademicTab: React.FC = () => {
                         </div>
                         <span className="journey-action__label">{item.label}</span>
                         {isExternal ? (
-                          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-blue-700" />
+                          <ExternalLink className="journey-action__chev journey-action__chev--ext" />
                         ) : (
-                          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                          <ChevronRight className="journey-action__chev" />
                         )}
                       </button>
                     );

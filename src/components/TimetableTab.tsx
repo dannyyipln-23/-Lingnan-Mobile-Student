@@ -1,25 +1,33 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { 
-  Calendar as CalendarIcon, 
+import {
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  MapPin, 
-  User, 
-  BookOpen, 
+  MapPin,
+  User,
+  BookOpen,
+  Bell,
   Plus,
   Check,
-  Bell,
-  X
+  ExternalLink,
+  X,
 } from 'lucide-react';
-import { CALENDAR_DEMO_TODAY, STUDY_TASKS, StudyTaskSource } from '../data/mockData';
+import { STUDY_TASKS, StudyTaskSource } from '../data/mockData';
 import { CourseSession } from '../types';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { formatDateKey, getToday, toAcademicDay } from '../lib/appDate';
 import { fetchHkPublicHolidays, holidayMapFromList } from '../lib/hkPublicHolidays';
 import {
-  fetchRegisteredCourses,
-  isCourseActiveOnDate,
-  RegisteredCourse,
-  toCourseSession,
-} from '../lib/registeredCourses';
+  fetchMoodleAssignmentTasks,
+  MoodleAssignmentTask,
+} from '../lib/moodleAssignmentTimeline';
+import {
+  fetchScheduledRegisteredCourses,
+  getScheduledCoursesForDate,
+  isScheduledCourseActiveOnDate,
+  toScheduledCourseSession,
+} from '../lib/registeredCourseMeetings';
+import { fetchRegisteredCourses, RegisteredCourse } from '../lib/registeredCourses';
 
 type CalendarViewMode = 'week' | 'month';
 
@@ -33,7 +41,6 @@ const WEEKDAY_COLUMNS = [
   { label: 'Sat', academicDay: 6 },
 ] as const;
 
-const mapJsDayToAcademicDay = (jsDay: number): number => (jsDay === 0 ? 7 : jsDay);
 const mapAcademicDayToCalendarOffset = (academicDay: number): number => academicDay % 7;
 
 const getMonthGridStart = (year: number, monthIndex: number): Date => {
@@ -66,14 +73,8 @@ const isSameDate = (a: Date, b: Date): boolean =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
-const toDateKey = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const buildReminderDateTime = (date: Date, time: string): string => `${toDateKey(date)}T${time}`;
+const buildReminderDateTime = (date: Date, time: string): string =>
+  `${formatDateKey(date)}T${time}`;
 
 const formatReminderDateTime = (reminderDateTime: string): string => {
   const [datePart, timePart] = reminderDateTime.split('T');
@@ -103,16 +104,20 @@ interface TimetableTabProps {
 }
 
 export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }) => {
-  const [year, month, day] = CALENDAR_DEMO_TODAY.split('-').map(Number);
-  const initialSelectedDate = new Date(year, month - 1, day);
+  const { openInAppBrowser } = useAppPreferences();
+  const initialSelectedDate = getToday();
   const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
-  const [calendarAnchor, setCalendarAnchor] = useState<Date>(new Date(year, month - 1, 1));
+  const [calendarAnchor, setCalendarAnchor] = useState<Date>(
+    new Date(initialSelectedDate.getFullYear(), initialSelectedDate.getMonth(), 1),
+  );
   const [selectedWeek, setSelectedWeek] = useState<number>(getWeekOfMonth(initialSelectedDate));
-  const [selectedDay, setSelectedDay] = useState<number>(mapJsDayToAcademicDay(initialSelectedDate.getDay()));
+  const [selectedDay, setSelectedDay] = useState<number>(toAcademicDay(initialSelectedDate));
   const [selectedDate, setSelectedDate] = useState<Date>(initialSelectedDate);
   const [activeCourse, setActiveCourse] = useState<CourseSession | null>(null);
+  const [activeMoodleTask, setActiveMoodleTask] = useState<MoodleAssignmentTask | null>(null);
+  const [moodleTasks, setMoodleTasks] = useState<MoodleAssignmentTask[]>([]);
   const [tasks, setTasks] = useState<StudyTask[]>(() =>
-    STUDY_TASKS.map((task) => ({ ...task })),
+    STUDY_TASKS.filter((task) => task.source === 'personal').map((task) => ({ ...task })),
   );
   const [newTaskInput, setNewTaskInput] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('18:00');
@@ -124,7 +129,7 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
 
   useEffect(() => {
     let cancelled = false;
-    void fetchRegisteredCourses()
+    void fetchScheduledRegisteredCourses()
       .then((courses) => {
         if (!cancelled) {
           setRegisteredCourses(courses);
@@ -135,6 +140,26 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
           setRegisteredCourses([]);
         }
       });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const courses = await fetchRegisteredCourses();
+        const nextMoodleTasks = await fetchMoodleAssignmentTasks(courses);
+        if (!cancelled) {
+          setMoodleTasks(nextMoodleTasks);
+        }
+      } catch {
+        if (!cancelled) {
+          setMoodleTasks([]);
+        }
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -163,27 +188,33 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
     [selectedDate],
   );
 
-  const selectedDateKey = useMemo(() => toDateKey(selectedDate), [selectedDate]);
+  const selectedDateKey = useMemo(() => formatDateKey(selectedDate), [selectedDate]);
   const selectedHolidayName = holidayByDate.get(selectedDateKey);
-  const selectedDayTasks = useMemo(
-    () => tasks.filter((task) => task.dateKey === selectedDateKey),
+  const selectedMoodleTasks = useMemo(
+    () => moodleTasks.filter((task) => task.dateKey === selectedDateKey),
+    [moodleTasks, selectedDateKey],
+  );
+  const selectedPersonalTasks = useMemo(
+    () => tasks.filter((task) => task.source === 'personal' && task.dateKey === selectedDateKey),
     [selectedDateKey, tasks],
   );
 
-  const dayCourses = useMemo(() => {
-    return registeredCourses
-      .filter(
-        (course) =>
-          course.dayOfWeek === selectedDay && isCourseActiveOnDate(course, selectedDateKey),
-      )
-      .map(toCourseSession)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
-  }, [registeredCourses, selectedDateKey, selectedDay]);
+  const dayCourses = useMemo(
+    () => getScheduledCoursesForDate(registeredCourses, selectedDate).map(toScheduledCourseSession),
+    [registeredCourses, selectedDate],
+  );
 
   const monthLabel = useMemo(
-    () => new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(calendarAnchor),
+    () => new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(calendarAnchor),
     [calendarAnchor],
   );
+
+  const holidayTitleFor = (date: Date, dateKey: string): string | undefined => {
+    const named = holidayByDate.get(dateKey);
+    if (named) return named;
+    if (toAcademicDay(date) === 7) return 'Sunday';
+    return undefined;
+  };
 
   const weekDays = useMemo(
     () => WEEKDAY_COLUMNS.map((column) => {
@@ -197,17 +228,6 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
     [activeMonth, activeYear, selectedWeek],
   );
 
-  const weekRangeLabel = useMemo(() => {
-    const start = weekDays[0]?.date;
-    const end = weekDays[6]?.date;
-    if (!start || !end) {
-      return '';
-    }
-    const formatDay = (date: Date) =>
-      new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
-    return `${formatDay(start)} – ${formatDay(end)}`;
-  }, [weekDays]);
-
   const monthCells = useMemo(() => {
     const gridStart = getMonthGridStart(activeYear, activeMonth);
 
@@ -215,15 +235,16 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
       const date = new Date(gridStart);
       date.setDate(gridStart.getDate() + index);
 
-      const academicDay = mapJsDayToAcademicDay(date.getDay());
+      const academicDay = toAcademicDay(date);
       const isInMonth = date.getMonth() === activeMonth;
       const isWeekend = academicDay >= 6;
-      const dateKey = toDateKey(date);
+      const dateKey = formatDateKey(date);
       const courseCount =
         isInMonth && !isWeekend
           ? registeredCourses.filter(
               (course) =>
-                course.dayOfWeek === academicDay && isCourseActiveOnDate(course, dateKey),
+                course.dayOfWeek === academicDay &&
+                isScheduledCourseActiveOnDate(course, dateKey),
             ).length
           : 0;
 
@@ -250,27 +271,35 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
     setSelectedWeek(getWeekOfMonth(date));
   };
 
-  const handleShiftMonth = (offset: number) => {
-    const nextAnchor = new Date(activeYear, activeMonth + offset, 1);
-    setCalendarAnchor(nextAnchor);
+  const handlePickDate = (value: string) => {
+    if (!value) return;
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) return;
 
-    const nextDate = getDateByWeekAndDay(nextAnchor.getFullYear(), nextAnchor.getMonth(), 1, 1);
-    setSelectedWeek(1);
-    setSelectedDay(1);
+    const nextDate = new Date(year, month - 1, day);
     setSelectedDate(nextDate);
+    setSelectedDay(toAcademicDay(nextDate));
+    setSelectedWeek(getWeekOfMonth(nextDate));
+    setCalendarAnchor(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
   };
 
   const handleShiftWeek = (offset: number) => {
     const nextDate = new Date(selectedDate);
     nextDate.setDate(selectedDate.getDate() + offset * 7);
     setSelectedDate(nextDate);
-    setSelectedDay(mapJsDayToAcademicDay(nextDate.getDay()));
+    setSelectedDay(toAcademicDay(nextDate));
     setSelectedWeek(getWeekOfMonth(nextDate));
     setCalendarAnchor(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
   };
 
   const handleToggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id && task.source === 'personal'
+          ? { ...task, done: !task.done }
+          : task,
+      ),
+    );
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -297,143 +326,109 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
 
   return (
     <div className="page-shell page-shell--timetable space-y-4">
-      {/* Header */}
-      <div className="px-1">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">
-            Personal Calendar
-          </h2>
-          <p className="text-xs text-slate-500">
-            {registeredCourses.find((course) => isCourseActiveOnDate(course, selectedDateKey))
-              ?.termDescription || 'Registered courses'}
-          </p>
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white border border-slate-200 p-3 shadow-xs space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+      <div className="cal-panel space-y-3">
+        <div className="cal-toolbar">
+          <div className="cal-segmented">
             <button
               type="button"
               onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                viewMode === 'week'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`cal-segmented__btn${viewMode === 'week' ? ' is-active' : ''}`}
             >
               Weekly
             </button>
             <button
               type="button"
               onClick={() => setViewMode('month')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                viewMode === 'month'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`cal-segmented__btn${viewMode === 'month' ? ' is-active' : ''}`}
             >
               Monthly
             </button>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-1.5 py-1 bg-slate-50">
-            <button
-              type="button"
-              onClick={() => handleShiftMonth(-1)}
-              className="rounded-md p-1 text-slate-600 hover:bg-white hover:text-slate-900"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs font-semibold text-slate-800 min-w-[8rem] text-center">
-              {monthLabel}
-            </span>
-            <button
-              type="button"
-              onClick={() => handleShiftMonth(1)}
-              className="rounded-md p-1 text-slate-600 hover:bg-white hover:text-slate-900"
-              aria-label="Next month"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          <label className="cal-nav-chip cal-date-picker">
+            <CalendarIcon className="cal-date-picker__icon" aria-hidden />
+            <span className="cal-nav-label cal-date-picker__label">{monthLabel}</span>
+            <input
+              type="date"
+              className="cal-date-picker__input"
+              value={selectedDateKey}
+              onChange={(event) => handlePickDate(event.target.value)}
+              aria-label="Jump to date"
+            />
+          </label>
         </div>
 
         {viewMode === 'week' ? (
           <>
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1">
+            <div className="cal-week-nav">
               <button
                 type="button"
                 onClick={() => handleShiftWeek(-1)}
-                className="rounded-md p-1.5 text-slate-600 hover:bg-white hover:text-slate-900"
+                className="cal-nav-btn cal-nav-btn--lg"
                 aria-label="Previous week"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <p className="min-w-0 flex-1 text-center text-xs font-semibold text-slate-800">
-                {weekRangeLabel}
-              </p>
+
+              <div className="cal-week-strip">
+                {weekDays.map((item) => {
+                  const isSelected = selectedDay === item.day;
+                  const dateKey = formatDateKey(item.date);
+                  const holidayTitle = holidayTitleFor(item.date, dateKey);
+                  const isHoliday = Boolean(holidayTitle);
+
+                  return (
+                    <button
+                      key={`${item.label}-${item.date.toISOString()}`}
+                      type="button"
+                      onClick={() => handleSelectDay(selectedWeek, item.day)}
+                      title={holidayTitle}
+                      className={`cal-week-day${isSelected ? ' is-selected' : ''}${
+                        isHoliday && !isSelected ? ' is-holiday' : ''
+                      }`}
+                    >
+                      <span className="cal-week-day__label">{item.label}</span>
+                      <span
+                        className={`cal-week-day__date${
+                          isHoliday && !isSelected ? ' is-holiday' : ''
+                        }`}
+                      >
+                        {item.date.getDate()}
+                      </span>
+                      {isHoliday && !isSelected ? <span className="cal-week-day__dot" /> : null}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
                 type="button"
                 onClick={() => handleShiftWeek(1)}
-                className="rounded-md p-1.5 text-slate-600 hover:bg-white hover:text-slate-900"
+                className="cal-nav-btn cal-nav-btn--lg"
                 aria-label="Next week"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
-
-            <div className="grid grid-cols-7 gap-1.5 p-1 bg-slate-50 rounded-xl border border-slate-200">
-              {weekDays.map((item) => {
-                const isSelected = selectedDay === item.day;
-                const dateKey = toDateKey(item.date);
-                const isHoliday = holidayByDate.has(dateKey);
-
-                return (
-                  <button
-                    key={`${item.label}-${item.date.toISOString()}`}
-                    type="button"
-                    onClick={() => handleSelectDay(selectedWeek, item.day)}
-                    title={holidayByDate.get(dateKey)}
-                    className={`py-2 px-1 rounded-lg flex flex-col items-center justify-center transition-all ${
-                      isSelected
-                        ? 'bg-red-600 text-white shadow-xs font-bold'
-                        : isHoliday
-                          ? 'bg-red-50 text-red-700 font-bold hover:bg-red-100'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-                    }`}
-                  >
-                    <span className="text-xs">{item.label}</span>
-                    <span className={`text-[10px] mt-0.5 ${isHoliday && !isSelected ? 'text-red-600 font-bold' : 'opacity-85'}`}>
-                      {item.date.getDate()}
-                    </span>
-                    {isHoliday && !isSelected ? (
-                      <span className="mt-0.5 h-1 w-1 rounded-full bg-red-500" />
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
           </>
         ) : (
           <div className="space-y-2">
-            <div className="grid grid-cols-7 gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wide px-1">
-              <span className="text-center">Sun</span>
-              <span className="text-center">Mon</span>
-              <span className="text-center">Tue</span>
-              <span className="text-center">Wed</span>
-              <span className="text-center">Thu</span>
-              <span className="text-center">Fri</span>
-              <span className="text-center">Sat</span>
+            <div className="cal-month-head">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
+            <div className="cal-month-grid">
               {monthCells.map((cell) => {
                 const isSelected = isSameDate(cell.date, selectedDate);
-                const dateKey = toDateKey(cell.date);
-                const holidayName = holidayByDate.get(dateKey);
-                const isHoliday = Boolean(holidayName);
+                const dateKey = formatDateKey(cell.date);
+                const holidayTitle = holidayTitleFor(cell.date, dateKey);
+                const isHoliday = Boolean(holidayTitle);
 
                 return (
                   <button
@@ -441,64 +436,30 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
                     type="button"
                     onClick={() => handleSelectMonthCell(cell.date, cell.academicDay)}
                     disabled={!cell.isInMonth}
-                    title={holidayName}
-                    className={`min-h-[3.25rem] rounded-lg border px-1 py-1 text-left transition ${
-                      isSelected
-                        ? 'border-red-500 bg-red-100'
-                        : isHoliday && cell.isInMonth
-                          ? 'border-red-300 bg-red-50 hover:border-red-400'
-                          : cell.isInMonth
-                            ? 'border-slate-200 bg-white hover:border-slate-300'
-                            : 'border-slate-100 bg-slate-50 text-slate-300'
-                    }`}
+                    title={holidayTitle}
+                    className={`cal-month-cell${isSelected ? ' is-selected' : ''}${
+                      isHoliday && cell.isInMonth ? ' is-holiday' : ''
+                    }${!cell.isInMonth ? ' is-out' : ''}`}
                   >
-                    <span
-                      className={`block text-[10px] font-semibold ${
-                        !cell.isInMonth
-                          ? 'text-slate-300'
-                          : isHoliday
-                            ? 'text-red-700'
-                            : 'text-slate-700'
-                      }`}
-                    >
-                      {cell.date.getDate()}
-                    </span>
+                    <span className="cal-month-cell__day">{cell.date.getDate()}</span>
                     {isHoliday && cell.isInMonth ? (
-                      <span className="mt-0.5 block truncate text-[8px] font-bold leading-tight text-red-600">
-                        PH
-                      </span>
+                      <span className="cal-month-cell__ph">PH</span>
                     ) : null}
                   </button>
                 );
               })}
             </div>
-            <p className="px-1 text-[10px] text-slate-500">
-              <span className="font-semibold text-red-600">Red dates</span> = Hong Kong public holidays
-            </p>
           </div>
         )}
       </div>
 
-      <div className="px-1 space-y-1">
-        <p className="text-xs text-slate-600">
-          Showing classes for <span className="font-bold text-slate-900">{selectedDateLabel}</span>
-        </p>
-        {selectedHolidayName ? (
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-            Public holiday · {selectedHolidayName}
-          </p>
-        ) : null}
-      </div>
 
-      {/* Course List for the selected day */}
       <div className="space-y-3">
         {dayCourses.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-white border border-slate-200 text-center text-slate-500 shadow-xs">
-            <CalendarIcon className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-            <p className="text-xs font-semibold text-slate-700">
-              No scheduled lectures on this day
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">
+          <div className="cal-empty">
+            <CalendarIcon className="cal-empty__icon" />
+            <p className="cal-empty__title">No scheduled lectures on this day</p>
+            <p className="cal-empty__hint">
               Take time for library study or attend campus ILP activities!
             </p>
           </div>
@@ -507,111 +468,74 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
             <div
               key={course.id}
               onClick={() => setActiveCourse(course)}
-              className="cursor-pointer group rounded-2xl bg-white border border-slate-200 p-4 hover:border-red-400 transition shadow-xs"
+              className="cal-course-card"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
+              <div className="cal-course-card__top">
+                <div className="cal-course-card__lead">
                   <div
-                    className="w-2.5 h-10 rounded-full shrink-0"
+                    className="cal-course-card__bar"
                     style={{ backgroundColor: course.color }}
                   />
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 font-mono">
-                        {course.courseCode}
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-medium">
-                        {course.section}
-                      </span>
+                    <div className="cal-course-card__meta">
+                      <span className="cal-course-card__code">{course.courseCode}</span>
+                      <span className="cal-course-card__section">{course.section}</span>
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 mt-1 group-hover:text-red-600 transition-colors">
-                      {course.courseName}
-                    </h3>
+                    <h3 className="cal-course-card__title">{course.courseName}</h3>
                   </div>
                 </div>
-
-                <span className="text-xs font-semibold text-slate-700 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 shrink-0">
+                <span className="cal-course-card__time">
                   {course.startTime} - {course.endTime}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                <div className="flex items-center space-x-1.5 truncate">
-                  <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                  <span className="text-slate-800 font-medium truncate">{course.venue}</span>
-                </div>
-                <div className="flex items-center space-x-1.5 truncate justify-end">
-                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{course.instructor}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2">
-                {/* <span className="text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                  Attendance: {course.attendanceRate}%
-                </span> */}
-                <span className="text-red-600 font-medium flex items-center space-x-0.5">
-                  <span>Course Details</span>
-                  <ChevronRight className="w-3 h-3" />
-                </span>
-              </div>
             </div>
           ))
         )}
       </div>
 
-      {/* Course Detail Modal */}
       {activeCourse && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto text-slate-800 shadow-2xl">
-            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+        <div className="cal-modal">
+          <div className="cal-modal__sheet space-y-4">
+            <div className="cal-modal__head">
               <div>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">
+                <span className="cal-modal__badge">
                   {activeCourse.courseCode} • {activeCourse.section}
                 </span>
-                <h3 className="text-base font-bold text-slate-900 mt-1">
-                  {activeCourse.courseName}
-                </h3>
+                <h3 className="cal-modal__title">{activeCourse.courseName}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveCourse(null)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full bg-slate-100"
+                className="cal-modal__close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-2.5 text-xs">
-              <div className="p-3 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Classroom Venue</span>
-                  <span className="font-bold text-slate-800">{activeCourse.venue}</span>
+            <div className="cal-modal__body">
+              <div className="cal-modal__box">
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Classroom Venue</span>
+                  <span className="cal-modal__value">{activeCourse.venue}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Instructor</span>
-                  <span className="font-bold text-slate-800">{activeCourse.instructor}</span>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Instructor</span>
+                  <span className="cal-modal__value">{activeCourse.instructor}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Pending Assignments</span>
-                  <span className="font-bold text-amber-700">{activeCourse.assignmentsDue} Tasks</span>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Pending Assignments</span>
+                  <span className="cal-modal__value cal-modal__value--warn">
+                    {activeCourse.assignmentsDue} Tasks
+                  </span>
                 </div>
               </div>
-
-              {/* <div className="p-3 bg-red-50/60 rounded-xl space-y-1 border border-red-100">
-                <span className="font-bold text-red-700 block">
-                  Campus Navigation Tip
-                </span>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
-                  Head to {activeCourse.building}, take the central lift to the designated floor. Tap your Student e-Card at the entrance reader to register attendance.
-                </p>
-              </div> */}
             </div>
 
             <button
               type="button"
               onClick={() => setActiveCourse(null)}
-              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition border border-slate-200"
+              className="cal-modal__done"
             >
               Close
             </button>
@@ -619,116 +543,186 @@ export const TimetableTab: React.FC<TimetableTabProps> = ({ onAddStudyReminder }
         </div>
       )}
 
-      {/* Moodle tasks + personal reminders */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-3 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="p-1 rounded-md bg-indigo-50 text-indigo-600">
+      {activeMoodleTask && (
+        <div className="cal-modal" onClick={() => setActiveMoodleTask(null)}>
+          <div
+            className="cal-modal__sheet space-y-4"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="cal-modal__head">
+              <div>
+                <span className="cal-modal__badge cal-modal__badge--moodle">
+                  {activeMoodleTask.courseCode} · CRN {activeMoodleTask.crn}
+                </span>
+                <h3 className="cal-modal__title">{activeMoodleTask.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveMoodleTask(null)}
+                className="cal-modal__close"
+                aria-label="Close Moodle task details"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="cal-modal__body">
+              <div className="cal-modal__box">
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Course</span>
+                  <span className="cal-modal__value">{activeMoodleTask.courseName}</span>
+                </div>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Type</span>
+                  <span className="cal-modal__value">{activeMoodleTask.moduleName}</span>
+                </div>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Status</span>
+                  <span
+                    className={`cal-modal__value${
+                      activeMoodleTask.overdue ? ' cal-modal__value--warn' : ''
+                    }`}
+                  >
+                    {activeMoodleTask.overdue
+                      ? 'Overdue'
+                      : activeMoodleTask.activityLabel || 'Due'}
+                  </span>
+                </div>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Due</span>
+                  <span className="cal-modal__value">
+                    {formatReminderDateTime(activeMoodleTask.reminderDateTime)}
+                  </span>
+                </div>
+                <div className="cal-modal__row">
+                  <span className="cal-modal__label">Term</span>
+                  <span className="cal-modal__value">{activeMoodleTask.termLabel}</span>
+                </div>
+                {activeMoodleTask.courseShortname ? (
+                  <div className="cal-modal__row">
+                    <span className="cal-modal__label">Section</span>
+                    <span className="cal-modal__value">{activeMoodleTask.courseShortname}</span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {activeMoodleTask.url ? (
+              <button
+                type="button"
+                className="cal-modal__link"
+                onClick={() =>
+                  openInAppBrowser(activeMoodleTask.url!, activeMoodleTask.title)
+                }
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open in Moodle
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setActiveMoodleTask(null)}
+              className="cal-modal__done"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="cal-panel cal-panel--tasks space-y-3">
+        <div className="cal-tasks__head">
+          <div className="cal-tasks__title-wrap">
+            <div className="cal-tasks__icon cal-tasks__icon--moodle">
               <BookOpen className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-bold text-slate-900">
-              Moodle Tasks & Personal Reminders
-            </h3>
+            <h3 className="cal-tasks__title">Moodle Tasks</h3>
           </div>
-          <span className="text-[10px] font-semibold text-slate-500">
-            {selectedDayTasks.filter((t) => !t.done).length} pending
+          <span className="cal-tasks__pending">{selectedMoodleTasks.length} due</span>
+        </div>
+
+        <div className="space-y-2">
+          {selectedMoodleTasks.length === 0 ? (
+            <div className="cal-tasks__empty">No Moodle tasks for this day.</div>
+          ) : (
+            selectedMoodleTasks.map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                onClick={() => setActiveMoodleTask(task)}
+                className="cal-task cal-task--moodle cal-task--clickable"
+              >
+                <div className="cal-task__main">
+                  <span className="cal-task__text">{task.text}</span>
+                </div>
+                <span className="cal-task__time cal-task__time--moodle">
+                  {formatReminderDateTime(task.reminderDateTime)}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="cal-panel cal-panel--tasks space-y-3">
+        <div className="cal-tasks__head">
+          <div className="cal-tasks__title-wrap">
+            <div className="cal-tasks__icon cal-tasks__icon--personal">
+              <Bell className="w-4 h-4" />
+            </div>
+            <h3 className="cal-tasks__title">Personal Reminders</h3>
+          </div>
+          <span className="cal-tasks__pending">
+            {selectedPersonalTasks.filter((task) => !task.done).length} pending
           </span>
         </div>
 
-        {/* <div className="flex flex-wrap gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
-            <BookOpen className="h-3 w-3" />
-            Moodle
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
-            <Bell className="h-3 w-3" />
-            Personal
-          </span>
-        </div> */}
-
         <div className="space-y-2">
-          {selectedDayTasks.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-3 text-[11px] text-slate-500">
-              No reminders for this day yet.
-            </div>
+          {selectedPersonalTasks.length === 0 ? (
+            <div className="cal-tasks__empty">No personal reminders for this day yet.</div>
           ) : (
-            selectedDayTasks.map((task) => {
-              const isPersonal = task.source === 'personal';
-              return (
-                <div
-                  key={task.id}
-                  onClick={() => handleToggleTask(task.id)}
-                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition border ${
-                    isPersonal
-                      ? 'bg-amber-50/80 border-amber-200 hover:border-amber-300'
-                      : 'bg-indigo-50/70 border-indigo-200 hover:border-indigo-300'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2.5 truncate mr-2">
-                    <div
-                      className={`w-4 h-4 rounded-md flex items-center justify-center border transition ${
-                        task.done
-                          ? 'bg-emerald-600 border-emerald-500 text-white'
-                          : isPersonal
-                            ? 'border-amber-300 bg-white'
-                            : 'border-indigo-300 bg-white'
-                      }`}
-                    >
-                      {task.done && <Check className="w-3 h-3" />}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="mb-0.5 flex items-center gap-1.5">
-                        <span
-                          className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                            isPersonal
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-indigo-100 text-indigo-700'
-                          }`}
-                        >
-                          {isPersonal ? 'Personal' : 'Moodle'}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-xs truncate font-medium block ${
-                          task.done ? 'line-through text-slate-400' : 'text-slate-800'
-                        }`}
-                      >
-                        {task.text}
-                      </span>
-                    </div>
+            selectedPersonalTasks.map((task) => (
+              <div
+                key={task.id}
+                onClick={() => handleToggleTask(task.id)}
+                className="cal-task cal-task--personal"
+              >
+                <div className="cal-task__main">
+                  <div className={`cal-task__check${task.done ? ' is-done' : ''}`}>
+                    {task.done && <Check className="w-3 h-3" />}
                   </div>
-                  <span
-                    className={`text-[10px] font-mono font-semibold shrink-0 ${
-                      isPersonal ? 'text-amber-700' : 'text-indigo-700'
-                    }`}
-                  >
-                    {formatReminderDateTime(task.reminderDateTime)}
+                  <span className={`cal-task__text${task.done ? ' is-done' : ''}`}>
+                    {task.text}
                   </span>
                 </div>
-              );
-            })
+                <span className="cal-task__time cal-task__time--personal">
+                  {formatReminderDateTime(task.reminderDateTime)}
+                </span>
+              </div>
+            ))
           )}
         </div>
 
-        <form onSubmit={handleAddTask} className="space-y-2 pt-1">
+        <form onSubmit={handleAddTask} className="cal-task-form">
           <input
             type="text"
             value={newTaskInput}
             onChange={(e) => setNewTaskInput(e.target.value)}
             placeholder="Add personal reminder..."
-            className="w-full bg-amber-50/60 text-xs text-slate-800 px-3 py-2 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-500"
+            className="cal-task-form__input"
           />
-          <div className="flex items-center space-x-2">
+          <div className="cal-task-form__row">
             <input
               type="time"
               value={newTaskTime}
               onChange={(e) => setNewTaskTime(e.target.value)}
-              className="w-28 bg-amber-50/60 text-xs text-slate-800 px-2.5 py-2 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-500"
+              className="cal-task-form__time"
               aria-label="Reminder time"
             />
             <button
               type="submit"
-              className="p-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition shadow-xs"
+              className="cal-task-form__submit"
               aria-label="Add personal reminder"
             >
               <Plus className="w-4 h-4" />

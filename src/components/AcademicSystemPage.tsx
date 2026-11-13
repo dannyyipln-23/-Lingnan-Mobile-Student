@@ -334,27 +334,27 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
   }, [systemKey]);
 
   return (
-    <div className="page-shell page-shell--campus space-y-4 text-slate-800">
-      <div className="flex items-center justify-between px-1">
+    <div className="page-shell page-shell--campus sys-page">
+      <div className="sys-toolbar">
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-600"
+          className="sys-back"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="sys-back__icon" />
           <span>Back to Academic</span>
         </button>
       </div>
 
       {loading && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+        <div className="sys-state">
           Loading page data...
         </div>
       )}
 
       {!!error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 inline-flex items-center space-x-2">
-          <CircleAlert className="w-4 h-4" />
+        <div className="sys-state sys-state--error">
+          <CircleAlert className="sys-state__icon" />
           <span>{error}</span>
         </div>
       )}
@@ -362,16 +362,16 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
       {!loading && payload && (
         <>
           {(!!selectedTermCode || termOptions.length > 1) && (
-            <section className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-[11px] text-slate-700 font-semibold">Viewing term</div>
+            <section className="sys-term">
+              <div className="sys-term__row">
+                <div className="sys-term__label">Viewing term</div>
                 {termOptions.length > 1 && (
-                  <div className="min-w-[170px]">
+                  <div className="sys-term__select-wrap">
                     <select
                       id="academic-term-select"
                       value={selectedTermCode}
                       onChange={(e) => setSelectedTermCode(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      className="sys-select"
                     >
                       {termOptions.map((term) => (
                         <option key={term.code} value={term.code}>
@@ -385,72 +385,66 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
             </section>
           )}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900">{payload.title}</h2>
+          <section className="sys-panel">
+            <h2 className="sys-panel__title">{payload.title}</h2>
             {payload.subtitle && (
-              <p className="text-xs text-slate-500 mt-1">{payload.subtitle}</p>
+              <p className="sys-panel__subtitle">{payload.subtitle}</p>
             )}
-            <p className="text-xs text-slate-500 mt-1 inline-flex items-center space-x-1">
-              <CalendarClock className="w-3.5 h-3.5" />
+            <p className="sys-updated">
+              <CalendarClock className="sys-updated__icon" />
               <span>Last updated: {payload.lastUpdated}</span>
             </p>
 
             {!!payload.studentContext && (
-              <div className="grid grid-cols-2 gap-2 mt-3">
+              <div className="sys-ctx-grid">
                 {payload.studentContext.studentId && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-[11px]">
-                    <span className="text-slate-500 block">Student ID</span>
-                    <span className="font-bold text-slate-800">{payload.studentContext.studentId}</span>
+                  <div className="sys-ctx">
+                    <span className="sys-ctx__label">Student ID</span>
+                    <span className="sys-ctx__value">{payload.studentContext.studentId}</span>
                   </div>
                 )}
                 {payload.studentContext.userNm && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-[11px]">
-                    <span className="text-slate-500 block">UserNm</span>
-                    <span className="font-bold text-slate-800">{payload.studentContext.userNm}</span>
+                  <div className="sys-ctx">
+                    <span className="sys-ctx__label">UserNm</span>
+                    <span className="sys-ctx__value">{payload.studentContext.userNm}</span>
                   </div>
                 )}
                 {displayedTermCode && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-[11px]">
-                    <span className="text-slate-500 block">TermCode</span>
-                    <span className="font-bold text-slate-800">{displayedTermCode}</span>
+                  <div className="sys-ctx">
+                    <span className="sys-ctx__label">TermCode</span>
+                    <span className="sys-ctx__value">{displayedTermCode}</span>
                   </div>
                 )}
                 {payload.studentContext.termLevelCode && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-[11px]">
-                    <span className="text-slate-500 block">TermLevelCode</span>
-                    <span className="font-bold text-slate-800">{payload.studentContext.termLevelCode}</span>
+                  <div className="sys-ctx">
+                    <span className="sys-ctx__label">TermLevelCode</span>
+                    <span className="sys-ctx__value">{payload.studentContext.termLevelCode}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-2 mt-3">
+            <div className="sys-summary">
               {activeSummary.map((item) => (
                 <div
                   key={item.label}
-                  className={`rounded-xl border p-2.5 text-xs flex items-center justify-between ${
-                    item.tone === 'good'
-                      ? 'border-slate-200 bg-slate-50'
-                      : item.tone === 'warn'
-                        ? 'border-slate-200 bg-slate-50'
-                        : 'border-slate-200 bg-slate-50'
-                  }`}
+                  className="sys-summary__item"
                 >
-                  <span className="text-slate-500">{item.label}</span>
-                  <span className="font-bold text-slate-800 text-right">{item.value}</span>
+                  <span className="sys-summary__label">{item.label}</span>
+                  <span className="sys-summary__value">{item.value}</span>
                 </div>
               ))}
             </div>
           </section>
 
           {activeSections.map((section) => (
-            <section key={section.title} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 mb-2">{section.title}</h3>
-              <div className="space-y-2">
+            <section key={section.title} className="sys-panel">
+              <h3 className="sys-panel__section-title">{section.title}</h3>
+              <div className="sys-rows">
                 {section.rows.map((row) => (
-                  <div key={`${section.title}-${row.label}`} className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs flex items-start justify-between space-x-3">
-                    <span className="text-slate-600">{row.label}</span>
-                    <span className="font-semibold text-slate-800 text-right">{row.value}</span>
+                  <div key={`${section.title}-${row.label}`} className="sys-row">
+                    <span className="sys-row__label">{row.label}</span>
+                    <span className="sys-row__value">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -472,11 +466,11 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
             }
 
             return (
-            <section key={dataset.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-2.5">
-              <div className="flex items-start justify-between gap-2">
+            <section key={dataset.id} className="sys-panel sys-panel--dataset">
+              <div className="sys-dataset__head">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">{dataset.title}</h3>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{dataset.purpose}</p>
+                  <h3 className="sys-panel__section-title--flush">{dataset.title}</h3>
+                  <p className="sys-dataset__purpose">{dataset.purpose}</p>
                 </div>
               </div>
 
@@ -504,13 +498,13 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
                 return (
               <>
               {isTimetablePage && scheduleEvents.length > 0 && (
-                <div className="grid grid-cols-1 gap-2.5">
+                <div className="sys-events">
                   {scheduleEvents.map(({ row, event }, idx) => (
-                    <article key={`${dataset.id}-schedule-${idx}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <div className="flex items-start justify-between gap-2">
+                    <article key={`${dataset.id}-schedule-${idx}`} className="sys-event">
+                      <div className="sys-event__top">
                         <div>
-                          <p className="text-xs font-bold text-slate-900">{event.title}</p>
-                          <p className="text-[11px] text-slate-600 mt-0.5">
+                          <p className="sys-event__title">{event.title}</p>
+                          <p className="sys-event__when">
                             {row.ExamDate ?? '-'}
                             {row.ExamTime ? `, ${row.ExamTime}` : ''}
                             {!row.ExamTime && row.BeginTime && row.EndTime ? `, ${row.BeginTime} - ${row.EndTime}` : ''}
@@ -519,15 +513,15 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
                         <button
                           type="button"
                           onClick={() => downloadCalendarEvent(event)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700"
+                          className="sys-cal-btn"
                         >
-                          <CalendarPlus className="w-3.5 h-3.5" />
+                          <CalendarPlus className="sys-cal-btn__icon" />
                           <span>Add to Calendar</span>
                         </button>
                       </div>
                       {row.Venue && (
-                        <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-600">
-                          <MapPin className="w-3.5 h-3.5" />
+                        <div className="sys-venue">
+                          <MapPin className="sys-venue__icon" />
                           <span>{row.Venue}</span>
                         </div>
                       )}
@@ -536,12 +530,12 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
                 </div>
               )}
 
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                <table className="min-w-full text-[11px]">
-                  <thead className="bg-slate-100 text-slate-700">
+              <div className="sys-table-wrap">
+                <table className="sys-table">
+                  <thead className="sys-table__head">
                     <tr>
                       {dataset.columns.map((column) => (
-                        <th key={`${dataset.id}-${column}`} className="text-left px-2 py-1.5 font-bold whitespace-nowrap border-b border-slate-200">
+                        <th key={`${dataset.id}-${column}`} className="sys-th">
                           {column}
                         </th>
                       ))}
@@ -549,16 +543,16 @@ export const AcademicSystemPage: React.FC<AcademicSystemPageProps> = ({ systemKe
                   </thead>
                   <tbody>
                     {filteredRows.length === 0 && (
-                      <tr className="bg-white">
-                        <td className="px-2 py-2.5 text-slate-500 border-t border-slate-100" colSpan={dataset.columns.length}>
+                      <tr className="sys-tr">
+                        <td className="sys-td sys-td--empty" colSpan={dataset.columns.length}>
                           No records for the selected term.
                         </td>
                       </tr>
                     )}
                     {filteredRows.map((row, idx) => (
-                      <tr key={`${dataset.id}-row-${idx}`} className="bg-white even:bg-slate-50/60">
+                      <tr key={`${dataset.id}-row-${idx}`} className="sys-tr">
                         {dataset.columns.map((column) => (
-                          <td key={`${dataset.id}-row-${idx}-${column}`} className="px-2 py-1.5 text-slate-700 whitespace-nowrap border-t border-slate-100">
+                          <td key={`${dataset.id}-row-${idx}-${column}`} className="sys-td">
                             {row[column] ?? '-'}
                           </td>
                         ))}

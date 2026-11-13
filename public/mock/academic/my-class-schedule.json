@@ -1,13 +1,18 @@
 {
   "title": "My Class Schedule",
   "subtitle": "Select a term, then a course for schedule details",
-  "lastUpdated": "2026-09-23",
+  "lastUpdated": "2026-11-12",
   "studentContext": {
     "studentId": "4048115",
     "userNm": "dannyyip",
-    "termCode": "202509"
+    "termCode": "202609"
   },
   "terms": [
+    {
+      "code": "202609",
+      "description": "1st Term 2026 - 2027",
+      "isDefault": true
+    },
     {
       "code": "202601",
       "description": "2nd Term 2025 - 2026",
@@ -16,10 +21,62 @@
     {
       "code": "202509",
       "description": "1st Term 2025 - 2026",
-      "isDefault": true
+      "isDefault": false
     }
   ],
   "itemsByTerm": {
+    "202609": [
+      {
+        "id": "892",
+        "crn": "892",
+        "courseNumber": "4001",
+        "subjectCode": "PMS",
+        "courseTitle": "Organizational Communication",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "897",
+        "crn": "897",
+        "courseNumber": "4102",
+        "subjectCode": "PMS",
+        "courseTitle": "Data Analytic & Strategic Mang",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "901",
+        "crn": "901",
+        "courseNumber": "4103",
+        "subjectCode": "PMS",
+        "courseTitle": "Gerontech. & Manag. Age. Soc.",
+        "credits": "3",
+        "scheduleType": "Lecture",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "694",
+        "crn": "694",
+        "courseNumber": "2210",
+        "subjectCode": "LCC",
+        "courseTitle": "Advanced Chinese Communication",
+        "credits": "3",
+        "scheduleType": "Tutorial",
+        "registrationStatusCode": "RE"
+      },
+      {
+        "id": "821",
+        "crn": "821",
+        "courseNumber": "4003",
+        "subjectCode": "LUE",
+        "courseTitle": "Prof Comm Eng Social Sciences",
+        "credits": "3",
+        "scheduleType": "Tutorial",
+        "registrationStatusCode": "RE"
+      }
+    ],
     "202601": [
       {
         "id": "1201",
@@ -66,6 +123,101 @@
     ]
   },
   "detailsById": {
+    "892": {
+      "crn": "892",
+      "subjectCode": "PMS",
+      "courseNumber": "4001",
+      "courseTitle": "Organizational Communication",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Han S. CHAN",
+      "days": "Mon / Wed",
+      "daysDisplay": "MW",
+      "startTime": "10:30 AM",
+      "endTime": "11:50 AM",
+      "building": "Simon and Eleanor Kwok Building",
+      "room": "SEK 201",
+      "classStartDate": "2026-09-01",
+      "classEndDate": "2026-11-30",
+      "termCode": "202609"
+    },
+    "897": {
+      "crn": "897",
+      "subjectCode": "PMS",
+      "courseNumber": "4102",
+      "courseTitle": "Data Analytic & Strategic Mang",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Lap F. WONG",
+      "days": "Tue / Thu",
+      "daysDisplay": "TR",
+      "startTime": "09:00 AM",
+      "endTime": "10:20 AM",
+      "building": "Dorothy Y.L. Wong Building",
+      "room": "LKK 101",
+      "classStartDate": "2026-09-01",
+      "classEndDate": "2026-11-30",
+      "termCode": "202609"
+    },
+    "901": {
+      "crn": "901",
+      "subjectCode": "PMS",
+      "courseNumber": "4103",
+      "courseTitle": "Gerontech. & Manag. Age. Soc.",
+      "credits": "3",
+      "scheduleType": "Lecture",
+      "registrationStatusCode": "RE",
+      "faculty": "Pui Y. LEE",
+      "days": "Wed",
+      "daysDisplay": "W",
+      "startTime": "02:00 PM",
+      "endTime": "04:50 PM",
+      "building": "B.Y. Lam Building",
+      "room": "LBY 201",
+      "classStartDate": "2026-09-01",
+      "classEndDate": "2026-11-30",
+      "termCode": "202609"
+    },
+    "694": {
+      "crn": "694",
+      "subjectCode": "LCC",
+      "courseNumber": "2210",
+      "courseTitle": "Advanced Chinese Communication",
+      "credits": "3",
+      "scheduleType": "Tutorial",
+      "registrationStatusCode": "RE",
+      "faculty": "Fei LI",
+      "days": "Thu",
+      "daysDisplay": "R",
+      "startTime": "01:30 PM",
+      "endTime": "03:20 PM",
+      "building": "Main Building",
+      "room": "MBG 06",
+      "classStartDate": "2026-09-01",
+      "classEndDate": "2026-11-30",
+      "termCode": "202609"
+    },
+    "821": {
+      "crn": "821",
+      "subjectCode": "LUE",
+      "courseNumber": "4003",
+      "courseTitle": "Prof Comm Eng Social Sciences",
+      "credits": "3",
+      "scheduleType": "Tutorial",
+      "registrationStatusCode": "RE",
+      "faculty": "Lai Y. CHEUNG",
+      "days": "Fri",
+      "daysDisplay": "F",
+      "startTime": "11:30 AM",
+      "endTime": "01:20 PM",
+      "building": "Patrick Lee Wan Keung Academic Building",
+      "room": "LKK 203",
+      "classStartDate": "2026-09-01",
+      "classEndDate": "2026-11-30",
+      "termCode": "202609"
+    },
     "1201": {
       "crn": "1201",
       "subjectCode": "SCE",

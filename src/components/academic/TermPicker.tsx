@@ -21,7 +21,7 @@ export const TermPicker: React.FC<TermPickerProps> = ({
 }) => {
   if (terms.length === 0) {
     return (
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-xs text-[var(--text-muted)]">
+      <div className="flow-state">
         {emptyLabel}
       </div>
     );
@@ -37,30 +37,24 @@ export const TermPicker: React.FC<TermPickerProps> = ({
           onClick={() => onSelect(term.code)}
           className="list-card"
         >
-          <div className="flex items-center justify-between gap-2 pl-1.5">
-            <div className="flex min-w-0 items-start gap-2.5">
-              <div
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                style={{
-                  background: 'color-mix(in srgb, var(--flow-accent) 12%, white)',
-                  color: 'var(--flow-accent)',
-                }}
-              >
-                <CalendarDays className="h-3.5 w-3.5" />
+          <div className="list-card__row">
+            <div className="list-card__lead">
+              <div className="list-card__icon">
+                <CalendarDays className="list-card__icon-svg" />
               </div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <p className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+              <div className="list-card__text">
+                <div className="list-card__title-row">
+                  <p className="list-card__title">
                     {term.description}
                   </p>
                   {term.isDefault && <span className="theme-chip">Default</span>}
                 </div>
                 {term.meta && (
-                  <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">{term.meta}</p>
+                  <p className="list-card__meta">{term.meta}</p>
                 )}
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+            <ChevronRight className="list-card__chevron" />
           </div>
         </button>
       ))}

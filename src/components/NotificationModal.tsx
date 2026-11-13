@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, Bell, Award, BookOpen, AlertTriangle, Calendar } from 'lucide-react';
+import { X, Bell, Award, BookOpen, AlertTriangle, Calendar, Wallet } from 'lucide-react';
 
-export type NotificationKind = 'award' | 'library' | 'exam' | 'alert' | 'study';
+export type NotificationKind = 'award' | 'library' | 'exam' | 'alert' | 'study' | 'efees';
 
 export interface AppNotification {
   id: string;
@@ -10,6 +10,7 @@ export interface AppNotification {
   time: string;
   kind: NotificationKind;
   isRead: boolean;
+  action?: 'efees';
 }
 
 /** Official university push kinds shown in Campus Notices & Alerts. */
@@ -18,6 +19,7 @@ export const OFFICIAL_PUSH_KINDS: ReadonlySet<NotificationKind> = new Set([
   'library',
   'exam',
   'alert',
+  'efees',
 ]);
 
 export const isOfficialPushNotification = (item: AppNotification): boolean =>
@@ -28,6 +30,7 @@ interface NotificationModalProps {
   onClose: () => void;
   notifications: AppNotification[];
   onMarkAllRead: () => void;
+  onNotificationClick?: (item: AppNotification) => void;
 }
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -35,92 +38,84 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   onClose,
   notifications,
   onMarkAllRead,
+  onNotificationClick,
 }) => {
   if (!isOpen) return null;
 
   const officialNotifications = notifications.filter(isOfficialPushNotification);
 
-  const iconMap: Record<NotificationKind, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
-    award: {
-      icon: Award,
-      color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-    },
-    library: {
-      icon: BookOpen,
-      color: 'text-amber-600 bg-amber-50 border-amber-200',
-    },
-    exam: {
-      icon: Calendar,
-      color: 'text-blue-600 bg-blue-50 border-blue-200',
-    },
-    alert: {
-      icon: AlertTriangle,
-      color: 'text-red-600 bg-red-50 border-red-200',
-    },
-    study: {
-      icon: Bell,
-      color: 'text-violet-700 bg-violet-50 border-violet-200',
-    },
+  const iconMap: Record<
+    NotificationKind,
+    { icon: React.ComponentType<{ className?: string }>; tone: string }
+  > = {
+    award: { icon: Award, tone: 'notif-kind--award' },
+    library: { icon: BookOpen, tone: 'notif-kind--library' },
+    exam: { icon: Calendar, tone: 'notif-kind--exam' },
+    alert: { icon: AlertTriangle, tone: 'notif-kind--alert' },
+    study: { icon: Bell, tone: 'notif-kind--study' },
+    efees: { icon: Wallet, tone: 'notif-kind--efees' },
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-white border border-slate-200 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto text-slate-800 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 border border-red-100 flex items-center justify-center">
-              <Bell className="w-4 h-4" />
+    <div className="notif-overlay">
+      <div className="notif-sheet">
+        <div className="notif-sheet__head">
+          <div className="notif-sheet__brand">
+            <div className="notif-sheet__bell">
+              <Bell className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">
-                Campus Notices & Alerts
-              </h3>
-              <p className="text-[10px] text-slate-500">
-                Official university push notifications only
-              </p>
+              <h3 className="notif-sheet__title">Campus Notices & Alerts</h3>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 bg-slate-100"
-          >
-            <X className="w-4 h-4" />
+          <button type="button" onClick={onClose} className="notif-sheet__close" aria-label="Close">
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="notif-list">
           {officialNotifications.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center text-[11px] text-slate-500">
-              No official push notifications yet.
-            </div>
+            <div className="notif-empty">No official push notifications yet.</div>
           ) : (
             officialNotifications.map((item) => {
               const meta = iconMap[item.kind];
               const Icon = meta.icon;
+              const clickable = Boolean(onNotificationClick && item.action);
+
+              const content = (
+                <>
+                  <div className={`notif-kind ${meta.tone}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="notif-item__body">
+                    <div className="notif-item__row">
+                      <h4 className="notif-item__title">{item.title}</h4>
+                      <span className="notif-item__time">{item.time}</span>
+                    </div>
+                    <p className="notif-item__desc">{item.desc}</p>
+                  </div>
+                </>
+              );
+
+              if (clickable) {
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`notif-item notif-item--button${item.isRead ? ' is-read' : ' is-unread'}`}
+                    onClick={() => onNotificationClick?.(item)}
+                  >
+                    {content}
+                  </button>
+                );
+              }
+
               return (
                 <div
                   key={item.id}
-                  className={`p-3 rounded-2xl border flex items-start space-x-3 ${
-                    item.isRead ? 'bg-slate-50 border-slate-200' : 'bg-white border-red-200'
-                  }`}
+                  className={`notif-item${item.isRead ? ' is-read' : ' is-unread'}`}
                 >
-                  <div className={`p-2 rounded-xl border shrink-0 ${meta.color}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-0.5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-slate-900 truncate pr-1">
-                        {item.title}
-                      </h4>
-                      <span className="text-[9px] text-slate-500 font-mono shrink-0">
-                        {item.time}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
+                  {content}
                 </div>
               );
             })
@@ -133,7 +128,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             onMarkAllRead();
             onClose();
           }}
-          className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition border border-slate-200"
+          className="notif-sheet__action"
         >
           Mark All as Read
         </button>

@@ -233,7 +233,7 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
   if (error) {
     return (
       <AcademicFlowShell title="My Exam Timetable" theme="exam" onBack={onBack}>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</div>
+        <div className="flow-state flow-state--error">{error}</div>
       </AcademicFlowShell>
     );
   }
@@ -241,9 +241,7 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
   if (loading) {
     return (
       <AcademicFlowShell title="My Exam Timetable" theme="exam" onBack={onBack}>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-          Loading…
-        </div>
+        <div className="flow-state">Loading…</div>
       </AcademicFlowShell>
     );
   }
@@ -292,17 +290,13 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
           <div className="flow-hero">
             <p className="flow-hero__eyebrow">Exam season</p>
             <p className="flow-hero__value">
-              {items.length} <span className="text-base font-semibold text-slate-500">papers</span>
+              {items.length} <span className="flow-hero__unit">papers</span>
             </p>
             <p className="flow-hero__caption">{selectedTerm?.description}</p>
           </div>
           <div className="space-y-2">
             <p className="flow-section-label">Upcoming exams</p>
-            {items.length === 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-                No exams for this term.
-              </div>
-            )}
+            {items.length === 0 && <div className="flow-state">No exams for this term.</div>}
             {items.map((item) => (
               <FlowListCard
                 key={item.id}
@@ -324,25 +318,21 @@ export const MyExamTimetableFlow: React.FC<MyExamTimetableFlowProps> = ({ onBack
       {step === 'detail' && detail && (
         <div className="space-y-3">
           <div className="flow-hero">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flow-hero__top">
               <div className="min-w-0">
                 <p className="flow-hero__eyebrow">{detail.courseCode}</p>
-                <p className="mt-1 text-lg font-bold tracking-tight text-slate-900">{detail.courseTitle}</p>
+                <p className="flow-hero__title">{detail.courseTitle}</p>
               </div>
-              <button
-                type="button"
-                onClick={addToCalendar}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-red-700 shadow-sm transition hover:bg-red-50"
-              >
+              <button type="button" onClick={addToCalendar} className="exam-cal-btn">
                 <CalendarPlus className="h-3.5 w-3.5" />
                 <span>Add to Calendar</span>
               </button>
             </div>
-            <p className="mt-3 text-sm font-semibold text-slate-800">{examDateLabel}</p>
-            <p className="text-sm text-slate-700">
+            <p className="flow-hero__date">{examDateLabel}</p>
+            <p className="flow-hero__time">
               {detail.beginTime} – {detail.endTime}
             </p>
-            <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600">
+            <div className="flow-hero__venue">
               <MapPin className="h-3.5 w-3.5" />
               <span>{detail.venue}</span>
             </div>
